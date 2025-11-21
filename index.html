@@ -2,15 +2,17 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Pré-reserva de Evento | Flor de Sal</title>
+  <title>Flor de Sal | Delivery e Retirada</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
     :root {
+      /* Paleta baseada no logo */
       --cor-principal: #8b3a23;
       --cor-secundaria: #b85b34;
       --cor-clara: #fdf7f2;
       --cor-texto: #3b2417;
+      --cor-botao-sec: #ffffff;
       --shadow-soft: 0 18px 35px rgba(0,0,0,0.14);
       --radius-xl: 24px;
       --transition-fast: 0.25s ease;
@@ -28,124 +30,99 @@
       font-family: var(--font-texto);
       background: radial-gradient(circle at top left, #ffe7d4 0, #fdf7f2 45%, #ffffff 100%);
       color: var(--cor-texto);
+      line-height: 1.5;
       min-height: 100vh;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 2rem 1.5rem;
+      flex-direction: column;
     }
 
-    .wrapper {
-      width: min(720px, 100%);
-      background: rgba(255,255,255,0.96);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-soft);
-      padding: 2.4rem 2rem 2rem;
-      border: 1px solid rgba(139,58,35,0.12);
-      position: relative;
-      overflow: hidden;
+    img {
+      max-width: 100%;
+      display: block;
     }
 
-    .wrapper::before {
-      content: "";
-      position: absolute;
-      inset: -40%;
-      background: radial-gradient(circle at 0 0, rgba(184,91,52,0.25), transparent 55%),
-                  radial-gradient(circle at 100% 100%, rgba(255,198,153,0.65), transparent 55%);
-      opacity: 0.55;
-      z-index: -1;
+    a {
+      text-decoration: none;
     }
 
     header {
-      margin-bottom: 1.5rem;
-      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(12px);
+      background: rgba(253,247,242,0.92);
+      border-bottom: 1px solid rgba(139,58,35,0.08);
     }
 
-    header h1 {
-      font-family: var(--font-titulos);
-      font-size: 1.9rem;
-      color: var(--cor-principal);
-      margin-bottom: 0.25rem;
+    .container {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 0 1.5rem;
     }
 
-    header h2 {
-      font-size: 1rem;
-      opacity: 0.9;
-      margin-bottom: 0.6rem;
-    }
-
-    header p {
-      font-size: 0.9rem;
-      opacity: 0.9;
-    }
-
-    form {
-      margin-top: 1.6rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.2rem 1.6rem;
-    }
-
-    .campo-full {
-      grid-column: 1 / -1;
-    }
-
-    label {
-      display: block;
-      font-size: 0.85rem;
-      margin-bottom: 0.3rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      opacity: 0.85;
-    }
-
-    input,
-    textarea {
-      width: 100%;
-      padding: 0.8rem 0.85rem;
-      border-radius: 999px;
-      border: 1px solid rgba(139,58,35,0.28);
-      background: rgba(255,255,255,0.95);
-      outline: none;
-      font-size: 0.95rem;
-      transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
-    }
-
-    textarea {
-      border-radius: 18px;
-      min-height: 90px;
-      resize: vertical;
-    }
-
-    input:focus,
-    textarea:focus {
-      border-color: var(--cor-principal);
-      box-shadow: 0 0 0 1px rgba(139,58,35,0.25);
-      background: #ffffff;
-    }
-
-    .form-footer {
-      grid-column: 1 / -1;
+    .nav {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 1rem;
-      margin-top: 0.4rem;
-      flex-wrap: wrap;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-area img {
+      height: 56px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .logo-text span:first-child {
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: 0.03em;
+      color: var(--cor-principal);
+    }
+
+    .logo-text span:last-child {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+
+    .nav-cta {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .chip {
+      font-size: 0.8rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(139,58,35,0.3);
+      color: var(--cor-principal);
+      background: rgba(255,255,255,0.8);
     }
 
     .btn {
       border-radius: 999px;
       border: none;
-      padding: 0.8rem 1.6rem;
-      font-size: 0.95rem;
+      padding: 0.7rem 1.3rem;
+      font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), opacity var(--transition-fast);
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), opacity var(--transition-fast);
       white-space: nowrap;
     }
 
@@ -157,6 +134,7 @@
       background: linear-gradient(135deg, var(--cor-principal), var(--cor-secundaria));
       color: #fff;
       box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(0,0,0,0.08);
     }
 
     .btn-primary:hover {
@@ -165,10 +143,9 @@
     }
 
     .btn-outline {
-      background: rgba(255,255,255,0.85);
+      background: rgba(255,255,255,0.88);
       color: var(--cor-principal);
-      border: 1px solid rgba(139,58,35,0.38);
-      text-decoration: none;
+      border: 1px solid rgba(139,58,35,0.35);
     }
 
     .btn-outline:hover {
@@ -176,141 +153,715 @@
       color: #fff;
     }
 
-    .hint {
+    main {
+      flex: 1;
+    }
+
+    /* HERO */
+
+    .hero {
+      padding: 3rem 0 3.5rem;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      gap: 2.5rem;
+      align-items: center;
+    }
+
+    .hero-copy h1 {
+      font-family: var(--font-titulos);
+      font-size: clamp(2.3rem, 4vw, 3rem);
+      color: var(--cor-principal);
+      margin-bottom: 0.4rem;
+    }
+
+    .hero-copy h2 {
+      font-size: 1.05rem;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      opacity: 0.9;
+      margin-bottom: 1.3rem;
+    }
+
+    .hero-copy p {
+      font-size: 1rem;
+      max-width: 32rem;
+      opacity: 0.9;
+      margin-bottom: 1.8rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.9rem;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-info {
+      display: flex;
+      gap: 1.6rem;
+      font-size: 0.88rem;
+      flex-wrap: wrap;
+    }
+
+    .hero-info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .hero-info-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.72rem;
+      opacity: 0.7;
+    }
+
+    .hero-info-value {
+      font-weight: 600;
+    }
+
+    .hero-visual {
+      position: relative;
+      display: flex;
+      justify-content: center;
+    }
+
+    .hero-card {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      padding: 1.4rem 1.4rem 1.2rem;
+      border-radius: var(--radius-xl);
+      background: rgba(255,255,255,0.92);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      border: 1px solid rgba(139,58,35,0.08);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: radial-gradient(circle at 0 0, rgba(184,91,52,0.25), transparent 55%),
+                  radial-gradient(circle at 100% 100%, rgba(255,198,153,0.65), transparent 55%);
+      opacity: 0.55;
+      z-index: -1;
+    }
+
+    .hero-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .hero-card-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--cor-principal);
+    }
+
+    .hero-card-chip {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(139,58,35,0.3);
+    }
+
+    .hero-card-img {
+      border-radius: 18px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      border: 1px solid rgba(139,58,35,0.1);
+    }
+
+    .hero-card-img img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .hero-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       font-size: 0.8rem;
+    }
+
+    .hero-card-footer strong {
+      font-size: 0.9rem;
+      color: var(--cor-principal);
+    }
+
+    /* CARROSSEL SEMANAL */
+
+    .menu-semana {
+      padding: 0 0 3.5rem;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.8rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .section-header h3 {
+      font-size: 1.4rem;
+      color: var(--cor-principal);
+    }
+
+    .section-header p {
+      font-size: 0.9rem;
+      max-width: 28rem;
+      opacity: 0.9;
+    }
+
+    .carousel {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 2.1rem;
+      align-items: stretch;
+    }
+
+    .carousel-visual {
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      position: relative;
+      min-height: 260px;
+      background: #eee;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .carousel-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .carousel-badge {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      padding: 0.4rem 0.8rem;
+      background: rgba(0,0,0,0.56);
+      color: #fff;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .carousel-content {
+      background: rgba(255,255,255,0.96);
+      border-radius: var(--radius-xl);
+      padding: 1.6rem 1.6rem 1.4rem;
+      border: 1px solid rgba(139,58,35,0.08);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .carousel-day {
+      font-size: 0.88rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 0.3rem;
+    }
+
+    .carousel-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: var(--cor-principal);
+    }
+
+    .carousel-desc {
+      font-size: 0.92rem;
+      opacity: 0.9;
+      margin-bottom: 0.7rem;
+    }
+
+    .carousel-items {
+      list-style: none;
+      font-size: 0.9rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .carousel-items li + li {
+      margin-top: 0.25rem;
+    }
+
+    .carousel-meta {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .carousel-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .carousel-dots {
+      display: flex;
+      gap: 0.45rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(139,58,35,0.35);
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      transition: background var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast), width var(--transition-fast);
+    }
+
+    .dot.active {
+      background: var(--cor-principal);
+      border-color: transparent;
+      width: 22px;
+      transform: translateY(-1px);
+    }
+
+    .carousel-cta {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    footer {
+      border-top: 1px solid rgba(139,58,35,0.08);
+      padding: 1.5rem 0 2rem;
+      font-size: 0.8rem;
+      text-align: center;
       opacity: 0.85;
     }
 
+    /* RESPONSIVO */
+
+    @media (max-width: 900px) {
+      .hero {
+        padding: 2rem 0 2.5rem;
+      }
+
+      .hero-grid {
+        grid-template-columns: minmax(0,1fr);
+      }
+
+      .hero-visual {
+        order: -1;
+      }
+
+      .hero-card {
+        max-width: 360px;
+      }
+
+      .carousel {
+        grid-template-columns: minmax(0,1fr);
+      }
+    }
+
     @media (max-width: 640px) {
-      body {
-        padding: 1.5rem 1rem;
+      .nav {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.7rem;
       }
 
-      .wrapper {
-        padding: 1.9rem 1.4rem 1.6rem;
-      }
-
-      form {
-        grid-template-columns: 1fr;
-      }
-
-      .form-footer {
+      .hero-actions {
         flex-direction: column;
         align-items: stretch;
       }
 
-      .form-footer .btn {
+      .hero-actions .btn {
         justify-content: center;
         width: 100%;
+      }
+
+      .carousel-cta {
+        width: 100%;
+      }
+
+      .carousel-cta .btn {
+        flex: 1;
+        justify-content: center;
       }
     }
   </style>
 </head>
 <body>
-  <div class="wrapper">
-    <header>
-      <h1>Faça sua pré-reserva</h1>
-      <h2>Entraremos em contato</h2>
-      <p>
-        Deixe seus dados e a data desejada. Vamos retornar pelo WhatsApp para alinhar
-        cardápio, quantidade de pessoas e todos os detalhes do seu evento.
-      </p>
-    </header>
+  <header>
+    <div class="container">
+      <div class="nav">
+        <div class="logo-area">
+          <!-- Trocar o src pelo nome do arquivo do logo -->
+          <img src="logo-flor-de-sal.png" alt="Flor de Sal Delivery" />
+          <div class="logo-text">
+            <span>Flor de Sal</span>
+            <span>Delivery &amp; retirada</span>
+          </div>
+        </div>
 
-    <!--
-      Aqui está a "planilha" de coleta de informações.
-      Você pode integrar este form com qualquer backend, Google Sheets, Make, etc.
-    -->
-    <form id="form-evento">
-      <div class="campo-full">
-        <label for="nome">Nome completo</label>
-        <input
-          id="nome"
-          name="nome"
-          type="text"
-          required
-          placeholder="Seu nome"
-        />
-      </div>
+        <div class="nav-cta">
+          <span class="chip">Entrega em Rio Verde e região</span>
 
-      <div>
-        <label for="telefone">Telefone / WhatsApp</label>
-        <input
-          id="telefone"
-          name="telefone"
-          type="tel"
-          required
-          placeholder="(64) 9 0000-0000"
-        />
-      </div>
-
-      <div>
-        <label for="data">Data desejada do evento</label>
-        <input
-          id="data"
-          name="data"
-          type="date"
-          required
-        />
-      </div>
-
-      <div class="campo-full">
-        <label for="detalhes">Detalhes do evento (opcional)</label>
-        <textarea
-          id="detalhes"
-          name="detalhes"
-          placeholder="Tipo de evento, quantidade aproximada de pessoas, local, horário..."
-        ></textarea>
-      </div>
-
-      <div class="form-footer">
-        <button type="submit" class="btn btn-primary">
-          Enviar pré-reserva
-        </button>
-
-        <div class="hint">
-          Preferir falar direto?
           <a
-            class="btn btn-outline"
             href="https://wa.me/5564981245822"
             target="_blank"
             rel="noopener noreferrer"
+            class="btn btn-primary"
           >
-            Abrir WhatsApp
+            Peça aqui
+          </a>
+
+          <a href="evento.html" class="btn btn-outline">
+            Nos contrate para seu evento
           </a>
         </div>
       </div>
-    </form>
-  </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <h1>Feito com carinho</h1>
+            <h2>Flor de Sal | Delivery e retirada</h2>
+            <p>
+              Comida caseira, ingredientes selecionados e aquele cuidado de cozinha de
+              família. Você escolhe: entregamos na sua porta ou deixamos tudo prontinho
+              pra retirada.
+            </p>
+
+            <div class="hero-actions">
+              <a
+                href="https://wa.me/5564981245822"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-primary"
+              >
+                Peça aqui
+              </a>
+
+              <a href="evento.html" class="btn btn-outline">
+                Nos contrate para seu evento
+              </a>
+            </div>
+
+            <div class="hero-info">
+              <div class="hero-info-item">
+                <span class="hero-info-label">Horário de almoço</span>
+                <span class="hero-info-value">Seg a Sex · 11h às 14h</span>
+              </div>
+              <div class="hero-info-item">
+                <span class="hero-info-label">Formas de atendimento</span>
+                <span class="hero-info-value">Delivery &amp; retirada no local</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-visual">
+            <article class="hero-card">
+              <header class="hero-card-header">
+                <div>
+                  <div class="hero-card-title">Prato do dia com carinho</div>
+                  <small>Arroz, feijão, proteína e acompanhamentos</small>
+                </div>
+                <span class="hero-card-chip">Caseiro • Fresquinho</span>
+              </header>
+
+              <div class="hero-card-img">
+                <!-- Pode trocar por uma foto real do prato -->
+                <img
+                  src="https://images.pexels.com/photos/1437267/pexels-photo-1437267.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                  alt="Prato caseiro Flor de Sal"
+                />
+              </div>
+
+              <footer class="hero-card-footer">
+                <div>
+                  <strong>Hoje tem capricho no tempero</strong><br />
+                  <span>Peça agora pelo WhatsApp e garanta seu almoço.</span>
+                </div>
+                <span>💬 WhatsApp direto</span>
+              </footer>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARROSSEL CARDÁPIO DA SEMANA -->
+    <section class="menu-semana">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <h3>Cardápio da semana</h3>
+            <p>Veja o prato principal de cada dia. O cardápio roda automaticamente, mas você também pode navegar pelos dias.</p>
+          </div>
+        </div>
+
+        <div class="carousel">
+          <div class="carousel-visual">
+            <span class="carousel-badge" id="badge-dia">
+              Segunda-feira
+            </span>
+            <img
+              id="imagem-dia"
+              src=""
+              alt="Prato do dia Flor de Sal"
+            />
+          </div>
+
+          <article class="carousel-content">
+            <header>
+              <div class="carousel-day" id="nome-dia">
+                Segunda-feira
+              </div>
+              <div class="carousel-title" id="titulo-prato">
+                Prato de exemplo
+              </div>
+              <p class="carousel-desc" id="descricao-prato">
+                Descrição do prato do dia.
+              </p>
+              <ul class="carousel-items" id="lista-itens">
+                <!-- itens via JS -->
+              </ul>
+              <div class="carousel-meta">
+                <span id="horario-dia">Servimos no almoço · 11h às 14h</span>
+                <span id="info-extra">Opções com e sem carne</span>
+              </div>
+            </header>
+
+            <footer class="carousel-controls">
+              <div class="carousel-dots" id="dots-container">
+                <!-- bolinhas via JS -->
+              </div>
+
+              <div class="carousel-cta">
+                <a
+                  href="https://wa.me/5564981245822"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-primary"
+                >
+                  Peça este prato
+                </a>
+                <a href="evento.html" class="btn btn-outline">
+                  Quero no meu evento
+                </a>
+              </div>
+            </footer>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      Flor de Sal Delivery · Feito com carinho · Contato via WhatsApp: (64) 98124-5822
+    </div>
+  </footer>
 
   <script>
-    // Aqui você pode adaptar para integrar com seu backend ou Make.
-    // No momento, apenas mostra um alerta e prepara a mensagem para o WhatsApp.
+    // Sistema de "pratos rodando" de segunda a sexta
 
-    const form = document.getElementById("form-evento");
-
-    form.addEventListener("submit", function (event) {
-      event.preventDefault();
-
-      const nome = document.getElementById("nome").value.trim();
-      const telefone = document.getElementById("telefone").value.trim();
-      const data = document.getElementById("data").value;
-      const detalhes = document.getElementById("detalhes").value.trim();
-
-      if (!nome || !telefone || !data) {
-        alert("Por favor, preencha nome, telefone e data do evento.");
-        return;
+    const diasSemana = [
+      {
+        id: "segunda",
+        nome: "Segunda-feira",
+        titulo: "Picadinho de carne com legumes",
+        descricao:
+          "Arroz branco soltinho, feijão caseiro, picadinho de carne com legumes frescos e salada do dia.",
+        itens: [
+          "Arroz branco",
+          "Feijão tradicional",
+          "Picadinho de carne com legumes",
+          "Salada de folhas e tomate"
+        ],
+        horario: "Servimos no almoço · 11h às 14h",
+        extra: "Porções individuais e família",
+        imagem:
+          "https://images.pexels.com/photos/8478050/pexels-photo-8478050.jpeg?auto=compress&cs=tinysrgb&w=1200"
+      },
+      {
+        id: "terca",
+        nome: "Terça-feira",
+        titulo: "Frango grelhado com creme de milho",
+        descricao:
+          "Prato leve e saboroso, perfeito pra metade da semana começar bem.",
+        itens: [
+          "Arroz branco ou integral",
+          "Feijão",
+          "Frango grelhado",
+          "Creme de milho",
+          "Salada colorida"
+        ],
+        horario: "Almoço · 11h às 14h",
+        extra: "Opção sem glúten disponível",
+        imagem:
+          "https://images.pexels.com/photos/1431305/pexels-photo-1431305.jpeg?auto=compress&cs=tinysrgb&w=1200"
+      },
+      {
+        id: "quarta",
+        nome: "Quarta-feira",
+        titulo: "Feijoada da Flor de Sal",
+        descricao:
+          "Feijoada bem temperada, acompanhamentos completos e aquela laranja pra fechar.",
+        itens: [
+          "Feijoada completa",
+          "Arroz branco",
+          "Couve refogada",
+          "Farofa",
+          "Laranja fatiada"
+        ],
+        horario: "Quarta da feijoada · 11h às 14h",
+        extra: "Versão light sob encomenda",
+        imagem:
+          "https://images.pexels.com/photos/6287491/pexels-photo-6287491.jpeg?auto=compress&cs=tinysrgb&w=1200"
+      },
+      {
+        id: "quinta",
+        nome: "Quinta-feira",
+        titulo: "Parmegiana da casa",
+        descricao:
+          "Clássico parmegiana com molho caseiro, queijo gratinado e acompanhamentos.",
+        itens: [
+          "Filé de frango ou bovino à parmegiana",
+          "Arroz branco",
+          "Batata rústica",
+          "Salada fresca"
+        ],
+        horario: "Almoço · 11h às 14h",
+        extra: "Serve muito bem 1 pessoa",
+        imagem:
+          "https://images.pexels.com/photos/4109230/pexels-photo-4109230.jpeg?auto=compress&cs=tinysrgb&w=1200"
+      },
+      {
+        id: "sexta",
+        nome: "Sexta-feira",
+        titulo: "Peixe empanado com limão siciliano",
+        descricao:
+          "Pra fechar a semana: peixe crocante, acompanhamento leve e sabor cítrico.",
+        itens: [
+          "Filé de peixe empanado",
+          "Arroz com alho",
+          "Purê de batata",
+          "Molho de limão siciliano",
+          "Salada verde"
+        ],
+        horario: "Sextou · 11h às 14h",
+        extra: "Ideal para quem prefere algo mais leve",
+        imagem:
+          "https://images.pexels.com/photos/262959/pexels-photo-262959.jpeg?auto=compress&cs=tinysrgb&w=1200"
       }
+    ];
 
-      const mensagem = `Olá, sou ${nome}. Quero fazer uma pré-reserva para evento na data ${data}.%0A%0ATelefone/WhatsApp: ${telefone}%0A%0ADetalhes:%0A${detalhes || "Sem detalhes adicionais."}`;
+    const badgeDia = document.getElementById("badge-dia");
+    const imagemDia = document.getElementById("imagem-dia");
+    const nomeDia = document.getElementById("nome-dia");
+    const tituloPrato = document.getElementById("titulo-prato");
+    const descricaoPrato = document.getElementById("descricao-prato");
+    const listaItens = document.getElementById("lista-itens");
+    const horarioDia = document.getElementById("horario-dia");
+    const infoExtra = document.getElementById("info-extra");
+    const dotsContainer = document.getElementById("dots-container");
 
-      // Abrir WhatsApp com mensagem preenchida (opcional)
-      const url = `https://wa.me/5564981245822?text=${mensagem}`;
-      window.open(url, "_blank");
+    let indiceAtual = 0;
+    let intervalo = null;
 
-      alert("Pré-reserva enviada! Vamos falar com você pelo WhatsApp.");
-      form.reset();
-    });
+    function montarDots() {
+      diasSemana.forEach((dia, index) => {
+        const dot = document.createElement("button");
+        dot.classList.add("dot");
+        if (index === 0) dot.classList.add("active");
+        dot.setAttribute("aria-label", dia.nome);
+        dot.addEventListener("click", () => {
+          mudarDia(index, true);
+        });
+        dotsContainer.appendChild(dot);
+      });
+    }
+
+    function atualizarDots(indice) {
+      const todosDots = dotsContainer.querySelectorAll(".dot");
+      todosDots.forEach((dot, i) => {
+        dot.classList.toggle("active", i === indice);
+      });
+    }
+
+    function atualizarConteudo(dia) {
+      badgeDia.textContent = dia.nome;
+      nomeDia.textContent = dia.nome;
+      tituloPrato.textContent = dia.titulo;
+      descricaoPrato.textContent = dia.descricao;
+      horarioDia.textContent = dia.horario;
+      infoExtra.textContent = dia.extra;
+      imagemDia.src = dia.imagem;
+      imagemDia.alt = dia.titulo + " - " + dia.nome;
+
+      listaItens.innerHTML = "";
+      dia.itens.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = "• " + item;
+        listaItens.appendChild(li);
+      });
+    }
+
+    function mudarDia(novoIndice, pausaAuto = false) {
+      indiceAtual = novoIndice;
+      atualizarConteudo(diasSemana[indiceAtual]);
+      atualizarDots(indiceAtual);
+
+      if (pausaAuto) {
+        reiniciarIntervalo();
+      }
+    }
+
+    function proximoDia() {
+      indiceAtual = (indiceAtual + 1) % diasSemana.length;
+      mudarDia(indiceAtual);
+    }
+
+    function iniciarIntervalo() {
+      intervalo = setInterval(proximoDia, 7000); // 7 segundos
+    }
+
+    function reiniciarIntervalo() {
+      if (intervalo) clearInterval(intervalo);
+      iniciarIntervalo();
+    }
+
+    // inicialização
+    montarDots();
+    atualizarConteudo(diasSemana[indiceAtual]);
+    iniciarIntervalo();
   </script>
 </body>
 </html>
