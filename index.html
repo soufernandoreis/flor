@@ -7,37 +7,56 @@
 
   <style>
     :root {
-      --cor-principal: #8b3a23;
-      --cor-secundaria: #b85b34;
-      --cor-fundo: #fdf7f2;
-      --cor-texto: #3b2417;
-      --shadow-soft: 0 18px 35px rgba(0,0,0,0.16);
-      --radius-xl: 26px;
-      --transition-fast: 0.25s ease;
+      --cor-texto: #fdf7f2;
       --font-base: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
     body {
       font-family: var(--font-base);
-      background: radial-gradient(circle at top left, #ffe7d4 0, var(--cor-fundo) 45%, #ffffff 100%);
       color: var(--cor-texto);
       min-height: 100vh;
       display: flex;
+      align-items: stretch;
       justify-content: center;
+      transition: background 0.7s ease;
       overflow-x: hidden;
     }
 
+    /* Temas de fundo (um por prato) */
+    body.theme-0 {
+      background: radial-gradient(circle at top left, #ffb088 0, #1d0b0b 40%, #040109 100%);
+    }
+
+    body.theme-1 {
+      background: radial-gradient(circle at top right, #ffd46b 0, #251108 45%, #05030c 100%);
+    }
+
+    body.theme-2 {
+      background: radial-gradient(circle at top, #ff9777 0, #1d090a 45%, #05020a 100%);
+    }
+
+    body.theme-3 {
+      background: radial-gradient(circle at bottom left, #ffc3a0 0, #1b1015 45%, #05030c 100%);
+    }
+
+    body.theme-4 {
+      background: radial-gradient(circle at bottom right, #ffb86c 0, #1c0d06 45%, #050208 100%);
+    }
+
     main {
-      width: min(1120px, 100%);
-      padding: 2.5rem 1.5rem 3.5rem;
+      width: min(1200px, 100%);
+      padding: 2.4rem 1.6rem 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       opacity: 0;
-      transform: translateY(12px);
+      transform: translateY(10px);
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
 
@@ -46,63 +65,92 @@
       transform: translateY(0);
     }
 
-    /* HERO */
-
     .hero {
-      text-align: center;
-      margin-bottom: 3rem;
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 2.6rem;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Partículas de fundo */
+    .hero::before,
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: -20%;
+      background:
+        radial-gradient(circle at 10% 20%, rgba(255,255,255,0.08) 0, transparent 55%),
+        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.04) 0, transparent 60%);
+      opacity: 0.6;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .hero::after {
+      animation: drift 18s linear infinite alternate;
+      opacity: 0.4;
+    }
+
+    @keyframes drift {
+      0% { transform: translate3d(0,0,0); }
+      100% { transform: translate3d(40px,-30px,0); }
+    }
+
+    .hero-left {
+      position: relative;
+      z-index: 2;
     }
 
     .hero-logo {
-      margin: 0 auto 1.4rem;
       width: min(260px, 70vw);
-      transform: translate3d(0, 0, 0);
+      margin-bottom: 1.2rem;
+      transform: translate3d(0,0,0);
       transition: transform 0.4s ease-out;
       will-change: transform;
     }
 
     .hero-logo img {
       width: 100%;
-      height: auto;
       display: block;
-      filter: drop-shadow(0 18px 30px rgba(0,0,0,0.18));
+      filter: drop-shadow(0 18px 32px rgba(0,0,0,0.5));
     }
 
-    .hero h2 {
-      font-size: 1.25rem;
-      letter-spacing: 0.18em;
+    .hero-tagline {
+      font-size: 0.95rem;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: var(--cor-principal);
+      opacity: 0.85;
       margin-bottom: 1.4rem;
-      opacity: 0;
-      transform: translateY(12px);
-      transition: opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s;
     }
 
-    .hero p {
-      max-width: 540px;
-      margin: 0 auto 1.9rem;
+    .hero-subtitle {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 3vw, 2.6rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 0.8rem;
+    }
+
+    .hero-desc {
       font-size: 0.98rem;
-      opacity: 0;
-      transform: translateY(14px);
-      transition: opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s;
+      max-width: 420px;
+      opacity: 0.9;
+      margin-bottom: 1.8rem;
+      line-height: 1.7;
     }
 
     .hero-actions {
       display: flex;
-      justify-content: center;
-      gap: 1rem;
       flex-wrap: wrap;
-      opacity: 0;
-      transform: translateY(16px);
-      transition: opacity 0.6s ease 0.28s, transform 0.6s ease 0.28s;
-    }
-
-    body.is-loaded .hero h2,
-    body.is-loaded .hero p,
-    body.is-loaded .hero-actions {
-      opacity: 1;
-      transform: translateY(0);
+      gap: 0.9rem;
+      margin-bottom: 1.3rem;
     }
 
     .btn {
@@ -117,181 +165,177 @@
       gap: 0.45rem;
       cursor: pointer;
       border: none;
-      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast), opacity var(--transition-fast), border-color var(--transition-fast);
-      white-space: nowrap;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
+      transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, color 0.22s ease, border-color 0.22s ease;
+      white-space: nowrap;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, rgba(139,58,35,0.92), rgba(184,91,52,0.96));
+      background: rgba(255,255,255,0.16);
       color: #fff;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
-      border: 1px solid rgba(255,255,255,0.35);
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
     }
 
     .btn-primary:hover {
-      filter: brightness(1.06);
-      box-shadow: 0 22px 46px rgba(0,0,0,0.35);
+      transform: translateY(-1px) scale(1.02);
+      background: rgba(255,255,255,0.22);
+      box-shadow: 0 22px 48px rgba(0,0,0,0.8);
+    }
+
+    .btn-secondary {
+      background: rgba(0,0,0,0.35);
+      color: #fff6ea;
+      border: 1px solid rgba(255,255,255,0.25);
+      box-shadow: 0 14px 32px rgba(0,0,0,0.6);
+    }
+
+    .btn-secondary:hover {
       transform: translateY(-1px) scale(1.01);
+      background: rgba(0,0,0,0.5);
     }
 
-    .btn-outline {
-      background: rgba(255,255,255,0.18);
-      color: var(--cor-principal);
-      border: 1px solid rgba(255,255,255,0.7);
-      box-shadow: 0 10px 26px rgba(0,0,0,0.16);
-    }
-
-    .btn-outline:hover {
-      background: rgba(255,255,255,0.35);
-      color: var(--cor-principal);
-      transform: translateY(-1px) scale(1.01);
-    }
-
-    /* CARROSSEL */
-
-    .section-menu {
-      margin-top: 1rem;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 1.5rem;
-      margin-bottom: 1.8rem;
-      flex-wrap: wrap;
-    }
-
-    .section-header h3 {
-      font-size: 1.35rem;
-      color: var(--cor-principal);
-    }
-
-    .section-header p {
-      font-size: 0.9rem;
-      max-width: 360px;
+    .hero-meta {
+      font-size: 0.85rem;
       opacity: 0.9;
     }
 
-    .carousel-shell {
-      position: relative;
+    .hero-meta span + span::before {
+      content: "•";
+      margin: 0 0.45rem;
+      opacity: 0.7;
     }
 
-    .cards-viewport {
+    /* Dots */
+    .hero-dots {
       display: flex;
-      gap: 1.5rem;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      padding: 0.45rem 0.1rem 0.9rem;
-      -webkit-overflow-scrolling: touch;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 1.6rem;
     }
 
-    .cards-viewport::-webkit-scrollbar {
-      display: none;
-    }
-
-    .card {
-      scroll-snap-align: center;
-      min-width: 260px;
-      max-width: 260px;
-      flex: 0 0 auto;
-      perspective: 1100px;
-      opacity: 0;
-      transform: translateY(18px);
-      transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
-    }
-
-    body.is-loaded .card {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .card-inner {
-      position: relative;
-      background: rgba(255,255,255,0.96);
-      border-radius: var(--radius-xl);
-      box-shadow: 0 14px 30px rgba(0,0,0,0.12);
-      border: 1px solid rgba(139,58,35,0.08);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      transform-style: preserve-3d;
-      transform: translateY(6px) scale(0.98);
-      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
-      will-change: transform, box-shadow;
-    }
-
-    .card-visual {
-      position: relative;
-      height: 170px;
-      overflow: visible;
-    }
-
-    .card-visual img {
-      width: 88%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      margin: 0 auto;
+    .hero-dot {
+      width: 9px;
+      height: 9px;
       border-radius: 999px;
-      transform-origin: center;
-      transform: translateY(16px) translateZ(0);
-      transition: transform 0.28s ease;
-      box-shadow: 0 10px 22px rgba(0,0,0,0.18);
-      will-change: transform;
+      border: 1px solid rgba(255,255,255,0.6);
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      transition: width 0.25s ease, background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
     }
 
-    .card-content {
-      padding: 1rem 1.2rem 1.2rem;
+    .hero-dot.active {
+      width: 24px;
+      background: #fff;
+      border-color: transparent;
+      transform: translateY(-1px);
     }
 
-    .dia-label {
-      font-size: 0.78rem;
+    .hero-right {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .product-3d-shell {
+      width: min(420px, 100%);
+      aspect-ratio: 3 / 4;
+      position: relative;
+      perspective: 1200px;
+    }
+
+    .product-3d {
+      width: 100%;
+      height: 100%;
+      border-radius: 32px;
+      background: radial-gradient(circle at 50% 20%, rgba(255,255,255,0.12), transparent 55%);
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow:
+        0 30px 80px rgba(0,0,0,0.85),
+        0 0 0 1px rgba(0,0,0,0.5);
+      overflow: visible;
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(0deg) rotateY(0deg);
+      transition: transform 0.25s ease-out;
+      padding: 1.3rem 1.1rem 1.6rem;
+    }
+
+    .product-base-glow {
+      position: absolute;
+      inset: auto 10% 10% 10%;
+      height: 38%;
+      background: radial-gradient(circle at 50% 0, rgba(0,0,0,0.7) 0, transparent 65%);
+      transform: translateZ(0);
+      filter: blur(2px);
+      opacity: 0.9;
+    }
+
+    .product-image-wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+
+    .product-image-wrap img {
+      width: 82%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 999px;
+      transform: translateZ(40px) translateY(-6px);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.95);
+      transition: transform 0.25s ease-out;
+    }
+
+    /* Elementos flutuantes */
+    .float-pill {
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.45);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transform-style: preserve-3d;
+    }
+
+    .float-pill span {
+      font-size: 0.7rem;
       letter-spacing: 0.16em;
       text-transform: uppercase;
-      opacity: 0.7;
-      margin-bottom: 0.35rem;
+      padding: 0.35rem 0.8rem;
+      display: block;
+      white-space: nowrap;
     }
 
-    .card-title {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: var(--cor-principal);
-      margin-bottom: 0.35rem;
+    .pill-1 { top: 12%; left: 8%; animation: float1 7s ease-in-out infinite; }
+    .pill-2 { top: 6%; right: 6%; animation: float2 8s ease-in-out infinite; }
+    .pill-3 { bottom: 16%; left: 12%; animation: float3 9s ease-in-out infinite; }
+    .pill-4 { bottom: 10%; right: 12%; animation: float2 6.5s ease-in-out infinite; }
+
+    @keyframes float1 {
+      0%,100% { transform: translate3d(0,0,60px); }
+      50% { transform: translate3d(0,-10px,80px); }
+    }
+    @keyframes float2 {
+      0%,100% { transform: translate3d(0,0,70px); }
+      50% { transform: translate3d(4px,8px,90px); }
+    }
+    @keyframes float3 {
+      0%,100% { transform: translate3d(0,0,50px); }
+      50% { transform: translate3d(-6px,-8px,70px); }
     }
 
-    .card-text {
-      font-size: 0.88rem;
-      opacity: 0.9;
-      margin-bottom: 0.7rem;
-    }
-
-    .card-meta {
-      font-size: 0.8rem;
-      opacity: 0.85;
-      display: flex;
-      justify-content: space-between;
-      gap: 0.4rem;
-      flex-wrap: wrap;
-    }
-
-    .card.active .card-inner {
-      transform: translateY(-10px) scale(1.05) rotateX(4deg);
-      box-shadow: 0 26px 60px rgba(0,0,0,0.32);
-      border-color: rgba(139,58,35,0.32);
-    }
-
-    .card.active .card-visual img {
-      transform: translateY(4px) translateZ(40px) scale(1.08);
-    }
-
-    .card.active:hover .card-inner {
-      transform: translateY(-14px) scale(1.07) rotateX(6deg) rotateY(-3deg);
-    }
-
-    .carousel-nav {
+    /* Navegação lateral */
+    .hero-nav {
       position: absolute;
       inset: 0;
       display: flex;
@@ -300,64 +344,68 @@
       pointer-events: none;
     }
 
-    .nav-btn {
+    .hero-nav-btn {
       width: 40px;
       height: 40px;
-      border-radius: 50%;
+      border-radius: 999px;
       border: none;
-      background: rgba(255,255,255,0.9);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.18);
+      background: rgba(0,0,0,0.5);
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 16px 30px rgba(0,0,0,0.7);
       cursor: pointer;
       pointer-events: auto;
-      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, opacity 0.18s ease;
-      color: var(--cor-principal);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .nav-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 28px rgba(0,0,0,0.2);
-      background: #ffffff;
+    .hero-nav-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(0,0,0,0.7);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.85);
     }
 
-    .nav-btn svg {
+    .hero-nav-btn svg {
       width: 18px;
       height: 18px;
     }
 
-    .nav-btn--left {
-      margin-left: -0.4rem;
-    }
+    .hero-nav-btn--left { transform: translateX(-10px); }
+    .hero-nav-btn--right { transform: translateX(10px); }
 
-    .nav-btn--right {
-      margin-right: -0.4rem;
-    }
+    /* Responsivo */
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: minmax(0,1fr);
+        gap: 2rem;
+      }
 
-    @media (max-width: 768px) {
+      .hero-right {
+        order: -1;
+      }
+
+      .hero-nav {
+        display: none; /* mobile usa swipe */
+      }
+
       main {
-        padding-inline: 1.25rem;
-      }
-
-      .card {
-        min-width: 220px;
-        max-width: 220px;
-      }
-
-      .nav-btn {
-        width: 34px;
-        height: 34px;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.16);
+        padding-inline: 1.2rem;
       }
     }
 
-    @media (max-width: 560px) {
-      .hero h2 {
-        font-size: 1.05rem;
-        letter-spacing: 0.16em;
+    @media (max-width: 600px) {
+      .hero {
+        gap: 1.8rem;
+      }
+
+      .product-3d-shell {
+        width: 100%;
+        max-width: 360px;
+      }
+
+      .hero-title {
+        font-size: 1.8rem;
       }
 
       .hero-actions {
@@ -367,258 +415,211 @@
       .hero-actions .btn {
         width: 100%;
       }
-
-      .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .carousel-nav {
-        display: none; /* mobile usa o dedo */
-      }
     }
   </style>
 </head>
-<body>
+<body class="theme-0">
 <main>
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-logo" id="heroLogo">
-      <!-- H1 visual com a imagem do logo -->
-      <img src="flor de sal.png" alt="Flor de Sal Delivery" />
-    </div>
+  <section class="hero" id="heroSlider">
+    <div class="hero-left">
+      <!-- H1 visual: logo -->
+      <div class="hero-logo" id="heroLogo">
+        <img src="flor de sal.png" alt="Flor de Sal Delivery" />
+      </div>
 
-    <h2>feito com carinho</h2>
+      <div class="hero-tagline">feito com carinho</div>
 
-    <p>
-      Cardápio caseiro preparado todos os dias com ingredientes frescos e aquele
-      tempero de cozinha de família. Peça seu prato ou fale com a gente sobre o seu evento.
-    </p>
+      <div class="hero-subtitle" id="slideSubtitle">Segunda-feira · Picadinho da casa</div>
+      <div class="hero-title" id="slideTitle">Pra começar a semana com conforto</div>
 
-    <div class="hero-actions">
-      <a
-        href="https://wa.me/5564981245822"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn btn-primary"
-      >
-        Peça aqui
-      </a>
+      <p class="hero-desc" id="slideDesc">
+        Arroz soltinho, feijão caseiro, picadinho de carne com legumes e salada fresca.
+      </p>
 
-      <a
-        href="https://wa.me/5564981245822?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20sobre%20um%20evento."
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn btn-outline"
-      >
-        Nos contrate para seu evento
-      </a>
-    </div>
-  </section>
+      <div class="hero-actions">
+        <a
+          href="https://wa.me/5564981245822"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-primary"
+        >
+          Peça este prato
+        </a>
+        <a
+          href="https://wa.me/5564981245822?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20sobre%20um%20evento."
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-secondary"
+        >
+          Fale sobre seu evento
+        </a>
+      </div>
 
-  <!-- CARROSSEL DE PRATOS -->
-  <section class="section-menu">
-    <div class="section-header">
-      <div>
-        <h3>Cardápio da semana</h3>
-        <p>Arraste para o lado para ver os pratos de segunda a sexta. Em cada dia, um cuidado diferente no tempero.</p>
+      <div class="hero-meta">
+        <span>Almoço · 11h às 14h</span>
+        <span>Delivery e retirada</span>
+      </div>
+
+      <div class="hero-dots" id="heroDots">
+        <!-- preenchido via JS -->
       </div>
     </div>
 
-    <div class="carousel-shell">
-      <div class="cards-viewport" id="cardsViewport">
-        <!-- Segunda -->
-        <article class="card">
-          <div class="card-inner">
-            <div class="card-visual">
-              <img src="prato.png" alt="Prato de segunda-feira" />
-            </div>
-            <div class="card-content">
-              <p class="dia-label">Segunda-feira</p>
-              <h4 class="card-title">Picadinho da casa</h4>
-              <p class="card-text">
-                Arroz soltinho, feijão, picadinho de carne com legumes e salada fresca.
-              </p>
-              <div class="card-meta">
-                <span>Almoço · 11h às 14h</span>
-                <span>Porções individual e família</span>
-              </div>
-            </div>
-          </div>
-        </article>
+    <div class="hero-right">
+      <div class="product-3d-shell" id="productShell">
+        <div class="product-3d" id="product3d">
+          <div class="product-base-glow"></div>
 
-        <!-- Terça -->
-        <article class="card">
-          <div class="card-inner">
-            <div class="card-visual">
-              <img src="prato1.png" alt="Prato de terça-feira" />
-            </div>
-            <div class="card-content">
-              <p class="dia-label">Terça-feira</p>
-              <h4 class="card-title">Frango grelhado</h4>
-              <p class="card-text">
-                Frango grelhado, arroz, feijão e legumes salteados no ponto certo.
-              </p>
-              <div class="card-meta">
-                <span>Almoço · 11h às 14h</span>
-                <span>Opção leve e saborosa</span>
-              </div>
-            </div>
+          <div class="product-image-wrap">
+            <img src="prato.png" alt="Prato Flor de Sal" id="slideImage" />
           </div>
-        </article>
 
-        <!-- Quarta -->
-        <article class="card">
-          <div class="card-inner">
-            <div class="card-visual">
-              <img src="prato2.png" alt="Prato de quarta-feira" />
-            </div>
-            <div class="card-content">
-              <p class="dia-label">Quarta-feira</p>
-              <h4 class="card-title">Feijoada Flor de Sal</h4>
-              <p class="card-text">
-                Feijoada caseira com acompanhamentos completos, pra matar a saudade.
-              </p>
-              <div class="card-meta">
-                <span>Quarta da feijoada</span>
-                <span>Peça antecipado e garanta o seu</span>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <!-- Quinta -->
-        <article class="card">
-          <div class="card-inner">
-            <div class="card-visual">
-              <img src="prato3.png" alt="Prato de quinta-feira" />
-            </div>
-            <div class="card-content">
-              <p class="dia-label">Quinta-feira</p>
-              <h4 class="card-title">Parmegiana da casa</h4>
-              <p class="card-text">
-                Filé à parmegiana com molho caseiro, queijo gratinado e acompanhamentos.
-              </p>
-              <div class="card-meta">
-                <span>Almoço · 11h às 14h</span>
-                <span>Serve muito bem 1 pessoa</span>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <!-- Sexta (imagem duplicada) -->
-        <article class="card">
-          <div class="card-inner">
-            <div class="card-visual">
-              <img src="prato2.png" alt="Prato de sexta-feira" />
-            </div>
-            <div class="card-content">
-              <p class="dia-label">Sexta-feira</p>
-              <h4 class="card-title">Sexta especial</h4>
-              <p class="card-text">
-                Prato especial da semana, pensado para fechar a sexta com chave de ouro.
-              </p>
-              <div class="card-meta">
-                <span>Consulte o prato do dia</span>
-                <span>Fale com a gente no WhatsApp</span>
-              </div>
-            </div>
-          </div>
-        </article>
+          <!-- elementos flutuantes -->
+          <div class="float-pill pill-1"><span id="pillTopLeft">Segunda</span></div>
+          <div class="float-pill pill-2"><span id="pillTopRight">Caseiro</span></div>
+          <div class="float-pill pill-3"><span id="pillBottomLeft">Feito na hora</span></div>
+          <div class="float-pill pill-4"><span id="pillBottomRight">Flor de Sal</span></div>
+        </div>
       </div>
+    </div>
 
-      <!-- Navegação por clique (desktop) com bounce -->
-      <div class="carousel-nav">
-        <button class="nav-btn nav-btn--left" data-dir="prev" aria-label="Prato anterior">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-        <button class="nav-btn nav-btn--right" data-dir="next" aria-label="Próximo prato">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
+    <!-- Navegação lateral (desktop) -->
+    <div class="hero-nav">
+      <button class="hero-nav-btn hero-nav-btn--left" data-dir="prev" aria-label="Prato anterior">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="hero-nav-btn hero-nav-btn--right" data-dir="next" aria-label="Próximo prato">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
   </section>
 </main>
 
 <script>
-  const viewport = document.getElementById("cardsViewport");
-  const cards = Array.from(viewport.querySelectorAll(".card"));
-  const prevBtn = document.querySelector('[data-dir="prev"]');
-  const nextBtn = document.querySelector('[data-dir="next"]');
-  const heroLogo = document.getElementById("heroLogo");
-
-  // Marca card ativo pelo centro do viewport
-  function updateActiveCard() {
-    const viewportRect = viewport.getBoundingClientRect();
-    const viewportCenter = viewportRect.left + viewportRect.width / 2;
-
-    let closestCard = null;
-    let closestDistance = Infinity;
-
-    cards.forEach(card => {
-      const rect = card.getBoundingClientRect();
-      const cardCenter = rect.left + rect.width / 2;
-      const distance = Math.abs(viewportCenter - cardCenter);
-
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestCard = card;
-      }
-    });
-
-    cards.forEach(card => {
-      card.classList.toggle("active", card === closestCard);
-    });
-  }
-
-  // Scroll + debounce
-  let ticking = false;
-  viewport.addEventListener("scroll", () => {
-    if (!ticking) {
-      window.requestAnimationFrame(() => {
-        updateActiveCard();
-        ticking = false;
-      });
-      ticking = true;
+  // Slides com as imagens dos pratos e textos
+  const slides = [
+    {
+      theme: "theme-0",
+      image: "prato.png",
+      subtitle: "Segunda-feira · Picadinho da casa",
+      title: "Pra começar a semana com conforto",
+      desc: "Arroz soltinho, feijão caseiro, picadinho de carne com legumes e salada fresca.",
+      pills: ["Segunda", "Caseiro", "Feito na hora", "Flor de Sal"]
+    },
+    {
+      theme: "theme-1",
+      image: "prato1.png",
+      subtitle: "Terça-feira · Frango grelhado",
+      title: "Leve, saboroso e caprichado",
+      desc: "Frango grelhado, arroz, feijão e legumes salteados no ponto certo.",
+      pills: ["Terça", "Grelhado", "Leve", "Feito com carinho"]
+    },
+    {
+      theme: "theme-2",
+      image: "prato2.png",
+      subtitle: "Quarta-feira · Feijoada Flor de Sal",
+      title: "Clássico de quarta, do seu jeito",
+      desc: "Feijoada caseira com acompanhamentos completos pra matar a saudade.",
+      pills: ["Quarta", "Feijoada", "Completa", "Flor de Sal"]
+    },
+    {
+      theme: "theme-3",
+      image: "prato3.png",
+      subtitle: "Quinta-feira · Parmegiana da casa",
+      title: "Queijo gratinado e molho caseiro",
+      desc: "Filé à parmegiana com molho da casa, queijo gratinado e acompanhamentos.",
+      pills: ["Quinta", "Parmegiana", "Crocante", "Caseiro"]
+    },
+    {
+      theme: "theme-4",
+      image: "prato2.png", // imagem reaproveitada
+      subtitle: "Sexta-feira · Sexta especial",
+      title: "Pra fechar a semana com chave de ouro",
+      desc: "Prato especial da semana, pensado para a sua sexta-feira ficar ainda melhor.",
+      pills: ["Sexta", "Especial", "Consulte", "WhatsApp"]
     }
+  ];
+
+  const body = document.body;
+  const subtitleEl = document.getElementById("slideSubtitle");
+  const titleEl = document.getElementById("slideTitle");
+  const descEl = document.getElementById("slideDesc");
+  const imageEl = document.getElementById("slideImage");
+  const pillTopLeft = document.getElementById("pillTopLeft");
+  const pillTopRight = document.getElementById("pillTopRight");
+  const pillBottomLeft = document.getElementById("pillBottomLeft");
+  const pillBottomRight = document.getElementById("pillBottomRight");
+  const heroDotsContainer = document.getElementById("heroDots");
+  const heroLogo = document.getElementById("heroLogo");
+  const productShell = document.getElementById("productShell");
+  const product3d = document.getElementById("product3d");
+  const heroSlider = document.getElementById("heroSlider");
+
+  let currentIndex = 0;
+
+  // Cria dots
+  slides.forEach((_, i) => {
+    const dot = document.createElement("button");
+    dot.className = "hero-dot" + (i === 0 ? " active" : "");
+    dot.type = "button";
+    dot.setAttribute("aria-label", "Ir para prato " + (i + 1));
+    dot.addEventListener("click", () => goToSlide(i));
+    heroDotsContainer.appendChild(dot);
   });
 
-  // Navegação com bounce nas extremidades
-  function scrollByCard(direction) {
-    if (!cards.length) return;
-    const cardWidth = cards[0].getBoundingClientRect().width + 24; // width + gap
+  const dots = Array.from(document.querySelectorAll(".hero-dot"));
 
-    const maxScroll =
-      viewport.scrollWidth - viewport.clientWidth;
-    const newPos = viewport.scrollLeft + direction * cardWidth;
+  function goToSlide(index) {
+    if (index === currentIndex || index < 0 || index >= slides.length) return;
+    currentIndex = index;
+    const slide = slides[currentIndex];
 
-    if (newPos < 0 || newPos > maxScroll) {
-      // efeito bounce simples
-      const bounce = direction < 0 ? -20 : 20;
-      viewport.scrollTo({ left: viewport.scrollLeft + bounce, behavior: "smooth" });
-      setTimeout(() => {
-        viewport.scrollTo({ left: viewport.scrollLeft - bounce, behavior: "smooth" });
-      }, 160);
-      return;
-    }
+    // atualiza tema de fundo
+    body.className = slide.theme + " is-loaded";
 
-    viewport.scrollBy({
-      left: direction * cardWidth,
-      behavior: "smooth"
-    });
+    subtitleEl.textContent = slide.subtitle;
+    titleEl.textContent = slide.title;
+    descEl.textContent = slide.desc;
+
+    imageEl.style.opacity = "0";
+    setTimeout(() => {
+      imageEl.src = slide.image;
+      imageEl.alt = slide.subtitle;
+      imageEl.style.opacity = "1";
+    }, 150);
+
+    const [p1, p2, p3, p4] = slide.pills;
+    pillTopLeft.textContent = p1;
+    pillTopRight.textContent = p2;
+    pillBottomLeft.textContent = p3;
+    pillBottomRight.textContent = p4;
+
+    dots.forEach((d, i) => d.classList.toggle("active", i === currentIndex));
   }
 
+  function nextSlide() {
+    const next = (currentIndex + 1) % slides.length;
+    goToSlide(next);
+  }
+
+  function prevSlide() {
+    const prev = (currentIndex - 1 + slides.length) % slides.length;
+    goToSlide(prev);
+  }
+
+  // Botões laterais
+  const prevBtn = document.querySelector('[data-dir="prev"]');
+  const nextBtn = document.querySelector('[data-dir="next"]');
   if (prevBtn && nextBtn) {
-    prevBtn.addEventListener("click", () => scrollByCard(-1));
-    nextBtn.addEventListener("click", () => scrollByCard(1));
+    prevBtn.addEventListener("click", prevSlide);
+    nextBtn.addEventListener("click", nextSlide);
   }
 
-  // Parallax suave do logo (mouse + scroll)
+  // Parallax suave do logo
   function updateLogoParallax(event) {
     const rect = heroLogo.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -630,45 +631,70 @@
     if (event && event.type === "mousemove") {
       const dx = (event.clientX - centerX) / rect.width;
       const dy = (event.clientY - centerY) / rect.height;
-      x = dx * 8;
-      y = dy * 6;
+      x = dx * 10;
+      y = dy * 8;
     }
 
-    const scrollFactor = window.scrollY * 0.05;
-    heroLogo.style.transform =
-      `translate3d(${x}px, ${y - scrollFactor}px, 0)`;
+    const scrollFactor = window.scrollY * 0.03;
+    heroLogo.style.transform = `translate3d(${x}px, ${y - scrollFactor}px, 0)`;
   }
 
   window.addEventListener("mousemove", updateLogoParallax);
   window.addEventListener("scroll", () => updateLogoParallax());
 
-  // Micro animação no toque/click dos cards
-  cards.forEach(card => {
-    const inner = card.querySelector(".card-inner");
-    card.addEventListener("pointerdown", () => {
-      inner.style.transition = "transform 0.12s ease";
-      inner.style.transform += " scale(0.96)";
-    });
-    card.addEventListener("pointerup", () => {
-      inner.style.transition = "transform 0.18s ease";
-      inner.style.transform = inner.style.transform.replace(/scale\(0\.96\)/, "");
-    });
-    card.addEventListener("pointerleave", () => {
-      inner.style.transition = "transform 0.18s ease";
-      inner.style.transform = inner.style.transform.replace(/scale\(0\.96\)/, "");
-    });
+  // Tilt 3D do produto
+  productShell.addEventListener("mousemove", (e) => {
+    const rect = productShell.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+    const rotateY = x * 16;
+    const rotateX = -y * 14;
+
+    product3d.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
   });
 
-  // Marca card inicial e anima entrada
+  productShell.addEventListener("mouseleave", () => {
+    product3d.style.transform = "rotateX(0deg) rotateY(0deg)";
+  });
+
+  // Swipe (touch) para mobile
+  let startX = 0;
+  let isTouching = false;
+
+  heroSlider.addEventListener("touchstart", (e) => {
+    const touch = e.touches[0];
+    startX = touch.clientX;
+    isTouching = true;
+  }, { passive: true });
+
+  heroSlider.addEventListener("touchmove", (e) => {
+    // apenas para registrar movimento, sem bloquear scroll
+  }, { passive: true });
+
+  heroSlider.addEventListener("touchend", (e) => {
+    if (!isTouching) return;
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - startX;
+    const threshold = 50; // pixels
+
+    if (Math.abs(deltaX) > threshold) {
+      if (deltaX < 0) {
+        nextSlide();
+      } else {
+        prevSlide();
+      }
+    }
+    isTouching = false;
+  });
+
+  // Inicialização
   function init() {
-    document.body.classList.add("is-loaded");
-    updateActiveCard();
+    body.classList.add("is-loaded");
+    goToSlide(0);
   }
 
   window.addEventListener("load", init);
-  window.addEventListener("resize", () => {
-    setTimeout(updateActiveCard, 100);
-  });
 </script>
 </body>
 </html>
