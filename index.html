@@ -28,7 +28,7 @@
       overflow-x: hidden;
     }
 
-    /* Temas de fundo – um por slide */
+    /* Um tema de fundo por slide */
     body.theme-0 {
       background: radial-gradient(circle at top left, #ffb088 0, #1d0b0b 40%, #040109 100%);
     }
@@ -75,7 +75,7 @@
       min-height: 70vh;
     }
 
-    /* “Neblina” de fundo */
+    /* Neblina de fundo leve */
     .hero::before,
     .hero::after {
       content: "";
@@ -104,7 +104,7 @@
       z-index: 2;
     }
 
-    /* H1 visual */
+    /* H1 visual: logo livre (como você mostrou) */
     .hero-logo {
       width: min(260px, 70vw);
       margin-bottom: 1.2rem;
@@ -125,6 +125,10 @@
       text-transform: uppercase;
       opacity: 0.85;
       margin-bottom: 1.4rem;
+    }
+
+    .hero-copy {
+      transition: transform 0.45s ease, opacity 0.45s ease;
     }
 
     .hero-subtitle {
@@ -201,6 +205,7 @@
     .hero-meta {
       font-size: 0.85rem;
       opacity: 0.9;
+      margin-top: 0.5rem;
     }
 
     .hero-meta span + span::before {
@@ -243,7 +248,7 @@
       align-items: center;
     }
 
-    /* IMAGEM 3D LIVRE (sem card) */
+    /* IMAGEM 3D LIVRE (sem card, só a foto flutuando) */
 
     .product-3d-shell {
       width: min(480px, 100%);
@@ -265,30 +270,39 @@
       position: absolute;
       inset: auto 10% 6% 10%;
       height: 26%;
-      background: radial-gradient(circle at 50% 0, rgba(0,0,0,0.65) 0, transparent 70%);
-      filter: blur(2px);
+      background: radial-gradient(circle at 50% 0, rgba(0,0,0,0.75) 0, transparent 70%);
+      filter: blur(3px);
       transform: translateZ(0);
-      opacity: 0.9;
+      opacity: 0.95;
     }
 
-    .product-image-wrap {
-      width: 100%;
-      height: 100%;
+    .product-image-stage {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
+      pointer-events: none;
       transform-style: preserve-3d;
     }
 
-    .product-image-wrap img {
+    .product-image-stage img {
+      position: absolute;
       width: 80%;
       max-height: 90%;
       object-fit: contain;
       border-radius: 40px;
-      transform: translateZ(120px) translateY(-10px);
       box-shadow: 0 40px 90px rgba(0,0,0,0.95);
-      transition: transform 0.28s ease-out;
+      transform-origin: center;
+      opacity: 0;
+      transform: translate3d(-50%, -50%, 120px);
+      top: 50%;
+      left: 50%;
+      transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+
+    .product-image-stage img.visible {
+      opacity: 1;
     }
 
     /* Navegação lateral (desktop) */
@@ -306,7 +320,7 @@
       height: 40px;
       border-radius: 999px;
       border: none;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.55);
       color: #fff;
       display: flex;
       align-items: center;
@@ -319,7 +333,7 @@
 
     .hero-nav-btn:hover {
       transform: translateY(-1px);
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.75);
       box-shadow: 0 20px 40px rgba(0,0,0,0.85);
     }
 
@@ -386,39 +400,41 @@
 
       <div class="hero-tagline">feito com carinho</div>
 
-      <div class="hero-subtitle" id="slideSubtitle">Segunda-feira · Picadinho da casa</div>
-      <div class="hero-title" id="slideTitle">Pra começar a semana com conforto</div>
+      <div class="hero-copy" id="heroCopy">
+        <div class="hero-subtitle" id="slideSubtitle">Segunda-feira · Picadinho da casa</div>
+        <div class="hero-title" id="slideTitle">Pra começar a semana com conforto</div>
 
-      <p class="hero-desc" id="slideDesc">
-        Arroz soltinho, feijão caseiro, picadinho de carne com legumes e salada fresca.
-      </p>
+        <p class="hero-desc" id="slideDesc">
+          Arroz soltinho, feijão caseiro, picadinho de carne com legumes e salada fresca.
+        </p>
 
-      <div class="hero-actions">
-        <a
-          href="https://wa.me/5564981245822"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn btn-primary"
-        >
-          Peça este prato
-        </a>
-        <a
-          href="https://wa.me/5564981245822?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20sobre%20um%20evento."
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn btn-secondary"
-        >
-          Fale sobre seu evento
-        </a>
-      </div>
+        <div class="hero-actions">
+          <a
+            href="https://wa.me/5564981245822"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary"
+          >
+            Peça este prato
+          </a>
+          <a
+            href="https://wa.me/5564981245822?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20sobre%20um%20evento."
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-secondary"
+          >
+            Fale sobre seu evento
+          </a>
+        </div>
 
-      <div class="hero-meta">
-        <span>Almoço · 11h às 14h</span>
-        <span>Delivery e retirada</span>
+        <div class="hero-meta">
+          <span>Almoço · 11h às 14h</span>
+          <span>Delivery e retirada</span>
+        </div>
       </div>
 
       <div class="hero-dots" id="heroDots">
-        <!-- dots via JS -->
+        <!-- preenchido via JS -->
       </div>
     </div>
 
@@ -426,8 +442,9 @@
       <div class="product-3d-shell" id="productShell">
         <div class="product-3d" id="product3d">
           <div class="product-shadow"></div>
-          <div class="product-image-wrap">
-            <img src="prato.png" alt="Prato Flor de Sal" id="slideImage" />
+          <div class="product-image-stage" id="productImageStage">
+            <img id="currentImage" class="visible" src="prato.png" alt="Prato Flor de Sal" />
+            <img id="nextImage" src="prato1.png" alt="" />
           </div>
         </div>
       </div>
@@ -450,7 +467,7 @@
 </main>
 
 <script>
-  // Slides: fundos diferentes + imagens diferentes (incluindo roy.png)
+  // Configuração dos slides (inclui roy.png)
   const slides = [
     {
       theme: "theme-0",
@@ -482,7 +499,7 @@
     },
     {
       theme: "theme-4",
-      image: "prato2.png", // reaproveitado
+      image: "prato2.png",
       subtitle: "Sexta-feira · Sexta especial",
       title: "Pra fechar a semana com chave de ouro",
       desc: "Prato especial da semana, pensado para a sua sexta-feira ficar ainda melhor."
@@ -500,16 +517,21 @@
   const subtitleEl = document.getElementById("slideSubtitle");
   const titleEl = document.getElementById("slideTitle");
   const descEl = document.getElementById("slideDesc");
-  const imageEl = document.getElementById("slideImage");
+  const heroCopy = document.getElementById("heroCopy");
   const heroDotsContainer = document.getElementById("heroDots");
   const heroLogo = document.getElementById("heroLogo");
   const productShell = document.getElementById("productShell");
   const product3d = document.getElementById("product3d");
   const heroSlider = document.getElementById("heroSlider");
 
-  let currentIndex = 0;
+  const currentImage = document.getElementById("currentImage");
+  const nextImage = document.getElementById("nextImage");
 
-  // Dots
+  let currentIndex = 0;
+  let isAnimating = false;
+  const animationDuration = 500; // ms
+
+  // Cria os dots do slider
   slides.forEach((_, i) => {
     const dot = document.createElement("button");
     dot.className = "hero-dot" + (i === 0 ? " active" : "");
@@ -521,27 +543,83 @@
 
   const dots = Array.from(document.querySelectorAll(".hero-dot"));
 
-  function goToSlide(index) {
-    if (index === currentIndex || index < 0 || index >= slides.length) return;
-    currentIndex = index;
-    const slide = slides[currentIndex];
+  function setBodyTheme(theme) {
+    // remove todos os temas anteriores
+    slides.forEach(s => body.classList.remove(s.theme));
+    body.classList.add(theme);
+  }
 
-    // tema de fundo
-    body.className = slide.theme + " is-loaded";
-
+  function updateTexts(slide) {
     subtitleEl.textContent = slide.subtitle;
     titleEl.textContent = slide.title;
     descEl.textContent = slide.desc;
+  }
 
-    // pequena transição na imagem
-    imageEl.style.opacity = "0";
+  function goToSlide(newIndex) {
+    if (isAnimating || newIndex === currentIndex || newIndex < 0 || newIndex >= slides.length) return;
+    isAnimating = true;
+
+    const slide = slides[newIndex];
+
+    // Atualiza fundo imediatamente para acompanhar a troca
+    setBodyTheme(slide.theme);
+
+    // Anima texto: primeiro sai para a direita
+    heroCopy.style.transform = "translateX(40px)";
+    heroCopy.style.opacity = "0";
+
+    // Prepara imagem de entrada (vem da esquerda)
+    nextImage.src = slide.image;
+    nextImage.alt = slide.subtitle;
+
+    // posição inicial das imagens:
+    // imagem atual: centro -> vai pra direita
+    currentImage.classList.add("visible");
+    currentImage.style.transform = "translate3d(-50%, -50%, 120px)";
+    currentImage.style.opacity = "1";
+
+    nextImage.classList.add("visible");
+    nextImage.style.transform = "translate3d(-150%, -50%, 80px)";
+    nextImage.style.opacity = "0";
+
+    // força reflow para as transições dispararem
+    void nextImage.offsetWidth;
+
+    // Animações: foto antiga sai pra direita, nova entra da esquerda
+    currentImage.style.transform = "translate3d(50%, -50%, 0px)";
+    currentImage.style.opacity = "0";
+
+    nextImage.style.transform = "translate3d(-50%, -50%, 120px)";
+    nextImage.style.opacity = "1";
+
+    // No meio da animação, troca textos e reseta posição da cópia
     setTimeout(() => {
-      imageEl.src = slide.image;
-      imageEl.alt = slide.subtitle;
-      imageEl.style.opacity = "1";
-    }, 150);
+      updateTexts(slide);
 
-    dots.forEach((d, i) => d.classList.toggle("active", i === currentIndex));
+      // texto entra da direita para o centro
+      heroCopy.style.transform = "translateX(-40px)";
+      // força reflow
+      void heroCopy.offsetWidth;
+      heroCopy.style.transform = "translateX(0)";
+      heroCopy.style.opacity = "1";
+    }, animationDuration * 0.4);
+
+    // Finaliza animação
+    setTimeout(() => {
+      // coloca a nova imagem como "current"
+      currentImage.src = slide.image;
+      currentImage.alt = slide.subtitle;
+      currentImage.style.transform = "translate3d(-50%, -50%, 120px)";
+      currentImage.style.opacity = "1";
+
+      // esconde a imagem auxiliar
+      nextImage.classList.remove("visible");
+      nextImage.style.opacity = "0";
+
+      currentIndex = newIndex;
+      dots.forEach((d, i) => d.classList.toggle("active", i === currentIndex));
+      isAnimating = false;
+    }, animationDuration);
   }
 
   function nextSlide() {
@@ -554,7 +632,7 @@
     goToSlide(prev);
   }
 
-  // Botões laterais
+  // Botões laterais (desktop)
   const prevBtn = document.querySelector('[data-dir="prev"]');
   const nextBtn = document.querySelector('[data-dir="next"]');
   if (prevBtn && nextBtn) {
@@ -601,7 +679,7 @@
     product3d.style.transform = "rotateX(0deg) rotateY(0deg)";
   });
 
-  // Swipe (touch) para mobile: arrastar pro lado troca slide
+  // Swipe (touch) para mobile – sempre anima da mesma forma
   let startX = 0;
   let isTouching = false;
 
@@ -615,18 +693,27 @@
     if (!isTouching) return;
     const touch = e.changedTouches[0];
     const deltaX = touch.clientX - startX;
-    const threshold = 50;
+    const threshold = 50; // pixels
 
     if (Math.abs(deltaX) > threshold) {
-      if (deltaX < 0) nextSlide();
-      else prevSlide();
+      if (deltaX < 0) {
+        nextSlide();
+      } else {
+        prevSlide();
+      }
     }
     isTouching = false;
   }, { passive: true });
 
+  // Inicialização
   function init() {
     body.classList.add("is-loaded");
-    goToSlide(0);
+    setBodyTheme(slides[0].theme);
+    // garante texto correto do primeiro slide
+    updateTexts(slides[0]);
+    currentImage.src = slides[0].image;
+    currentImage.alt = slides[0].subtitle;
+    currentImage.classList.add("visible");
   }
 
   window.addEventListener("load", init);
