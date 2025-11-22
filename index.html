@@ -223,22 +223,6 @@
       will-change: transform, box-shadow;
     }
 
-    /* glow atrás do prato */
-    .card-inner::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      margin: auto;
-      width: 65%;
-      height: 40%;
-      background: radial-gradient(circle, rgba(184,91,52,0.2), transparent 70%);
-      filter: blur(8px);
-      opacity: 0;
-      transform: translateY(40px) translateZ(-1px);
-      transition: opacity 0.25s ease, transform 0.25s ease;
-      pointer-events: none;
-    }
-
     .card-visual {
       position: relative;
       height: 170px;
@@ -297,11 +281,6 @@
       transform: translateY(-10px) scale(1.05) rotateX(4deg);
       box-shadow: 0 26px 60px rgba(0,0,0,0.32);
       border-color: rgba(139,58,35,0.32);
-    }
-
-    .card.active .card-inner::before {
-      opacity: 1;
-      transform: translateY(18px) translateZ(-1px);
     }
 
     .card.active .card-visual img {
@@ -672,7 +651,6 @@
     });
     card.addEventListener("pointerup", () => {
       inner.style.transition = "transform 0.18s ease";
-      // remove apenas scale extra, mantendo transform base
       inner.style.transform = inner.style.transform.replace(/scale\(0\.96\)/, "");
     });
     card.addEventListener("pointerleave", () => {
