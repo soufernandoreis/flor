@@ -30,11 +30,20 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
+      overflow-x: hidden;
     }
 
     main {
       width: min(1120px, 100%);
       padding: 2.5rem 1.5rem 3.5rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    body.is-loaded main {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     /* HERO */
@@ -47,12 +56,16 @@
     .hero-logo {
       margin: 0 auto 1.4rem;
       width: min(260px, 70vw);
+      transform: translate3d(0, 0, 0);
+      transition: transform 0.4s ease-out;
+      will-change: transform;
     }
 
     .hero-logo img {
       width: 100%;
       height: auto;
       display: block;
+      filter: drop-shadow(0 18px 30px rgba(0,0,0,0.18));
     }
 
     .hero h2 {
@@ -61,13 +74,18 @@
       text-transform: uppercase;
       color: var(--cor-principal);
       margin-bottom: 1.4rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s;
     }
 
     .hero p {
       max-width: 540px;
       margin: 0 auto 1.9rem;
       font-size: 0.98rem;
-      opacity: 0.9;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s;
     }
 
     .hero-actions {
@@ -75,6 +93,16 @@
       justify-content: center;
       gap: 1rem;
       flex-wrap: wrap;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.6s ease 0.28s, transform 0.6s ease 0.28s;
+    }
+
+    body.is-loaded .hero h2,
+    body.is-loaded .hero p,
+    body.is-loaded .hero-actions {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .btn {
@@ -89,30 +117,36 @@
       gap: 0.45rem;
       cursor: pointer;
       border: none;
-      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast), opacity var(--transition-fast);
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast), opacity var(--transition-fast), border-color var(--transition-fast);
       white-space: nowrap;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--cor-principal), var(--cor-secundaria));
+      background: linear-gradient(135deg, rgba(139,58,35,0.92), rgba(184,91,52,0.96));
       color: #fff;
-      box-shadow: var(--shadow-soft);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.35);
     }
 
     .btn-primary:hover {
       filter: brightness(1.06);
-      box-shadow: 0 22px 40px rgba(0,0,0,0.2);
+      box-shadow: 0 22px 46px rgba(0,0,0,0.35);
+      transform: translateY(-1px) scale(1.01);
     }
 
     .btn-outline {
-      background: rgba(255,255,255,0.92);
+      background: rgba(255,255,255,0.18);
       color: var(--cor-principal);
-      border: 1px solid rgba(139,58,35,0.38);
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.16);
     }
 
     .btn-outline:hover {
-      background: var(--cor-principal);
-      color: #fff;
+      background: rgba(255,255,255,0.35);
+      color: var(--cor-principal);
+      transform: translateY(-1px) scale(1.01);
     }
 
     /* CARROSSEL */
@@ -164,9 +198,18 @@
       max-width: 260px;
       flex: 0 0 auto;
       perspective: 1100px;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
+    }
+
+    body.is-loaded .card {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .card-inner {
+      position: relative;
       background: rgba(255,255,255,0.96);
       border-radius: var(--radius-xl);
       box-shadow: 0 14px 30px rgba(0,0,0,0.12);
@@ -177,6 +220,23 @@
       transform-style: preserve-3d;
       transform: translateY(6px) scale(0.98);
       transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      will-change: transform, box-shadow;
+    }
+
+    /* glow atrás do prato */
+    .card-inner::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: 65%;
+      height: 40%;
+      background: radial-gradient(circle, rgba(184,91,52,0.2), transparent 70%);
+      filter: blur(8px);
+      opacity: 0;
+      transform: translateY(40px) translateZ(-1px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
     }
 
     .card-visual {
@@ -196,6 +256,7 @@
       transform: translateY(16px) translateZ(0);
       transition: transform 0.28s ease;
       box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+      will-change: transform;
     }
 
     .card-content {
@@ -234,8 +295,13 @@
 
     .card.active .card-inner {
       transform: translateY(-10px) scale(1.05) rotateX(4deg);
-      box-shadow: 0 22px 45px rgba(0,0,0,0.24);
-      border-color: rgba(139,58,35,0.2);
+      box-shadow: 0 26px 60px rgba(0,0,0,0.32);
+      border-color: rgba(139,58,35,0.32);
+    }
+
+    .card.active .card-inner::before {
+      opacity: 1;
+      transform: translateY(18px) translateZ(-1px);
     }
 
     .card.active .card-visual img {
@@ -260,7 +326,7 @@
       height: 40px;
       border-radius: 50%;
       border: none;
-      background: rgba(255,255,255,0.92);
+      background: rgba(255,255,255,0.9);
       box-shadow: 0 10px 20px rgba(0,0,0,0.18);
       display: flex;
       align-items: center;
@@ -269,6 +335,8 @@
       pointer-events: auto;
       transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, opacity 0.18s ease;
       color: var(--cor-principal);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     .nav-btn:hover {
@@ -327,7 +395,7 @@
       }
 
       .carousel-nav {
-        display: none; /* em mobile o dedo resolve */
+        display: none; /* mobile usa o dedo */
       }
     }
   </style>
@@ -336,7 +404,7 @@
 <main>
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-logo">
+    <div class="hero-logo" id="heroLogo">
       <!-- H1 visual com a imagem do logo -->
       <img src="flor de sal.png" alt="Flor de Sal Delivery" />
     </div>
@@ -481,7 +549,7 @@
         </article>
       </div>
 
-      <!-- Navegação por clique (desktop) -->
+      <!-- Navegação por clique (desktop) com bounce -->
       <div class="carousel-nav">
         <button class="nav-btn nav-btn--left" data-dir="prev" aria-label="Prato anterior">
           <svg viewBox="0 0 24 24" fill="none">
@@ -499,13 +567,13 @@
 </main>
 
 <script>
-  // Carrossel com scroll lateral + destaque 3D no card central
-
   const viewport = document.getElementById("cardsViewport");
   const cards = Array.from(viewport.querySelectorAll(".card"));
   const prevBtn = document.querySelector('[data-dir="prev"]');
   const nextBtn = document.querySelector('[data-dir="next"]');
+  const heroLogo = document.getElementById("heroLogo");
 
+  // Marca card ativo pelo centro do viewport
   function updateActiveCard() {
     const viewportRect = viewport.getBoundingClientRect();
     const viewportCenter = viewportRect.left + viewportRect.width / 2;
@@ -529,13 +597,7 @@
     });
   }
 
-  // Atualiza ao carregar, rolar e redimensionar
-  window.addEventListener("load", updateActiveCard);
-  window.addEventListener("resize", () => {
-    // pequeno delay para layout estabilizar
-    setTimeout(updateActiveCard, 100);
-  });
-
+  // Scroll + debounce
   let ticking = false;
   viewport.addEventListener("scroll", () => {
     if (!ticking) {
@@ -547,10 +609,25 @@
     }
   });
 
-  // Navegação por clique (desktop)
+  // Navegação com bounce nas extremidades
   function scrollByCard(direction) {
     if (!cards.length) return;
-    const cardWidth = cards[0].getBoundingClientRect().width + 24; // width + gap aproximado
+    const cardWidth = cards[0].getBoundingClientRect().width + 24; // width + gap
+
+    const maxScroll =
+      viewport.scrollWidth - viewport.clientWidth;
+    const newPos = viewport.scrollLeft + direction * cardWidth;
+
+    if (newPos < 0 || newPos > maxScroll) {
+      // efeito bounce simples
+      const bounce = direction < 0 ? -20 : 20;
+      viewport.scrollTo({ left: viewport.scrollLeft + bounce, behavior: "smooth" });
+      setTimeout(() => {
+        viewport.scrollTo({ left: viewport.scrollLeft - bounce, behavior: "smooth" });
+      }, 160);
+      return;
+    }
+
     viewport.scrollBy({
       left: direction * cardWidth,
       behavior: "smooth"
@@ -562,8 +639,58 @@
     nextBtn.addEventListener("click", () => scrollByCard(1));
   }
 
-  // Garantir que o primeiro card comece ativo
-  updateActiveCard();
+  // Parallax suave do logo (mouse + scroll)
+  function updateLogoParallax(event) {
+    const rect = heroLogo.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    let x = 0;
+    let y = 0;
+
+    if (event && event.type === "mousemove") {
+      const dx = (event.clientX - centerX) / rect.width;
+      const dy = (event.clientY - centerY) / rect.height;
+      x = dx * 8;
+      y = dy * 6;
+    }
+
+    const scrollFactor = window.scrollY * 0.05;
+    heroLogo.style.transform =
+      `translate3d(${x}px, ${y - scrollFactor}px, 0)`;
+  }
+
+  window.addEventListener("mousemove", updateLogoParallax);
+  window.addEventListener("scroll", () => updateLogoParallax());
+
+  // Micro animação no toque/click dos cards
+  cards.forEach(card => {
+    const inner = card.querySelector(".card-inner");
+    card.addEventListener("pointerdown", () => {
+      inner.style.transition = "transform 0.12s ease";
+      inner.style.transform += " scale(0.96)";
+    });
+    card.addEventListener("pointerup", () => {
+      inner.style.transition = "transform 0.18s ease";
+      // remove apenas scale extra, mantendo transform base
+      inner.style.transform = inner.style.transform.replace(/scale\(0\.96\)/, "");
+    });
+    card.addEventListener("pointerleave", () => {
+      inner.style.transition = "transform 0.18s ease";
+      inner.style.transform = inner.style.transform.replace(/scale\(0\.96\)/, "");
+    });
+  });
+
+  // Marca card inicial e anima entrada
+  function init() {
+    document.body.classList.add("is-loaded");
+    updateActiveCard();
+  }
+
+  window.addEventListener("load", init);
+  window.addEventListener("resize", () => {
+    setTimeout(updateActiveCard, 100);
+  });
 </script>
 </body>
 </html>
