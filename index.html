@@ -28,25 +28,24 @@
       overflow-x: hidden;
     }
 
-    /* Temas de fundo (um por prato) */
+    /* Temas de fundo – um por slide */
     body.theme-0 {
       background: radial-gradient(circle at top left, #ffb088 0, #1d0b0b 40%, #040109 100%);
     }
-
     body.theme-1 {
       background: radial-gradient(circle at top right, #ffd46b 0, #251108 45%, #05030c 100%);
     }
-
     body.theme-2 {
       background: radial-gradient(circle at top, #ff9777 0, #1d090a 45%, #05020a 100%);
     }
-
     body.theme-3 {
       background: radial-gradient(circle at bottom left, #ffc3a0 0, #1b1015 45%, #05030c 100%);
     }
-
     body.theme-4 {
       background: radial-gradient(circle at bottom right, #ffb86c 0, #1c0d06 45%, #050208 100%);
+    }
+    body.theme-5 {
+      background: radial-gradient(circle at center, #ba8cff 0, #220b3a 40%, #050010 100%);
     }
 
     main {
@@ -58,6 +57,7 @@
       opacity: 0;
       transform: translateY(10px);
       transition: opacity 0.6s ease, transform 0.6s ease;
+      min-height: 100vh;
     }
 
     body.is-loaded main {
@@ -72,9 +72,10 @@
       gap: 2.6rem;
       align-items: center;
       position: relative;
+      min-height: 70vh;
     }
 
-    /* Partículas de fundo */
+    /* “Neblina” de fundo */
     .hero::before,
     .hero::after {
       content: "";
@@ -103,6 +104,7 @@
       z-index: 2;
     }
 
+    /* H1 visual */
     .hero-logo {
       width: min(260px, 70vw);
       margin-bottom: 1.2rem;
@@ -207,7 +209,7 @@
       opacity: 0.7;
     }
 
-    /* Dots */
+    /* Dots (indicadores de slide) */
     .hero-dots {
       display: flex;
       gap: 0.5rem;
@@ -241,37 +243,31 @@
       align-items: center;
     }
 
+    /* IMAGEM 3D LIVRE (sem card) */
+
     .product-3d-shell {
-      width: min(420px, 100%);
-      aspect-ratio: 3 / 4;
+      width: min(480px, 100%);
+      aspect-ratio: 1 / 1;
       position: relative;
-      perspective: 1200px;
+      perspective: 1400px;
     }
 
     .product-3d {
       width: 100%;
       height: 100%;
-      border-radius: 32px;
-      background: radial-gradient(circle at 50% 20%, rgba(255,255,255,0.12), transparent 55%);
-      border: 1px solid rgba(255,255,255,0.15);
-      box-shadow:
-        0 30px 80px rgba(0,0,0,0.85),
-        0 0 0 1px rgba(0,0,0,0.5);
-      overflow: visible;
       position: relative;
       transform-style: preserve-3d;
       transform: rotateX(0deg) rotateY(0deg);
       transition: transform 0.25s ease-out;
-      padding: 1.3rem 1.1rem 1.6rem;
     }
 
-    .product-base-glow {
+    .product-shadow {
       position: absolute;
-      inset: auto 10% 10% 10%;
-      height: 38%;
-      background: radial-gradient(circle at 50% 0, rgba(0,0,0,0.7) 0, transparent 65%);
-      transform: translateZ(0);
+      inset: auto 10% 6% 10%;
+      height: 26%;
+      background: radial-gradient(circle at 50% 0, rgba(0,0,0,0.65) 0, transparent 70%);
       filter: blur(2px);
+      transform: translateZ(0);
       opacity: 0.9;
     }
 
@@ -279,62 +275,23 @@
       width: 100%;
       height: 100%;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
       position: relative;
       transform-style: preserve-3d;
     }
 
     .product-image-wrap img {
-      width: 82%;
-      max-height: 100%;
+      width: 80%;
+      max-height: 90%;
       object-fit: contain;
-      border-radius: 999px;
-      transform: translateZ(40px) translateY(-6px);
-      box-shadow: 0 24px 60px rgba(0,0,0,0.95);
-      transition: transform 0.25s ease-out;
+      border-radius: 40px;
+      transform: translateZ(120px) translateY(-10px);
+      box-shadow: 0 40px 90px rgba(0,0,0,0.95);
+      transition: transform 0.28s ease-out;
     }
 
-    /* Elementos flutuantes */
-    .float-pill {
-      position: absolute;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.18);
-      border: 1px solid rgba(255,255,255,0.45);
-      box-shadow: 0 12px 28px rgba(0,0,0,0.6);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      transform-style: preserve-3d;
-    }
-
-    .float-pill span {
-      font-size: 0.7rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      padding: 0.35rem 0.8rem;
-      display: block;
-      white-space: nowrap;
-    }
-
-    .pill-1 { top: 12%; left: 8%; animation: float1 7s ease-in-out infinite; }
-    .pill-2 { top: 6%; right: 6%; animation: float2 8s ease-in-out infinite; }
-    .pill-3 { bottom: 16%; left: 12%; animation: float3 9s ease-in-out infinite; }
-    .pill-4 { bottom: 10%; right: 12%; animation: float2 6.5s ease-in-out infinite; }
-
-    @keyframes float1 {
-      0%,100% { transform: translate3d(0,0,60px); }
-      50% { transform: translate3d(0,-10px,80px); }
-    }
-    @keyframes float2 {
-      0%,100% { transform: translate3d(0,0,70px); }
-      50% { transform: translate3d(4px,8px,90px); }
-    }
-    @keyframes float3 {
-      0%,100% { transform: translate3d(0,0,50px); }
-      50% { transform: translate3d(-6px,-8px,70px); }
-    }
-
-    /* Navegação lateral */
+    /* Navegação lateral (desktop) */
     .hero-nav {
       position: absolute;
       inset: 0;
@@ -461,24 +418,17 @@
       </div>
 
       <div class="hero-dots" id="heroDots">
-        <!-- preenchido via JS -->
+        <!-- dots via JS -->
       </div>
     </div>
 
     <div class="hero-right">
       <div class="product-3d-shell" id="productShell">
         <div class="product-3d" id="product3d">
-          <div class="product-base-glow"></div>
-
+          <div class="product-shadow"></div>
           <div class="product-image-wrap">
             <img src="prato.png" alt="Prato Flor de Sal" id="slideImage" />
           </div>
-
-          <!-- elementos flutuantes -->
-          <div class="float-pill pill-1"><span id="pillTopLeft">Segunda</span></div>
-          <div class="float-pill pill-2"><span id="pillTopRight">Caseiro</span></div>
-          <div class="float-pill pill-3"><span id="pillBottomLeft">Feito na hora</span></div>
-          <div class="float-pill pill-4"><span id="pillBottomRight">Flor de Sal</span></div>
         </div>
       </div>
     </div>
@@ -500,47 +450,49 @@
 </main>
 
 <script>
-  // Slides com as imagens dos pratos e textos
+  // Slides: fundos diferentes + imagens diferentes (incluindo roy.png)
   const slides = [
     {
       theme: "theme-0",
       image: "prato.png",
       subtitle: "Segunda-feira · Picadinho da casa",
       title: "Pra começar a semana com conforto",
-      desc: "Arroz soltinho, feijão caseiro, picadinho de carne com legumes e salada fresca.",
-      pills: ["Segunda", "Caseiro", "Feito na hora", "Flor de Sal"]
+      desc: "Arroz soltinho, feijão caseiro, picadinho de carne com legumes e salada fresca."
     },
     {
       theme: "theme-1",
       image: "prato1.png",
       subtitle: "Terça-feira · Frango grelhado",
       title: "Leve, saboroso e caprichado",
-      desc: "Frango grelhado, arroz, feijão e legumes salteados no ponto certo.",
-      pills: ["Terça", "Grelhado", "Leve", "Feito com carinho"]
+      desc: "Frango grelhado, arroz, feijão e legumes salteados no ponto certo."
     },
     {
       theme: "theme-2",
       image: "prato2.png",
       subtitle: "Quarta-feira · Feijoada Flor de Sal",
       title: "Clássico de quarta, do seu jeito",
-      desc: "Feijoada caseira com acompanhamentos completos pra matar a saudade.",
-      pills: ["Quarta", "Feijoada", "Completa", "Flor de Sal"]
+      desc: "Feijoada caseira com acompanhamentos completos pra matar a saudade."
     },
     {
       theme: "theme-3",
       image: "prato3.png",
       subtitle: "Quinta-feira · Parmegiana da casa",
       title: "Queijo gratinado e molho caseiro",
-      desc: "Filé à parmegiana com molho da casa, queijo gratinado e acompanhamentos.",
-      pills: ["Quinta", "Parmegiana", "Crocante", "Caseiro"]
+      desc: "Filé à parmegiana com molho da casa, queijo gratinado e acompanhamentos."
     },
     {
       theme: "theme-4",
-      image: "prato2.png", // imagem reaproveitada
+      image: "prato2.png", // reaproveitado
       subtitle: "Sexta-feira · Sexta especial",
       title: "Pra fechar a semana com chave de ouro",
-      desc: "Prato especial da semana, pensado para a sua sexta-feira ficar ainda melhor.",
-      pills: ["Sexta", "Especial", "Consulte", "WhatsApp"]
+      desc: "Prato especial da semana, pensado para a sua sexta-feira ficar ainda melhor."
+    },
+    {
+      theme: "theme-5",
+      image: "roy.png",
+      subtitle: "Especial da casa · Roy",
+      title: "Visual diferente, mesmo carinho",
+      desc: "Uma opção especial para testar novas combinações e apresentar a Flor de Sal com outro visual."
     }
   ];
 
@@ -549,10 +501,6 @@
   const titleEl = document.getElementById("slideTitle");
   const descEl = document.getElementById("slideDesc");
   const imageEl = document.getElementById("slideImage");
-  const pillTopLeft = document.getElementById("pillTopLeft");
-  const pillTopRight = document.getElementById("pillTopRight");
-  const pillBottomLeft = document.getElementById("pillBottomLeft");
-  const pillBottomRight = document.getElementById("pillBottomRight");
   const heroDotsContainer = document.getElementById("heroDots");
   const heroLogo = document.getElementById("heroLogo");
   const productShell = document.getElementById("productShell");
@@ -561,7 +509,7 @@
 
   let currentIndex = 0;
 
-  // Cria dots
+  // Dots
   slides.forEach((_, i) => {
     const dot = document.createElement("button");
     dot.className = "hero-dot" + (i === 0 ? " active" : "");
@@ -578,25 +526,20 @@
     currentIndex = index;
     const slide = slides[currentIndex];
 
-    // atualiza tema de fundo
+    // tema de fundo
     body.className = slide.theme + " is-loaded";
 
     subtitleEl.textContent = slide.subtitle;
     titleEl.textContent = slide.title;
     descEl.textContent = slide.desc;
 
+    // pequena transição na imagem
     imageEl.style.opacity = "0";
     setTimeout(() => {
       imageEl.src = slide.image;
       imageEl.alt = slide.subtitle;
       imageEl.style.opacity = "1";
     }, 150);
-
-    const [p1, p2, p3, p4] = slide.pills;
-    pillTopLeft.textContent = p1;
-    pillTopRight.textContent = p2;
-    pillBottomLeft.textContent = p3;
-    pillBottomRight.textContent = p4;
 
     dots.forEach((d, i) => d.classList.toggle("active", i === currentIndex));
   }
@@ -642,7 +585,7 @@
   window.addEventListener("mousemove", updateLogoParallax);
   window.addEventListener("scroll", () => updateLogoParallax());
 
-  // Tilt 3D do produto
+  // Tilt 3D da imagem (sem card)
   productShell.addEventListener("mousemove", (e) => {
     const rect = productShell.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
@@ -658,7 +601,7 @@
     product3d.style.transform = "rotateX(0deg) rotateY(0deg)";
   });
 
-  // Swipe (touch) para mobile
+  // Swipe (touch) para mobile: arrastar pro lado troca slide
   let startX = 0;
   let isTouching = false;
 
@@ -668,27 +611,19 @@
     isTouching = true;
   }, { passive: true });
 
-  heroSlider.addEventListener("touchmove", (e) => {
-    // apenas para registrar movimento, sem bloquear scroll
-  }, { passive: true });
-
   heroSlider.addEventListener("touchend", (e) => {
     if (!isTouching) return;
     const touch = e.changedTouches[0];
     const deltaX = touch.clientX - startX;
-    const threshold = 50; // pixels
+    const threshold = 50;
 
     if (Math.abs(deltaX) > threshold) {
-      if (deltaX < 0) {
-        nextSlide();
-      } else {
-        prevSlide();
-      }
+      if (deltaX < 0) nextSlide();
+      else prevSlide();
     }
     isTouching = false;
-  });
+  }, { passive: true });
 
-  // Inicialização
   function init() {
     body.classList.add("is-loaded");
     goToSlide(0);
