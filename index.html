@@ -7,174 +7,102 @@
 
   <style>
     :root {
-      --cor-texto: #fdf7f2;
+      --cor-principal: #8b3a23;
+      --cor-secundaria: #b85b34;
+      --cor-fundo: #fdf7f2;
+      --cor-texto: #3b2417;
+      --shadow-soft: 0 18px 35px rgba(0,0,0,0.16);
+      --radius-xl: 26px;
+      --transition-fast: 0.25s ease;
       --font-base: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
     }
 
     body {
       font-family: var(--font-base);
+      background: radial-gradient(circle at top left, #ffe7d4 0, var(--cor-fundo) 45%, #ffffff 100%);
       color: var(--cor-texto);
       min-height: 100vh;
-      overflow-x: hidden;
-      position: relative;
-    }
-
-    /* Container principal com overflow hidden */
-    .slider-wrapper {
-      position: relative;
-      width: 100%;
-      min-height: 100vh;
-      overflow: hidden;
-    }
-
-    /* Faixa horizontal com todas as páginas lado a lado */
-    .slider-track {
       display: flex;
-      width: calc(100% * var(--total-slides, 6));
-      min-height: 100vh;
-      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-      will-change: transform;
-    }
-
-    /* Cada slide é uma página completa */
-    .slide-page {
-      width: 100vw;
-      min-height: 100vh;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
       justify-content: center;
-      position: relative;
-      padding: 2.4rem 1.6rem 3rem;
+      overflow-x: hidden;
     }
 
-    /* Temas de fundo por página */
-    .slide-page.theme-0 {
-      background: radial-gradient(circle at top left, #ffb088 0, #1d0b0b 40%, #040109 100%);
-    }
-    .slide-page.theme-1 {
-      background: radial-gradient(circle at top right, #ffd46b 0, #251108 45%, #05030c 100%);
-    }
-    .slide-page.theme-2 {
-      background: radial-gradient(circle at top, #ff9777 0, #1d090a 45%, #05020a 100%);
-    }
-    .slide-page.theme-3 {
-      background: radial-gradient(circle at bottom left, #ffc3a0 0, #1b1015 45%, #05030c 100%);
-    }
-    .slide-page.theme-4 {
-      background: radial-gradient(circle at bottom right, #ffb86c 0, #1c0d06 45%, #050208 100%);
-    }
-    .slide-page.theme-5 {
-      background: radial-gradient(circle at center, #ba8cff 0, #220b3a 40%, #050010 100%);
-    }
-
-    /* Neblina de fundo leve */
-    .slide-page::before,
-    .slide-page::after {
-      content: "";
-      position: absolute;
-      inset: -20%;
-      background:
-        radial-gradient(circle at 10% 20%, rgba(255,255,255,0.08) 0, transparent 55%),
-        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.04) 0, transparent 60%);
-      opacity: 0.6;
-      pointer-events: none;
-      mix-blend-mode: screen;
-    }
-
-    .slide-page::after {
-      animation: drift 18s linear infinite alternate;
-      opacity: 0.4;
-    }
-
-    @keyframes drift {
-      0% { transform: translate3d(0,0,0); }
-      100% { transform: translate3d(40px,-30px,0); }
-    }
-
-    /* Conteúdo da página */
-    .slide-content {
-      width: min(1200px, 100%);
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-      gap: 2.6rem;
-      align-items: center;
-      position: relative;
-      z-index: 2;
+    main {
+      width: min(1120px, 100%);
+      padding: 2.5rem 1.5rem 3.5rem;
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(12px);
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
 
-    body.is-loaded .slide-content {
+    body.is-loaded main {
       opacity: 1;
       transform: translateY(0);
     }
 
-    .slide-left {
-      position: relative;
-      z-index: 2;
+    /* HERO */
+
+    .hero {
+      text-align: center;
+      margin-bottom: 3rem;
     }
 
-    /* Logo */
     .hero-logo {
+      margin: 0 auto 1.4rem;
       width: min(260px, 70vw);
-      margin-bottom: 1.2rem;
-      transform: translate3d(0,0,0);
+      transform: translate3d(0, 0, 0);
       transition: transform 0.4s ease-out;
       will-change: transform;
     }
 
     .hero-logo img {
       width: 100%;
+      height: auto;
       display: block;
-      filter: drop-shadow(0 18px 32px rgba(0,0,0,0.5));
+      filter: drop-shadow(0 18px 30px rgba(0,0,0,0.18));
     }
 
-    .hero-tagline {
-      font-size: 0.95rem;
-      letter-spacing: 0.2em;
+    .hero h2 {
+      font-size: 1.25rem;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      opacity: 0.85;
+      color: var(--cor-principal);
       margin-bottom: 1.4rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s;
     }
 
-    .hero-copy {
-      transition: transform 0.45s ease, opacity 0.45s ease;
-    }
-
-    .hero-subtitle {
-      font-size: 1.6rem;
-      font-weight: 600;
-      margin-bottom: 0.4rem;
-    }
-
-    .hero-title {
-      font-size: clamp(2rem, 3vw, 2.6rem);
-      font-weight: 800;
-      text-transform: uppercase;
-      margin-bottom: 0.8rem;
-    }
-
-    .hero-desc {
+    .hero p {
+      max-width: 540px;
+      margin: 0 auto 1.9rem;
       font-size: 0.98rem;
-      max-width: 420px;
-      opacity: 0.9;
-      margin-bottom: 1.8rem;
-      line-height: 1.7;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s;
     }
 
     .hero-actions {
       display: flex;
+      justify-content: center;
+      gap: 1rem;
       flex-wrap: wrap;
-      gap: 0.9rem;
-      margin-bottom: 1.3rem;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.6s ease 0.28s, transform 0.6s ease 0.28s;
+    }
+
+    body.is-loaded .hero h2,
+    body.is-loaded .hero p,
+    body.is-loaded .hero-actions {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .btn {
@@ -189,208 +117,247 @@
       gap: 0.45rem;
       cursor: pointer;
       border: none;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast), opacity var(--transition-fast), border-color var(--transition-fast);
+      white-space: nowrap;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, color 0.22s ease, border-color 0.22s ease;
-      white-space: nowrap;
     }
 
     .btn-primary {
-      background: rgba(255,255,255,0.16);
+      background: linear-gradient(135deg, rgba(139,58,35,0.92), rgba(184,91,52,0.96));
       color: #fff;
-      border: 1px solid rgba(255,255,255,0.7);
-      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.35);
     }
 
     .btn-primary:hover {
-      transform: translateY(-1px) scale(1.02);
-      background: rgba(255,255,255,0.22);
-      box-shadow: 0 22px 48px rgba(0,0,0,0.8);
-    }
-
-    .btn-secondary {
-      background: rgba(0,0,0,0.35);
-      color: #fff6ea;
-      border: 1px solid rgba(255,255,255,0.25);
-      box-shadow: 0 14px 32px rgba(0,0,0,0.6);
-    }
-
-    .btn-secondary:hover {
+      filter: brightness(1.06);
+      box-shadow: 0 22px 46px rgba(0,0,0,0.35);
       transform: translateY(-1px) scale(1.01);
-      background: rgba(0,0,0,0.5);
     }
 
-    .hero-meta {
-      font-size: 0.85rem;
+    .btn-outline {
+      background: rgba(255,255,255,0.18);
+      color: var(--cor-principal);
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.16);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255,255,255,0.35);
+      color: var(--cor-principal);
+      transform: translateY(-1px) scale(1.01);
+    }
+
+    /* CARROSSEL */
+
+    .section-menu {
+      margin-top: 1rem;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1.5rem;
+      margin-bottom: 1.8rem;
+      flex-wrap: wrap;
+    }
+
+    .section-header h3 {
+      font-size: 1.35rem;
+      color: var(--cor-principal);
+    }
+
+    .section-header p {
+      font-size: 0.9rem;
+      max-width: 360px;
       opacity: 0.9;
-      margin-top: 0.5rem;
     }
 
-    .hero-meta span + span::before {
-      content: "•";
-      margin: 0 0.45rem;
-      opacity: 0.7;
-    }
-
-    /* Dots */
-    .hero-dots {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-      margin-top: 1.6rem;
-    }
-
-    .hero-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.6);
-      background: transparent;
-      cursor: pointer;
-      padding: 0;
-      transition: width 0.25s ease, background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
-    }
-
-    .hero-dot.active {
-      width: 24px;
-      background: #fff;
-      border-color: transparent;
-      transform: translateY(-1px);
-    }
-
-    /* Imagem livre flutuando */
-    .slide-right {
+    .carousel-shell {
       position: relative;
-      z-index: 2;
+    }
+
+    .cards-viewport {
       display: flex;
-      justify-content: center;
-      align-items: center;
+      gap: 1.5rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding: 0.45rem 0.1rem 0.9rem;
+      -webkit-overflow-scrolling: touch;
     }
 
-    .product-3d-shell {
-      width: min(480px, 100%);
-      aspect-ratio: 1 / 1;
-      position: relative;
-      perspective: 1400px;
+    .cards-viewport::-webkit-scrollbar {
+      display: none;
     }
 
-    .product-3d {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      transform-style: preserve-3d;
-      transform: rotateX(0deg) rotateY(0deg);
-      transition: transform 0.25s ease-out;
+    .card {
+      scroll-snap-align: center;
+      min-width: 260px;
+      max-width: 260px;
+      flex: 0 0 auto;
+      perspective: 1100px;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
     }
 
-    .product-shadow {
-      position: absolute;
-      inset: auto 10% 6% 10%;
-      height: 26%;
-      background: radial-gradient(circle at 50% 0, rgba(0,0,0,0.75) 0, transparent 70%);
-      filter: blur(3px);
-      transform: translateZ(0);
-      opacity: 0.95;
-    }
-
-    .product-image-stage {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      transform-style: preserve-3d;
-    }
-
-    .product-image-stage img {
-      position: absolute;
-      width: 80%;
-      max-height: 90%;
-      object-fit: contain;
-      border-radius: 40px;
-      box-shadow: 0 40px 90px rgba(0,0,0,0.95);
-      transform-origin: center;
-      top: 50%;
-      left: 50%;
-      transform: translate3d(-50%, -50%, 120px);
+    body.is-loaded .card {
       opacity: 1;
+      transform: translateY(0);
     }
 
-    /* Navegação lateral (desktop) */
-    .slider-nav {
-      position: fixed;
+    .card-inner {
+      position: relative;
+      background: rgba(255,255,255,0.96);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+      border: 1px solid rgba(139,58,35,0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transform-style: preserve-3d;
+      transform: translateY(6px) scale(0.98);
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      will-change: transform, box-shadow;
+    }
+
+    .card-visual {
+      position: relative;
+      height: 170px;
+      overflow: visible;
+    }
+
+    .card-visual img {
+      width: 88%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      margin: 0 auto;
+      border-radius: 999px;
+      transform-origin: center;
+      transform: translateY(16px) translateZ(0);
+      transition: transform 0.28s ease;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+      will-change: transform;
+    }
+
+    .card-content {
+      padding: 1rem 1.2rem 1.2rem;
+    }
+
+    .dia-label {
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 0.35rem;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--cor-principal);
+      margin-bottom: 0.35rem;
+    }
+
+    .card-text {
+      font-size: 0.88rem;
+      opacity: 0.9;
+      margin-bottom: 0.7rem;
+    }
+
+    .card-meta {
+      font-size: 0.8rem;
+      opacity: 0.85;
+      display: flex;
+      justify-content: space-between;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .card.active .card-inner {
+      transform: translateY(-10px) scale(1.05) rotateX(4deg);
+      box-shadow: 0 26px 60px rgba(0,0,0,0.32);
+      border-color: rgba(139,58,35,0.32);
+    }
+
+    .card.active .card-visual img {
+      transform: translateY(4px) translateZ(40px) scale(1.08);
+    }
+
+    .card.active:hover .card-inner {
+      transform: translateY(-14px) scale(1.07) rotateX(6deg) rotateY(-3deg);
+    }
+
+    .carousel-nav {
+      position: absolute;
       inset: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       pointer-events: none;
-      z-index: 100;
-      padding: 0 2rem;
     }
 
-    .slider-nav-btn {
+    .nav-btn {
       width: 40px;
       height: 40px;
-      border-radius: 999px;
+      border-radius: 50%;
       border: none;
-      background: rgba(0,0,0,0.55);
-      color: #fff;
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.18);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 16px 30px rgba(0,0,0,0.7);
       cursor: pointer;
       pointer-events: auto;
-      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, opacity 0.18s ease;
+      color: var(--cor-principal);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
-    .slider-nav-btn:hover {
-      transform: translateY(-1px);
-      background: rgba(0,0,0,0.75);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.85);
+    .nav-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(0,0,0,0.2);
+      background: #ffffff;
     }
 
-    .slider-nav-btn svg {
+    .nav-btn svg {
       width: 18px;
       height: 18px;
     }
 
-    .slider-nav-btn--left { transform: translateX(-10px); }
-    .slider-nav-btn--right { transform: translateX(10px); }
+    .nav-btn--left {
+      margin-left: -0.4rem;
+    }
 
-    /* Responsivo */
-    @media (max-width: 900px) {
-      .slide-content {
-        grid-template-columns: minmax(0,1fr);
-        gap: 2rem;
+    .nav-btn--right {
+      margin-right: -0.4rem;
+    }
+
+    @media (max-width: 768px) {
+      main {
+        padding-inline: 1.25rem;
       }
 
-      .slide-right {
-        order: -1;
+      .card {
+        min-width: 220px;
+        max-width: 220px;
       }
 
-      .slider-nav {
-        display: none;
-      }
-
-      .slide-page {
-        padding-inline: 1.2rem;
+      .nav-btn {
+        width: 34px;
+        height: 34px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.16);
       }
     }
 
-    @media (max-width: 600px) {
-      .slide-content {
-        gap: 1.8rem;
-      }
-
-      .product-3d-shell {
-        width: 100%;
-        max-width: 360px;
-      }
-
-      .hero-title {
-        font-size: 1.8rem;
+    @media (max-width: 560px) {
+      .hero h2 {
+        font-size: 1.05rem;
+        letter-spacing: 0.16em;
       }
 
       .hero-actions {
@@ -400,337 +367,308 @@
       .hero-actions .btn {
         width: 100%;
       }
+
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .carousel-nav {
+        display: none; /* mobile usa o dedo */
+      }
     }
   </style>
 </head>
 <body>
-  <div class="slider-wrapper" id="sliderWrapper">
-    <div class="slider-track" id="sliderTrack">
-      <!-- Páginas serão criadas via JS -->
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-logo" id="heroLogo">
+      <!-- H1 visual com a imagem do logo -->
+      <img src="flor de sal.png" alt="Flor de Sal Delivery" />
     </div>
-  </div>
 
-  <!-- Navegação fixa -->
-  <div class="slider-nav">
-    <button class="slider-nav-btn slider-nav-btn--left" data-dir="prev" aria-label="Prato anterior">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-    <button class="slider-nav-btn slider-nav-btn--right" data-dir="next" aria-label="Próximo prato">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-  </div>
+    <h2>feito com carinho</h2>
 
-  <!-- Container para dots (fixo) -->
-  <div style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 101;">
-    <div class="hero-dots" id="heroDots"></div>
-  </div>
+    <p>
+      Cardápio caseiro preparado todos os dias com ingredientes frescos e aquele
+      tempero de cozinha de família. Peça seu prato ou fale com a gente sobre o seu evento.
+    </p>
 
-<script>
-  // Configuração dos slides
-  const slides = [
-    {
-      theme: "theme-0",
-      image: "prato.png",
-      subtitle: "Segunda-feira · Picadinho da casa",
-      title: "Pra começar a semana com conforto",
-      desc: "Arroz soltinho, feijão caseiro, picadinho de carne com legumes e salada fresca."
-    },
-    {
-      theme: "theme-1",
-      image: "prato1.png",
-      subtitle: "Terça-feira · Frango grelhado",
-      title: "Leve, saboroso e caprichado",
-      desc: "Frango grelhado, arroz, feijão e legumes salteados no ponto certo."
-    },
-    {
-      theme: "theme-2",
-      image: "prato2.png",
-      subtitle: "Quarta-feira · Feijoada Flor de Sal",
-      title: "Clássico de quarta, do seu jeito",
-      desc: "Feijoada caseira com acompanhamentos completos pra matar a saudade."
-    },
-    {
-      theme: "theme-3",
-      image: "prato3.png",
-      subtitle: "Quinta-feira · Parmegiana da casa",
-      title: "Queijo gratinado e molho caseiro",
-      desc: "Filé à parmegiana com molho da casa, queijo gratinado e acompanhamentos."
-    },
-    {
-      theme: "theme-4",
-      image: "prato2.png",
-      subtitle: "Sexta-feira · Sexta especial",
-      title: "Pra fechar a semana com chave de ouro",
-      desc: "Prato especial da semana, pensado para a sua sexta-feira ficar ainda melhor."
-    },
-    {
-      theme: "theme-5",
-      image: "roy.png",
-      subtitle: "Especial da casa · Roy",
-      title: "Visual diferente, mesmo carinho",
-      desc: "Uma opção especial para testar novas combinações e apresentar a Flor de Sal com outro visual."
-    }
-  ];
+    <div class="hero-actions">
+      <a
+        href="https://wa.me/5564981245822"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-primary"
+      >
+        Peça aqui
+      </a>
 
-  const sliderTrack = document.getElementById("sliderTrack");
-  const heroDotsContainer = document.getElementById("heroDots");
-  const body = document.body;
+      <a
+        href="https://wa.me/5564981245822?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20sobre%20um%20evento."
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-outline"
+      >
+        Nos contrate para seu evento
+      </a>
+    </div>
+  </section>
 
-  // Define CSS variable para total de slides
-  document.documentElement.style.setProperty('--total-slides', slides.length);
+  <!-- CARROSSEL DE PRATOS -->
+  <section class="section-menu">
+    <div class="section-header">
+      <div>
+        <h3>Cardápio da semana</h3>
+        <p>Arraste para o lado para ver os pratos de segunda a sexta. Em cada dia, um cuidado diferente no tempero.</p>
+      </div>
+    </div>
 
-  let currentIndex = 0;
-  let isAnimating = false;
-
-  // Cria os dots
-  slides.forEach((_, i) => {
-    const dot = document.createElement("button");
-    dot.className = "hero-dot" + (i === 0 ? " active" : "");
-    dot.type = "button";
-    dot.setAttribute("aria-label", "Ir para prato " + (i + 1));
-    dot.addEventListener("click", () => goToSlide(i));
-    heroDotsContainer.appendChild(dot);
-  });
-
-  const dots = Array.from(document.querySelectorAll(".hero-dot"));
-
-  // Cria todas as páginas
-  slides.forEach((slide, index) => {
-    const page = document.createElement("div");
-    page.className = `slide-page ${slide.theme}`;
-    page.setAttribute("data-index", index);
-
-    page.innerHTML = `
-      <div class="slide-content">
-        <div class="slide-left">
-          <div class="hero-logo">
-            <img src="flor de sal.png" alt="Flor de Sal Delivery" />
-          </div>
-          <div class="hero-tagline">feito com carinho</div>
-          <div class="hero-copy">
-            <div class="hero-subtitle">${slide.subtitle}</div>
-            <div class="hero-title">${slide.title}</div>
-            <p class="hero-desc">${slide.desc}</p>
-            <div class="hero-actions">
-              <a
-                href="https://wa.me/5564981245822"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn-primary"
-              >
-                Peça este prato
-              </a>
-              <a
-                href="https://wa.me/5564981245822?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20sobre%20um%20evento."
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn-secondary"
-              >
-                Fale sobre seu evento
-              </a>
+    <div class="carousel-shell">
+      <div class="cards-viewport" id="cardsViewport">
+        <!-- Segunda -->
+        <article class="card">
+          <div class="card-inner">
+            <div class="card-visual">
+              <img src="prato.png" alt="Prato de segunda-feira" />
             </div>
-            <div class="hero-meta">
-              <span>Almoço · 11h às 14h</span>
-              <span>Delivery e retirada</span>
-            </div>
-          </div>
-        </div>
-        <div class="slide-right">
-          <div class="product-3d-shell">
-            <div class="product-3d">
-              <div class="product-shadow"></div>
-              <div class="product-image-stage">
-                <img src="${slide.image}" alt="${slide.subtitle}" />
+            <div class="card-content">
+              <p class="dia-label">Segunda-feira</p>
+              <h4 class="card-title">Picadinho da casa</h4>
+              <p class="card-text">
+                Arroz soltinho, feijão, picadinho de carne com legumes e salada fresca.
+              </p>
+              <div class="card-meta">
+                <span>Almoço · 11h às 14h</span>
+                <span>Porções individual e família</span>
               </div>
             </div>
           </div>
-        </div>
+        </article>
+
+        <!-- Terça -->
+        <article class="card">
+          <div class="card-inner">
+            <div class="card-visual">
+              <img src="prato1.png" alt="Prato de terça-feira" />
+            </div>
+            <div class="card-content">
+              <p class="dia-label">Terça-feira</p>
+              <h4 class="card-title">Frango grelhado</h4>
+              <p class="card-text">
+                Frango grelhado, arroz, feijão e legumes salteados no ponto certo.
+              </p>
+              <div class="card-meta">
+                <span>Almoço · 11h às 14h</span>
+                <span>Opção leve e saborosa</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Quarta -->
+        <article class="card">
+          <div class="card-inner">
+            <div class="card-visual">
+              <img src="prato2.png" alt="Prato de quarta-feira" />
+            </div>
+            <div class="card-content">
+              <p class="dia-label">Quarta-feira</p>
+              <h4 class="card-title">Feijoada Flor de Sal</h4>
+              <p class="card-text">
+                Feijoada caseira com acompanhamentos completos, pra matar a saudade.
+              </p>
+              <div class="card-meta">
+                <span>Quarta da feijoada</span>
+                <span>Peça antecipado e garanta o seu</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Quinta -->
+        <article class="card">
+          <div class="card-inner">
+            <div class="card-visual">
+              <img src="prato3.png" alt="Prato de quinta-feira" />
+            </div>
+            <div class="card-content">
+              <p class="dia-label">Quinta-feira</p>
+              <h4 class="card-title">Parmegiana da casa</h4>
+              <p class="card-text">
+                Filé à parmegiana com molho caseiro, queijo gratinado e acompanhamentos.
+              </p>
+              <div class="card-meta">
+                <span>Almoço · 11h às 14h</span>
+                <span>Serve muito bem 1 pessoa</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Sexta (imagem duplicada) -->
+        <article class="card">
+          <div class="card-inner">
+            <div class="card-visual">
+              <img src="prato2.png" alt="Prato de sexta-feira" />
+            </div>
+            <div class="card-content">
+              <p class="dia-label">Sexta-feira</p>
+              <h4 class="card-title">Sexta especial</h4>
+              <p class="card-text">
+                Prato especial da semana, pensado para fechar a sexta com chave de ouro.
+              </p>
+              <div class="card-meta">
+                <span>Consulte o prato do dia</span>
+                <span>Fale com a gente no WhatsApp</span>
+              </div>
+            </div>
+          </div>
+        </article>
       </div>
-    `;
 
-    sliderTrack.appendChild(page);
+      <!-- Navegação por clique (desktop) com bounce -->
+      <div class="carousel-nav">
+        <button class="nav-btn nav-btn--left" data-dir="prev" aria-label="Prato anterior">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="nav-btn nav-btn--right" data-dir="next" aria-label="Próximo prato">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
 
-    // Adiciona tilt 3D na imagem
-    const productShell = page.querySelector(".product-3d-shell");
-    const product3d = page.querySelector(".product-3d");
+<script>
+  const viewport = document.getElementById("cardsViewport");
+  const cards = Array.from(viewport.querySelectorAll(".card"));
+  const prevBtn = document.querySelector('[data-dir="prev"]');
+  const nextBtn = document.querySelector('[data-dir="next"]');
+  const heroLogo = document.getElementById("heroLogo");
 
-    productShell.addEventListener("mousemove", (e) => {
-      const rect = productShell.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
+  // Marca card ativo pelo centro do viewport
+  function updateActiveCard() {
+    const viewportRect = viewport.getBoundingClientRect();
+    const viewportCenter = viewportRect.left + viewportRect.width / 2;
 
-      const rotateY = x * 16;
-      const rotateX = -y * 14;
+    let closestCard = null;
+    let closestDistance = Infinity;
 
-      product3d.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    cards.forEach(card => {
+      const rect = card.getBoundingClientRect();
+      const cardCenter = rect.left + rect.width / 2;
+      const distance = Math.abs(viewportCenter - cardCenter);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestCard = card;
+      }
     });
 
-    productShell.addEventListener("mouseleave", () => {
-      product3d.style.transform = "rotateX(0deg) rotateY(0deg)";
+    cards.forEach(card => {
+      card.classList.toggle("active", card === closestCard);
+    });
+  }
+
+  // Scroll + debounce
+  let ticking = false;
+  viewport.addEventListener("scroll", () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        updateActiveCard();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  // Navegação com bounce nas extremidades
+  function scrollByCard(direction) {
+    if (!cards.length) return;
+    const cardWidth = cards[0].getBoundingClientRect().width + 24; // width + gap
+
+    const maxScroll =
+      viewport.scrollWidth - viewport.clientWidth;
+    const newPos = viewport.scrollLeft + direction * cardWidth;
+
+    if (newPos < 0 || newPos > maxScroll) {
+      // efeito bounce simples
+      const bounce = direction < 0 ? -20 : 20;
+      viewport.scrollTo({ left: viewport.scrollLeft + bounce, behavior: "smooth" });
+      setTimeout(() => {
+        viewport.scrollTo({ left: viewport.scrollLeft - bounce, behavior: "smooth" });
+      }, 160);
+      return;
+    }
+
+    viewport.scrollBy({
+      left: direction * cardWidth,
+      behavior: "smooth"
+    });
+  }
+
+  if (prevBtn && nextBtn) {
+    prevBtn.addEventListener("click", () => scrollByCard(-1));
+    nextBtn.addEventListener("click", () => scrollByCard(1));
+  }
+
+  // Parallax suave do logo (mouse + scroll)
+  function updateLogoParallax(event) {
+    const rect = heroLogo.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    let x = 0;
+    let y = 0;
+
+    if (event && event.type === "mousemove") {
+      const dx = (event.clientX - centerX) / rect.width;
+      const dy = (event.clientY - centerY) / rect.height;
+      x = dx * 8;
+      y = dy * 6;
+    }
+
+    const scrollFactor = window.scrollY * 0.05;
+    heroLogo.style.transform =
+      `translate3d(${x}px, ${y - scrollFactor}px, 0)`;
+  }
+
+  window.addEventListener("mousemove", updateLogoParallax);
+  window.addEventListener("scroll", () => updateLogoParallax());
+
+  // Micro animação no toque/click dos cards
+  cards.forEach(card => {
+    const inner = card.querySelector(".card-inner");
+    card.addEventListener("pointerdown", () => {
+      inner.style.transition = "transform 0.12s ease";
+      inner.style.transform += " scale(0.96)";
+    });
+    card.addEventListener("pointerup", () => {
+      inner.style.transition = "transform 0.18s ease";
+      inner.style.transform = inner.style.transform.replace(/scale\(0\.96\)/, "");
+    });
+    card.addEventListener("pointerleave", () => {
+      inner.style.transition = "transform 0.18s ease";
+      inner.style.transform = inner.style.transform.replace(/scale\(0\.96\)/, "");
     });
   });
 
-  // Parallax do logo
-  function updateLogoParallax() {
-    const pages = document.querySelectorAll(".slide-page");
-    pages.forEach((page, index) => {
-      if (index === currentIndex) {
-        const logo = page.querySelector(".hero-logo");
-        if (logo) {
-          window.addEventListener("mousemove", (event) => {
-            const rect = logo.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-
-            const dx = (event.clientX - centerX) / rect.width;
-            const dy = (event.clientY - centerY) / rect.height;
-            const x = dx * 10;
-            const y = dy * 8;
-
-            const scrollFactor = window.scrollY * 0.03;
-            logo.style.transform = `translate3d(${x}px, ${y - scrollFactor}px, 0)`;
-          });
-        }
-      }
-    });
-  }
-
-  function updateSliderPosition() {
-    const offset = -currentIndex * 100;
-    sliderTrack.style.transform = `translateX(${offset}vw)`;
-  }
-
-  function goToSlide(newIndex) {
-    if (isAnimating || newIndex === currentIndex || newIndex < 0 || newIndex >= slides.length) return;
-    isAnimating = true;
-
-    const direction = newIndex > currentIndex ? 1 : -1;
-    const currentPage = document.querySelector(`.slide-page[data-index="${currentIndex}"]`);
-    const nextPage = document.querySelector(`.slide-page[data-index="${newIndex}"]`);
-    
-    const currentImg = currentPage.querySelector(".product-image-stage img");
-    const nextImg = nextPage.querySelector(".product-image-stage img");
-
-    // Prepara posições iniciais
-    if (direction > 0) {
-      // Indo para frente: foto atual sai para direita, nova vem da esquerda
-      currentImg.style.transition = "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease";
-      currentImg.style.transform = "translate3d(50%, -50%, 0px)";
-      currentImg.style.opacity = "0";
-
-      nextImg.style.transition = "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease";
-      nextImg.style.transform = "translate3d(-150%, -50%, 80px)";
-      nextImg.style.opacity = "0";
-    } else {
-      // Indo para trás: foto atual sai para esquerda, nova vem da direita
-      currentImg.style.transition = "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease";
-      currentImg.style.transform = "translate3d(-150%, -50%, 0px)";
-      currentImg.style.opacity = "0";
-
-      nextImg.style.transition = "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease";
-      nextImg.style.transform = "translate3d(50%, -50%, 80px)";
-      nextImg.style.opacity = "0";
-    }
-    
-    // Força reflow
-    void currentImg.offsetWidth;
-    void nextImg.offsetWidth;
-
-    // Move a faixa inteira (página inteira desliza)
-    currentIndex = newIndex;
-    updateSliderPosition();
-
-    // Anima foto nova entrando para o centro
-    setTimeout(() => {
-      nextImg.style.transform = "translate3d(-50%, -50%, 120px)";
-      nextImg.style.opacity = "1";
-    }, 50);
-
-    // Atualiza dots
-    dots.forEach((d, i) => d.classList.toggle("active", i === currentIndex));
-
-    // Finaliza animação
-    setTimeout(() => {
-      // Reseta foto atual para próxima vez
-      currentImg.style.transform = "translate3d(-50%, -50%, 120px)";
-      currentImg.style.opacity = "1";
-      currentImg.style.transition = "";
-      
-      nextImg.style.transition = "";
-      
-      isAnimating = false;
-    }, 800);
-  }
-
-  function nextSlide() {
-    const next = (currentIndex + 1) % slides.length;
-    goToSlide(next);
-  }
-
-  function prevSlide() {
-    const prev = (currentIndex - 1 + slides.length) % slides.length;
-    goToSlide(prev);
-  }
-
-  // Botões de navegação
-  const prevBtn = document.querySelector('[data-dir="prev"]');
-  const nextBtn = document.querySelector('[data-dir="next"]');
-  if (prevBtn && nextBtn) {
-    prevBtn.addEventListener("click", prevSlide);
-    nextBtn.addEventListener("click", nextSlide);
-  }
-
-  // Swipe para mobile
-  let startX = 0;
-  let isTouching = false;
-
-  document.addEventListener("touchstart", (e) => {
-    const touch = e.touches[0];
-    startX = touch.clientX;
-    isTouching = true;
-  }, { passive: true });
-
-  document.addEventListener("touchend", (e) => {
-    if (!isTouching || isAnimating) return;
-    const touch = e.changedTouches[0];
-    const deltaX = touch.clientX - startX;
-    const threshold = 50;
-
-    if (Math.abs(deltaX) > threshold) {
-      if (deltaX < 0) {
-        nextSlide();
-      } else {
-        prevSlide();
-      }
-    }
-    isTouching = false;
-  }, { passive: true });
-
-  // Inicialização
+  // Marca card inicial e anima entrada
   function init() {
-    body.classList.add("is-loaded");
-    updateSliderPosition();
-    updateLogoParallax();
-    
-    // Garante que todas as imagens começam na posição correta
-    const allPages = document.querySelectorAll(".slide-page");
-    allPages.forEach((page, index) => {
-      const img = page.querySelector(".product-image-stage img");
-      if (index === currentIndex) {
-        img.style.transform = "translate3d(-50%, -50%, 120px)";
-        img.style.opacity = "1";
-      } else {
-        img.style.transform = "translate3d(-50%, -50%, 120px)";
-        img.style.opacity = "1";
-      }
-    });
+    document.body.classList.add("is-loaded");
+    updateActiveCard();
   }
 
   window.addEventListener("load", init);
+  window.addEventListener("resize", () => {
+    setTimeout(updateActiveCard, 100);
+  });
 </script>
 </body>
 </html>
