@@ -21,63 +21,62 @@
       font-family: var(--font-base);
       color: var(--cor-texto);
       min-height: 100vh;
-      display: flex;
-      align-items: stretch;
-      justify-content: center;
-      transition: background 0.7s ease;
       overflow-x: hidden;
+      position: relative;
     }
 
-    /* Um tema de fundo por slide */
-    body.theme-0 {
+    /* Container principal com overflow hidden */
+    .slider-wrapper {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Faixa horizontal com todas as páginas lado a lado */
+    .slider-track {
+      display: flex;
+      width: calc(100% * var(--total-slides, 6));
+      min-height: 100vh;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: transform;
+    }
+
+    /* Cada slide é uma página completa */
+    .slide-page {
+      width: 100vw;
+      min-height: 100vh;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 2.4rem 1.6rem 3rem;
+    }
+
+    /* Temas de fundo por página */
+    .slide-page.theme-0 {
       background: radial-gradient(circle at top left, #ffb088 0, #1d0b0b 40%, #040109 100%);
     }
-    body.theme-1 {
+    .slide-page.theme-1 {
       background: radial-gradient(circle at top right, #ffd46b 0, #251108 45%, #05030c 100%);
     }
-    body.theme-2 {
+    .slide-page.theme-2 {
       background: radial-gradient(circle at top, #ff9777 0, #1d090a 45%, #05020a 100%);
     }
-    body.theme-3 {
+    .slide-page.theme-3 {
       background: radial-gradient(circle at bottom left, #ffc3a0 0, #1b1015 45%, #05030c 100%);
     }
-    body.theme-4 {
+    .slide-page.theme-4 {
       background: radial-gradient(circle at bottom right, #ffb86c 0, #1c0d06 45%, #050208 100%);
     }
-    body.theme-5 {
+    .slide-page.theme-5 {
       background: radial-gradient(circle at center, #ba8cff 0, #220b3a 40%, #050010 100%);
     }
 
-    main {
-      width: min(1200px, 100%);
-      padding: 2.4rem 1.6rem 3rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-      min-height: 100vh;
-    }
-
-    body.is-loaded main {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .hero {
-      width: 100%;
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-      gap: 2.6rem;
-      align-items: center;
-      position: relative;
-      min-height: 70vh;
-    }
-
     /* Neblina de fundo leve */
-    .hero::before,
-    .hero::after {
+    .slide-page::before,
+    .slide-page::after {
       content: "";
       position: absolute;
       inset: -20%;
@@ -89,7 +88,7 @@
       mix-blend-mode: screen;
     }
 
-    .hero::after {
+    .slide-page::after {
       animation: drift 18s linear infinite alternate;
       opacity: 0.4;
     }
@@ -99,12 +98,31 @@
       100% { transform: translate3d(40px,-30px,0); }
     }
 
-    .hero-left {
+    /* Conteúdo da página */
+    .slide-content {
+      width: min(1200px, 100%);
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 2.6rem;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    body.is-loaded .slide-content {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .slide-left {
       position: relative;
       z-index: 2;
     }
 
-    /* H1 visual: logo livre (como você mostrou) */
+    /* Logo */
     .hero-logo {
       width: min(260px, 70vw);
       margin-bottom: 1.2rem;
@@ -214,7 +232,7 @@
       opacity: 0.7;
     }
 
-    /* Dots (indicadores de slide) */
+    /* Dots */
     .hero-dots {
       display: flex;
       gap: 0.5rem;
@@ -240,15 +258,14 @@
       transform: translateY(-1px);
     }
 
-    .hero-right {
+    /* Imagem livre flutuando */
+    .slide-right {
       position: relative;
       z-index: 2;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-
-    /* IMAGEM 3D LIVRE (sem card, só a foto flutuando) */
 
     .product-3d-shell {
       width: min(480px, 100%);
@@ -294,28 +311,25 @@
       border-radius: 40px;
       box-shadow: 0 40px 90px rgba(0,0,0,0.95);
       transform-origin: center;
-      opacity: 0;
-      transform: translate3d(-50%, -50%, 120px);
       top: 50%;
       left: 50%;
-      transition: transform 0.5s ease, opacity 0.5s ease;
-    }
-
-    .product-image-stage img.visible {
+      transform: translate3d(-50%, -50%, 120px);
       opacity: 1;
     }
 
     /* Navegação lateral (desktop) */
-    .hero-nav {
-      position: absolute;
+    .slider-nav {
+      position: fixed;
       inset: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       pointer-events: none;
+      z-index: 100;
+      padding: 0 2rem;
     }
 
-    .hero-nav-btn {
+    .slider-nav-btn {
       width: 40px;
       height: 40px;
       border-radius: 999px;
@@ -331,42 +345,42 @@
       transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .hero-nav-btn:hover {
+    .slider-nav-btn:hover {
       transform: translateY(-1px);
       background: rgba(0,0,0,0.75);
       box-shadow: 0 20px 40px rgba(0,0,0,0.85);
     }
 
-    .hero-nav-btn svg {
+    .slider-nav-btn svg {
       width: 18px;
       height: 18px;
     }
 
-    .hero-nav-btn--left { transform: translateX(-10px); }
-    .hero-nav-btn--right { transform: translateX(10px); }
+    .slider-nav-btn--left { transform: translateX(-10px); }
+    .slider-nav-btn--right { transform: translateX(10px); }
 
     /* Responsivo */
     @media (max-width: 900px) {
-      .hero {
+      .slide-content {
         grid-template-columns: minmax(0,1fr);
         gap: 2rem;
       }
 
-      .hero-right {
+      .slide-right {
         order: -1;
       }
 
-      .hero-nav {
-        display: none; /* mobile usa swipe */
+      .slider-nav {
+        display: none;
       }
 
-      main {
+      .slide-page {
         padding-inline: 1.2rem;
       }
     }
 
     @media (max-width: 600px) {
-      .hero {
+      .slide-content {
         gap: 1.8rem;
       }
 
@@ -389,85 +403,34 @@
     }
   </style>
 </head>
-<body class="theme-0">
-<main>
-  <section class="hero" id="heroSlider">
-    <div class="hero-left">
-      <!-- H1 visual: logo -->
-      <div class="hero-logo" id="heroLogo">
-        <img src="flor de sal.png" alt="Flor de Sal Delivery" />
-      </div>
-
-      <div class="hero-tagline">feito com carinho</div>
-
-      <div class="hero-copy" id="heroCopy">
-        <div class="hero-subtitle" id="slideSubtitle">Segunda-feira · Picadinho da casa</div>
-        <div class="hero-title" id="slideTitle">Pra começar a semana com conforto</div>
-
-        <p class="hero-desc" id="slideDesc">
-          Arroz soltinho, feijão caseiro, picadinho de carne com legumes e salada fresca.
-        </p>
-
-        <div class="hero-actions">
-          <a
-            href="https://wa.me/5564981245822"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-primary"
-          >
-            Peça este prato
-          </a>
-          <a
-            href="https://wa.me/5564981245822?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20sobre%20um%20evento."
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-secondary"
-          >
-            Fale sobre seu evento
-          </a>
-        </div>
-
-        <div class="hero-meta">
-          <span>Almoço · 11h às 14h</span>
-          <span>Delivery e retirada</span>
-        </div>
-      </div>
-
-      <div class="hero-dots" id="heroDots">
-        <!-- preenchido via JS -->
-      </div>
+<body>
+  <div class="slider-wrapper" id="sliderWrapper">
+    <div class="slider-track" id="sliderTrack">
+      <!-- Páginas serão criadas via JS -->
     </div>
+  </div>
 
-    <div class="hero-right">
-      <div class="product-3d-shell" id="productShell">
-        <div class="product-3d" id="product3d">
-          <div class="product-shadow"></div>
-          <div class="product-image-stage" id="productImageStage">
-            <img id="currentImage" class="visible" src="prato.png" alt="Prato Flor de Sal" />
-            <img id="nextImage" src="prato1.png" alt="" />
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- Navegação fixa -->
+  <div class="slider-nav">
+    <button class="slider-nav-btn slider-nav-btn--left" data-dir="prev" aria-label="Prato anterior">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="slider-nav-btn slider-nav-btn--right" data-dir="next" aria-label="Próximo prato">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
 
-    <!-- Navegação lateral (desktop) -->
-    <div class="hero-nav">
-      <button class="hero-nav-btn hero-nav-btn--left" data-dir="prev" aria-label="Prato anterior">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <button class="hero-nav-btn hero-nav-btn--right" data-dir="next" aria-label="Próximo prato">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </div>
-  </section>
-</main>
+  <!-- Container para dots (fixo) -->
+  <div style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 101;">
+    <div class="hero-dots" id="heroDots"></div>
+  </div>
 
 <script>
-  // Configuração dos slides (inclui roy.png)
+  // Configuração dos slides
   const slides = [
     {
       theme: "theme-0",
@@ -513,25 +476,17 @@
     }
   ];
 
-  const body = document.body;
-  const subtitleEl = document.getElementById("slideSubtitle");
-  const titleEl = document.getElementById("slideTitle");
-  const descEl = document.getElementById("slideDesc");
-  const heroCopy = document.getElementById("heroCopy");
+  const sliderTrack = document.getElementById("sliderTrack");
   const heroDotsContainer = document.getElementById("heroDots");
-  const heroLogo = document.getElementById("heroLogo");
-  const productShell = document.getElementById("productShell");
-  const product3d = document.getElementById("product3d");
-  const heroSlider = document.getElementById("heroSlider");
+  const body = document.body;
 
-  const currentImage = document.getElementById("currentImage");
-  const nextImage = document.getElementById("nextImage");
+  // Define CSS variable para total de slides
+  document.documentElement.style.setProperty('--total-slides', slides.length);
 
   let currentIndex = 0;
   let isAnimating = false;
-  const animationDuration = 500; // ms
 
-  // Cria os dots do slider
+  // Cria os dots
   slides.forEach((_, i) => {
     const dot = document.createElement("button");
     dot.className = "hero-dot" + (i === 0 ? " active" : "");
@@ -543,83 +498,172 @@
 
   const dots = Array.from(document.querySelectorAll(".hero-dot"));
 
-  function setBodyTheme(theme) {
-    // remove todos os temas anteriores
-    slides.forEach(s => body.classList.remove(s.theme));
-    body.classList.add(theme);
+  // Cria todas as páginas
+  slides.forEach((slide, index) => {
+    const page = document.createElement("div");
+    page.className = `slide-page ${slide.theme}`;
+    page.setAttribute("data-index", index);
+
+    page.innerHTML = `
+      <div class="slide-content">
+        <div class="slide-left">
+          <div class="hero-logo">
+            <img src="flor de sal.png" alt="Flor de Sal Delivery" />
+          </div>
+          <div class="hero-tagline">feito com carinho</div>
+          <div class="hero-copy">
+            <div class="hero-subtitle">${slide.subtitle}</div>
+            <div class="hero-title">${slide.title}</div>
+            <p class="hero-desc">${slide.desc}</p>
+            <div class="hero-actions">
+              <a
+                href="https://wa.me/5564981245822"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-primary"
+              >
+                Peça este prato
+              </a>
+              <a
+                href="https://wa.me/5564981245822?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20sobre%20um%20evento."
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-secondary"
+              >
+                Fale sobre seu evento
+              </a>
+            </div>
+            <div class="hero-meta">
+              <span>Almoço · 11h às 14h</span>
+              <span>Delivery e retirada</span>
+            </div>
+          </div>
+        </div>
+        <div class="slide-right">
+          <div class="product-3d-shell">
+            <div class="product-3d">
+              <div class="product-shadow"></div>
+              <div class="product-image-stage">
+                <img src="${slide.image}" alt="${slide.subtitle}" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    sliderTrack.appendChild(page);
+
+    // Adiciona tilt 3D na imagem
+    const productShell = page.querySelector(".product-3d-shell");
+    const product3d = page.querySelector(".product-3d");
+
+    productShell.addEventListener("mousemove", (e) => {
+      const rect = productShell.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+      const rotateY = x * 16;
+      const rotateX = -y * 14;
+
+      product3d.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+
+    productShell.addEventListener("mouseleave", () => {
+      product3d.style.transform = "rotateX(0deg) rotateY(0deg)";
+    });
+  });
+
+  // Parallax do logo
+  function updateLogoParallax() {
+    const pages = document.querySelectorAll(".slide-page");
+    pages.forEach((page, index) => {
+      if (index === currentIndex) {
+        const logo = page.querySelector(".hero-logo");
+        if (logo) {
+          window.addEventListener("mousemove", (event) => {
+            const rect = logo.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const dx = (event.clientX - centerX) / rect.width;
+            const dy = (event.clientY - centerY) / rect.height;
+            const x = dx * 10;
+            const y = dy * 8;
+
+            const scrollFactor = window.scrollY * 0.03;
+            logo.style.transform = `translate3d(${x}px, ${y - scrollFactor}px, 0)`;
+          });
+        }
+      }
+    });
   }
 
-  function updateTexts(slide) {
-    subtitleEl.textContent = slide.subtitle;
-    titleEl.textContent = slide.title;
-    descEl.textContent = slide.desc;
+  function updateSliderPosition() {
+    const offset = -currentIndex * 100;
+    sliderTrack.style.transform = `translateX(${offset}vw)`;
   }
 
   function goToSlide(newIndex) {
     if (isAnimating || newIndex === currentIndex || newIndex < 0 || newIndex >= slides.length) return;
     isAnimating = true;
 
-    const slide = slides[newIndex];
+    const direction = newIndex > currentIndex ? 1 : -1;
+    const currentPage = document.querySelector(`.slide-page[data-index="${currentIndex}"]`);
+    const nextPage = document.querySelector(`.slide-page[data-index="${newIndex}"]`);
+    
+    const currentImg = currentPage.querySelector(".product-image-stage img");
+    const nextImg = nextPage.querySelector(".product-image-stage img");
 
-    // Atualiza fundo imediatamente para acompanhar a troca
-    setBodyTheme(slide.theme);
+    // Prepara posições iniciais
+    if (direction > 0) {
+      // Indo para frente: foto atual sai para direita, nova vem da esquerda
+      currentImg.style.transition = "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease";
+      currentImg.style.transform = "translate3d(50%, -50%, 0px)";
+      currentImg.style.opacity = "0";
 
-    // Anima texto: primeiro sai para a direita
-    heroCopy.style.transform = "translateX(40px)";
-    heroCopy.style.opacity = "0";
+      nextImg.style.transition = "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease";
+      nextImg.style.transform = "translate3d(-150%, -50%, 80px)";
+      nextImg.style.opacity = "0";
+    } else {
+      // Indo para trás: foto atual sai para esquerda, nova vem da direita
+      currentImg.style.transition = "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease";
+      currentImg.style.transform = "translate3d(-150%, -50%, 0px)";
+      currentImg.style.opacity = "0";
 
-    // Prepara imagem de entrada (vem da esquerda)
-    nextImage.src = slide.image;
-    nextImage.alt = slide.subtitle;
+      nextImg.style.transition = "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease";
+      nextImg.style.transform = "translate3d(50%, -50%, 80px)";
+      nextImg.style.opacity = "0";
+    }
+    
+    // Força reflow
+    void currentImg.offsetWidth;
+    void nextImg.offsetWidth;
 
-    // posição inicial das imagens:
-    // imagem atual: centro -> vai pra direita
-    currentImage.classList.add("visible");
-    currentImage.style.transform = "translate3d(-50%, -50%, 120px)";
-    currentImage.style.opacity = "1";
+    // Move a faixa inteira (página inteira desliza)
+    currentIndex = newIndex;
+    updateSliderPosition();
 
-    nextImage.classList.add("visible");
-    nextImage.style.transform = "translate3d(-150%, -50%, 80px)";
-    nextImage.style.opacity = "0";
-
-    // força reflow para as transições dispararem
-    void nextImage.offsetWidth;
-
-    // Animações: foto antiga sai pra direita, nova entra da esquerda
-    currentImage.style.transform = "translate3d(50%, -50%, 0px)";
-    currentImage.style.opacity = "0";
-
-    nextImage.style.transform = "translate3d(-50%, -50%, 120px)";
-    nextImage.style.opacity = "1";
-
-    // No meio da animação, troca textos e reseta posição da cópia
+    // Anima foto nova entrando para o centro
     setTimeout(() => {
-      updateTexts(slide);
+      nextImg.style.transform = "translate3d(-50%, -50%, 120px)";
+      nextImg.style.opacity = "1";
+    }, 50);
 
-      // texto entra da direita para o centro
-      heroCopy.style.transform = "translateX(-40px)";
-      // força reflow
-      void heroCopy.offsetWidth;
-      heroCopy.style.transform = "translateX(0)";
-      heroCopy.style.opacity = "1";
-    }, animationDuration * 0.4);
+    // Atualiza dots
+    dots.forEach((d, i) => d.classList.toggle("active", i === currentIndex));
 
     // Finaliza animação
     setTimeout(() => {
-      // coloca a nova imagem como "current"
-      currentImage.src = slide.image;
-      currentImage.alt = slide.subtitle;
-      currentImage.style.transform = "translate3d(-50%, -50%, 120px)";
-      currentImage.style.opacity = "1";
-
-      // esconde a imagem auxiliar
-      nextImage.classList.remove("visible");
-      nextImage.style.opacity = "0";
-
-      currentIndex = newIndex;
-      dots.forEach((d, i) => d.classList.toggle("active", i === currentIndex));
+      // Reseta foto atual para próxima vez
+      currentImg.style.transform = "translate3d(-50%, -50%, 120px)";
+      currentImg.style.opacity = "1";
+      currentImg.style.transition = "";
+      
+      nextImg.style.transition = "";
+      
       isAnimating = false;
-    }, animationDuration);
+    }, 800);
   }
 
   function nextSlide() {
@@ -632,7 +676,7 @@
     goToSlide(prev);
   }
 
-  // Botões laterais (desktop)
+  // Botões de navegação
   const prevBtn = document.querySelector('[data-dir="prev"]');
   const nextBtn = document.querySelector('[data-dir="next"]');
   if (prevBtn && nextBtn) {
@@ -640,60 +684,21 @@
     nextBtn.addEventListener("click", nextSlide);
   }
 
-  // Parallax suave do logo
-  function updateLogoParallax(event) {
-    const rect = heroLogo.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    let x = 0;
-    let y = 0;
-
-    if (event && event.type === "mousemove") {
-      const dx = (event.clientX - centerX) / rect.width;
-      const dy = (event.clientY - centerY) / rect.height;
-      x = dx * 10;
-      y = dy * 8;
-    }
-
-    const scrollFactor = window.scrollY * 0.03;
-    heroLogo.style.transform = `translate3d(${x}px, ${y - scrollFactor}px, 0)`;
-  }
-
-  window.addEventListener("mousemove", updateLogoParallax);
-  window.addEventListener("scroll", () => updateLogoParallax());
-
-  // Tilt 3D da imagem (sem card)
-  productShell.addEventListener("mousemove", (e) => {
-    const rect = productShell.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-
-    const rotateY = x * 16;
-    const rotateX = -y * 14;
-
-    product3d.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-  });
-
-  productShell.addEventListener("mouseleave", () => {
-    product3d.style.transform = "rotateX(0deg) rotateY(0deg)";
-  });
-
-  // Swipe (touch) para mobile – sempre anima da mesma forma
+  // Swipe para mobile
   let startX = 0;
   let isTouching = false;
 
-  heroSlider.addEventListener("touchstart", (e) => {
+  document.addEventListener("touchstart", (e) => {
     const touch = e.touches[0];
     startX = touch.clientX;
     isTouching = true;
   }, { passive: true });
 
-  heroSlider.addEventListener("touchend", (e) => {
-    if (!isTouching) return;
+  document.addEventListener("touchend", (e) => {
+    if (!isTouching || isAnimating) return;
     const touch = e.changedTouches[0];
     const deltaX = touch.clientX - startX;
-    const threshold = 50; // pixels
+    const threshold = 50;
 
     if (Math.abs(deltaX) > threshold) {
       if (deltaX < 0) {
@@ -708,12 +713,21 @@
   // Inicialização
   function init() {
     body.classList.add("is-loaded");
-    setBodyTheme(slides[0].theme);
-    // garante texto correto do primeiro slide
-    updateTexts(slides[0]);
-    currentImage.src = slides[0].image;
-    currentImage.alt = slides[0].subtitle;
-    currentImage.classList.add("visible");
+    updateSliderPosition();
+    updateLogoParallax();
+    
+    // Garante que todas as imagens começam na posição correta
+    const allPages = document.querySelectorAll(".slide-page");
+    allPages.forEach((page, index) => {
+      const img = page.querySelector(".product-image-stage img");
+      if (index === currentIndex) {
+        img.style.transform = "translate3d(-50%, -50%, 120px)";
+        img.style.opacity = "1";
+      } else {
+        img.style.transform = "translate3d(-50%, -50%, 120px)";
+        img.style.opacity = "1";
+      }
+    });
   }
 
   window.addEventListener("load", init);
