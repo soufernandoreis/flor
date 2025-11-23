@@ -25,15 +25,31 @@
 
     body {
       font-family: var(--font-base);
-      background: radial-gradient(circle at top left, #ffe7d4 0, var(--cor-fundo) 45%, #ffffff 100%);
       color: var(--cor-texto);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       overflow-x: hidden;
+
+      /* === NOVO ESTILO: Fundo com Padrão de Flor === */
+      background-color: var(--cor-fundo); /* Cor de base */
+      background-image:
+          /* Gradiente radial original para cor suave */
+          radial-gradient(circle at top left, #ffe7d4 0, var(--cor-fundo) 45%, #ffffff 100%),
+          /* Padrão de fundo com baixa opacidade */
+          url('pequena.png'); /* Sua imagem de flor */
+      background-repeat: repeat, repeat; /* Repete ambos */
+      background-size: cover, 180px; /* O primeiro cobre, o segundo define o tamanho da flor */
+      background-blend-mode: multiply; /* Mistura sutilmente a imagem com o gradiente */
+      opacity: 0.95; /* Opacidade geral para suavizar o fundo */
+      /* =========================================== */
     }
 
     main {
+      /* Garante que o conteúdo fique sobre o fundo */
+      position: relative;
+      z-index: 10;
+
       width: min(1120px, 100%);
       padding: 2.5rem 1.5rem 3.5rem;
       opacity: 0;
@@ -210,7 +226,9 @@
 
     .card-inner {
       position: relative;
-      background: rgba(255,255,255,0.96);
+      /* Fundo do Card ligeiramente transparente para mostrar o padrão */
+      background: rgba(255,255,255,0.85); /* Reduzido de 0.96 para 0.85 */
+      backdrop-filter: blur(4px); /* Adiciona um blur para dar profundidade */
       border-radius: var(--radius-xl);
       box-shadow: 0 14px 30px rgba(0,0,0,0.12);
       border: 1px solid rgba(139,58,35,0.08);
