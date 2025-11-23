@@ -1,132 +1,674 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Mask Demo</title>
-<style>
-body {
-  background: #111;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: system-ui, sans-serif;
-}
+  <meta charset="UTF-8" />
+  <title>Flor de Sal | Delivery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-/* CONTAINER PRINCIPAL COM MÁSCARA */
-.demo-mask {
-  position: relative;
-  width: 380px;
-  height: 380px;
-  overflow: hidden;
-  border-radius: 20px;
-  background: #222;
-}
+  <style>
+    :root {
+      --cor-principal: #8b3a23;
+      --cor-secundaria: #b85b34;
+      --cor-fundo: #fdf7f2;
+      --cor-texto: #3b2417;
+      --shadow-soft: 0 18px 35px rgba(0,0,0,0.16);
+      --radius-xl: 26px;
+      --transition-fast: 0.25s ease;
+      --font-base: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
 
-/* FOTOS LIVRES */
-.slide-image {
-  position: absolute;
-  width: 80%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  transition: transform .7s ease, opacity .7s ease;
-  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.6));
-  opacity: 0;
-}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-/* imagem atual visível */
-.slide-image.current {
-  opacity: 1;
-}
+    body {
+      font-family: var(--font-base);
+      background: radial-gradient(circle at top left, #ffe7d4 0, var(--cor-fundo) 45%, #ffffff 100%);
+      color: var(--cor-texto);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      overflow-x: hidden;
+    }
 
-/* animação de saída → direita */
-.slide-image.current.exit {
-  transform: translate(80%, -50%);
-  opacity: 0;
-}
+    main {
+      width: min(1120px, 100%);
+      padding: 2.5rem 1.5rem 3.5rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
 
-/* nova imagem entra da esquerda */
-.slide-image.next {
-  transform: translate(-150%, -50%);
-  opacity: 0;
-}
+    body.is-loaded main {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
-/* animação de entrada */
-.slide-image.next.enter {
-  transform: translate(-50%, -50%);
-  opacity: 1;
-}
+    /* HERO */
 
-/* PAINEL QUE VEM DA DIREITA COM MÁSCARA REAL */
-.reveal-panel {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    .hero {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
 
-  /* A MÁSCARA IMPORTANTE */
-  mask-image: linear-gradient(to left, transparent 0%, white 100%);
-  -webkit-mask-image: linear-gradient(to left, transparent 0%, white 100%);
+    .hero-logo {
+      margin: 0 auto 1.4rem;
+      width: min(260px, 70vw);
+      transform: translate3d(0, 0, 0);
+      transition: transform 0.4s ease-out;
+      will-change: transform;
+    }
 
-  mask-size: 200% 100%;
-  -webkit-mask-size: 200% 100%;
+    .hero-logo img {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 18px 30px rgba(0,0,0,0.18));
+    }
 
-  mask-position: 200% 0;
-  -webkit-mask-position: 200% 0;
+    .hero h2 {
+      font-size: 1.25rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--cor-principal);
+      margin-bottom: 1.4rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s;
+    }
 
-  transition: mask-position .7s ease, -webkit-mask-position .7s ease;
-}
+    .hero p {
+      max-width: 540px;
+      margin: 0 auto 1.9rem;
+      font-size: 0.98rem;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s;
+    }
 
-/* painel revelando */
-.reveal-panel.reveal {
-  mask-position: 0% 0;
-  -webkit-mask-position: 0% 0;
-}
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.6s ease 0.28s, transform 0.6s ease 0.28s;
+    }
 
-/* botão */
-button {
-  position: absolute;
-  bottom: -60px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 22px;
-  background: #fff;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-}
-</style>
+    body.is-loaded .hero h2,
+    body.is-loaded .hero p,
+    body.is-loaded .hero-actions {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 0.85rem 1.8rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      cursor: pointer;
+      border: none;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast), opacity var(--transition-fast), border-color var(--transition-fast);
+      white-space: nowrap;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, rgba(139,58,35,0.92), rgba(184,91,52,0.96));
+      color: #fff;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.06);
+      box-shadow: 0 22px 46px rgba(0,0,0,0.35);
+      transform: translateY(-1px) scale(1.01);
+    }
+
+    .btn-outline {
+      background: rgba(255,255,255,0.18);
+      color: var(--cor-principal);
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.16);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255,255,255,0.35);
+      color: var(--cor-principal);
+      transform: translateY(-1px) scale(1.01);
+    }
+
+    /* CARROSSEL */
+
+    .section-menu {
+      margin-top: 1rem;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1.5rem;
+      margin-bottom: 1.8rem;
+      flex-wrap: wrap;
+    }
+
+    .section-header h3 {
+      font-size: 1.35rem;
+      color: var(--cor-principal);
+    }
+
+    .section-header p {
+      font-size: 0.9rem;
+      max-width: 360px;
+      opacity: 0.9;
+    }
+
+    .carousel-shell {
+      position: relative;
+    }
+
+    .cards-viewport {
+      display: flex;
+      gap: 1.5rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding: 0.45rem 0.1rem 0.9rem;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .cards-viewport::-webkit-scrollbar {
+      display: none;
+    }
+
+    .card {
+      scroll-snap-align: center;
+      min-width: 260px;
+      max-width: 260px;
+      flex: 0 0 auto;
+      perspective: 1100px;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
+    }
+
+    body.is-loaded .card {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .card-inner {
+      position: relative;
+      background: rgba(255,255,255,0.96);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+      border: 1px solid rgba(139,58,35,0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transform-style: preserve-3d;
+      transform: translateY(6px) scale(0.98);
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+      will-change: transform, box-shadow;
+    }
+
+    .card-visual {
+      position: relative;
+      height: 170px;
+      overflow: visible;
+    }
+
+    .card-visual img {
+      width: 88%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      margin: 0 auto;
+      border-radius: 999px;
+      transform-origin: center;
+      transform: translateY(16px) translateZ(0);
+      transition: transform 0.28s ease;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+      will-change: transform;
+    }
+
+    .card-content {
+      padding: 1rem 1.2rem 1.2rem;
+    }
+
+    .dia-label {
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 0.35rem;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--cor-principal);
+      margin-bottom: 0.35rem;
+    }
+
+    .card-text {
+      font-size: 0.88rem;
+      opacity: 0.9;
+      margin-bottom: 0.7rem;
+    }
+
+    .card-meta {
+      font-size: 0.8rem;
+      opacity: 0.85;
+      display: flex;
+      justify-content: space-between;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .card.active .card-inner {
+      transform: translateY(-10px) scale(1.05) rotateX(4deg);
+      box-shadow: 0 26px 60px rgba(0,0,0,0.32);
+      border-color: rgba(139,58,35,0.32);
+    }
+
+    .card.active .card-visual img {
+      transform: translateY(4px) translateZ(40px) scale(1.08);
+    }
+
+    .card.active:hover .card-inner {
+      transform: translateY(-14px) scale(1.07) rotateX(6deg) rotateY(-3deg);
+    }
+
+    .carousel-nav {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .nav-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, opacity 0.18s ease;
+      color: var(--cor-principal);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(0,0,0,0.2);
+      background: #ffffff;
+    }
+
+    .nav-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .nav-btn--left {
+      margin-left: -0.4rem;
+    }
+
+    .nav-btn--right {
+      margin-right: -0.4rem;
+    }
+
+    @media (max-width: 768px) {
+      main {
+        padding-inline: 1.25rem;
+      }
+
+      .card {
+        min-width: 220px;
+        max-width: 220px;
+      }
+
+      .nav-btn {
+        width: 34px;
+        height: 34px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.16);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .hero h2 {
+        font-size: 1.05rem;
+        letter-spacing: 0.16em;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      .hero-actions .btn {
+        width: 100%;
+      }
+
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .carousel-nav {
+        display: none; /* mobile usa o dedo */
+      }
+    }
+  </style>
 </head>
 <body>
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-logo" id="heroLogo">
+      <!-- H1 visual com a imagem do logo -->
+      <img src="flor de sal.png" alt="Flor de Sal Delivery" />
+    </div>
 
-<div class="demo-mask">
-  <img class="slide-image current" src="prato.png">
-  <div class="reveal-panel">
-    <img class="slide-image next" src="roy.png">
-  </div>
-  <button id="go">Trocar</button>
-</div>
+    <h2>feito com carinho</h2>
+
+    <p>
+      Cardápio caseiro preparado todos os dias com ingredientes frescos e aquele
+      tempero de cozinha de família. Peça seu prato ou fale com a gente sobre o seu evento.
+    </p>
+
+    <div class="hero-actions">
+      <a
+        href="https://wa.me/5564981245822"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-primary"
+      >
+        Peça aqui
+      </a>
+
+      <a
+        href="https://wa.me/5564981245822?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20sobre%20um%20evento."
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-outline"
+      >
+        Nos contrate para seu evento
+      </a>
+    </div>
+  </section>
+
+  <!-- CARROSSEL DE PRATOS -->
+  <section class="section-menu">
+    <div class="section-header">
+      <div>
+        <h3>Cardápio da semana</h3>
+        <p>Arraste para o lado para ver os pratos de segunda a sexta. Em cada dia, um cuidado diferente no tempero.</p>
+      </div>
+    </div>
+
+    <div class="carousel-shell">
+      <div class="cards-viewport" id="cardsViewport">
+        <!-- Segunda -->
+        <article class="card">
+          <div class="card-inner">
+            <div class="card-visual">
+              <img src="prato.png" alt="Prato de segunda-feira" />
+            </div>
+            <div class="card-content">
+              <p class="dia-label">Segunda-feira</p>
+              <h4 class="card-title">Picadinho da casa</h4>
+              <p class="card-text">
+                Arroz soltinho, feijão, picadinho de carne com legumes e salada fresca.
+              </p>
+              <div class="card-meta">
+                <span>Almoço · 11h às 14h</span>
+                <span>Porções individual e família</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Terça -->
+        <article class="card">
+          <div class="card-inner">
+            <div class="card-visual">
+              <img src="prato1.png" alt="Prato de terça-feira" />
+            </div>
+            <div class="card-content">
+              <p class="dia-label">Terça-feira</p>
+              <h4 class="card-title">Frango grelhado</h4>
+              <p class="card-text">
+                Frango grelhado, arroz, feijão e legumes salteados no ponto certo.
+              </p>
+              <div class="card-meta">
+                <span>Almoço · 11h às 14h</span>
+                <span>Opção leve e saborosa</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Quarta -->
+        <article class="card">
+          <div class="card-inner">
+            <div class="card-visual">
+              <img src="prato2.png" alt="Prato de quarta-feira" />
+            </div>
+            <div class="card-content">
+              <p class="dia-label">Quarta-feira</p>
+              <h4 class="card-title">Feijoada Flor de Sal</h4>
+              <p class="card-text">
+                Feijoada caseira com acompanhamentos completos, pra matar a saudade.
+              </p>
+              <div class="card-meta">
+                <span>Quarta da feijoada</span>
+                <span>Peça antecipado e garanta o seu</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Quinta -->
+        <article class="card">
+          <div class="card-inner">
+            <div class="card-visual">
+              <img src="prato3.png" alt="Prato de quinta-feira" />
+            </div>
+            <div class="card-content">
+              <p class="dia-label">Quinta-feira</p>
+              <h4 class="card-title">Parmegiana da casa</h4>
+              <p class="card-text">
+                Filé à parmegiana com molho caseiro, queijo gratinado e acompanhamentos.
+              </p>
+              <div class="card-meta">
+                <span>Almoço · 11h às 14h</span>
+                <span>Serve muito bem 1 pessoa</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Sexta (imagem duplicada) -->
+        <article class="card">
+          <div class="card-inner">
+            <div class="card-visual">
+              <img src="prato2.png" alt="Prato de sexta-feira" />
+            </div>
+            <div class="card-content">
+              <p class="dia-label">Sexta-feira</p>
+              <h4 class="card-title">Sexta especial</h4>
+              <p class="card-text">
+                Prato especial da semana, pensado para fechar a sexta com chave de ouro.
+              </p>
+              <div class="card-meta">
+                <span>Consulte o prato do dia</span>
+                <span>Fale com a gente no WhatsApp</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Navegação por clique (desktop) com bounce -->
+      <div class="carousel-nav">
+        <button class="nav-btn nav-btn--left" data-dir="prev" aria-label="Prato anterior">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="nav-btn nav-btn--right" data-dir="next" aria-label="Próximo prato">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
 
 <script>
-const btn = document.getElementById("go");
-const panel = document.querySelector(".reveal-panel");
-const current = document.querySelector(".slide-image.current");
-const next = document.querySelector(".slide-image.next");
+  const viewport = document.getElementById("cardsViewport");
+  const cards = Array.from(viewport.querySelectorAll(".card"));
+  const prevBtn = document.querySelector('[data-dir="prev"]');
+  const nextBtn = document.querySelector('[data-dir="next"]');
+  const heroLogo = document.getElementById("heroLogo");
 
-btn.onclick = () => {
-  // foto atual → sai pra direita
-  current.classList.add("exit");
+  // Marca card ativo pelo centro do viewport
+  function updateActiveCard() {
+    const viewportRect = viewport.getBoundingClientRect();
+    const viewportCenter = viewportRect.left + viewportRect.width / 2;
 
-  // máscara entra revelando painel
-  panel.classList.add("reveal");
+    let closestCard = null;
+    let closestDistance = Infinity;
 
-  // nova imagem entra da esquerda
-  next.classList.add("enter");
-};
+    cards.forEach(card => {
+      const rect = card.getBoundingClientRect();
+      const cardCenter = rect.left + rect.width / 2;
+      const distance = Math.abs(viewportCenter - cardCenter);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestCard = card;
+      }
+    });
+
+    cards.forEach(card => {
+      card.classList.toggle("active", card === closestCard);
+    });
+  }
+
+  // Scroll + debounce
+  let ticking = false;
+  viewport.addEventListener("scroll", () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        updateActiveCard();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  // Navegação com bounce nas extremidades
+  function scrollByCard(direction) {
+    if (!cards.length) return;
+    const cardWidth = cards[0].getBoundingClientRect().width + 24; // width + gap
+
+    const maxScroll =
+      viewport.scrollWidth - viewport.clientWidth;
+    const newPos = viewport.scrollLeft + direction * cardWidth;
+
+    if (newPos < 0 || newPos > maxScroll) {
+      // efeito bounce simples
+      const bounce = direction < 0 ? -20 : 20;
+      viewport.scrollTo({ left: viewport.scrollLeft + bounce, behavior: "smooth" });
+      setTimeout(() => {
+        viewport.scrollTo({ left: viewport.scrollLeft - bounce, behavior: "smooth" });
+      }, 160);
+      return;
+    }
+
+    viewport.scrollBy({
+      left: direction * cardWidth,
+      behavior: "smooth"
+    });
+  }
+
+  if (prevBtn && nextBtn) {
+    prevBtn.addEventListener("click", () => scrollByCard(-1));
+    nextBtn.addEventListener("click", () => scrollByCard(1));
+  }
+
+  // Parallax suave do logo (mouse + scroll)
+  function updateLogoParallax(event) {
+    const rect = heroLogo.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    let x = 0;
+    let y = 0;
+
+    if (event && event.type === "mousemove") {
+      const dx = (event.clientX - centerX) / rect.width;
+      const dy = (event.clientY - centerY) / rect.height;
+      x = dx * 8;
+      y = dy * 6;
+    }
+
+    const scrollFactor = window.scrollY * 0.05;
+    heroLogo.style.transform =
+      `translate3d(${x}px, ${y - scrollFactor}px, 0)`;
+  }
+
+  window.addEventListener("mousemove", updateLogoParallax);
+  window.addEventListener("scroll", () => updateLogoParallax());
+
+  // Micro animação no toque/click dos cards
+  cards.forEach(card => {
+    const inner = card.querySelector(".card-inner");
+    card.addEventListener("pointerdown", () => {
+      inner.style.transition = "transform 0.12s ease";
+      inner.style.transform += " scale(0.96)";
+    });
+    card.addEventListener("pointerup", () => {
+      inner.style.transition = "transform 0.18s ease";
+      inner.style.transform = inner.style.transform.replace(/scale\(0\.96\)/, "");
+    });
+    card.addEventListener("pointerleave", () => {
+      inner.style.transition = "transform 0.18s ease";
+      inner.style.transform = inner.style.transform.replace(/scale\(0\.96\)/, "");
+    });
+  });
+
+  // Marca card inicial e anima entrada
+  function init() {
+    document.body.classList.add("is-loaded");
+    updateActiveCard();
+  }
+
+  window.addEventListener("load", init);
+  window.addEventListener("resize", () => {
+    setTimeout(updateActiveCard, 100);
+  });
 </script>
-
 </body>
 </html>
