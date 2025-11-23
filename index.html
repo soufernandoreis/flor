@@ -1,729 +1,132 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Flor de Sal | Delivery</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<title>Mask Demo</title>
+<style>
+body {
+  background: #111;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: system-ui, sans-serif;
+}
 
-  <style>
-    :root {
-      --cor-texto: #fdf7f2;
-      --font-base: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
+/* CONTAINER PRINCIPAL COM MÁSCARA */
+.demo-mask {
+  position: relative;
+  width: 380px;
+  height: 380px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #222;
+}
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+/* FOTOS LIVRES */
+.slide-image {
+  position: absolute;
+  width: 80%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: transform .7s ease, opacity .7s ease;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.6));
+  opacity: 0;
+}
 
-    body {
-      font-family: var(--font-base);
-      color: var(--cor-texto);
-      min-height: 100vh;
-      display: flex;
-      align-items: stretch;
-      justify-content: center;
-      transition: background 0.7s ease;
-      overflow-x: hidden;
-    }
+/* imagem atual visível */
+.slide-image.current {
+  opacity: 1;
+}
 
-    /* Tema de fundo por slide */
-    body.theme-0 {
-      background: radial-gradient(circle at top left, #ffb088 0, #1d0b0b 40%, #040109 100%);
-    }
-    body.theme-1 {
-      background: radial-gradient(circle at top right, #ffd46b 0, #251108 45%, #05030c 100%);
-    }
-    body.theme-2 {
-      background: radial-gradient(circle at top, #ff9777 0, #1d090a 45%, #05020a 100%);
-    }
-    body.theme-3 {
-      background: radial-gradient(circle at bottom left, #ffc3a0 0, #1b1015 45%, #05030c 100%);
-    }
-    body.theme-4 {
-      background: radial-gradient(circle at bottom right, #ffb86c 0, #1c0d06 45%, #050208 100%);
-    }
-    body.theme-5 {
-      background: radial-gradient(circle at center, #ba8cff 0, #220b3a 40%, #050010 100%);
-    }
+/* animação de saída → direita */
+.slide-image.current.exit {
+  transform: translate(80%, -50%);
+  opacity: 0;
+}
 
-    main {
-      width: min(1200px, 100%);
-      padding: 2.4rem 1.6rem 3rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-      min-height: 100vh;
-    }
+/* nova imagem entra da esquerda */
+.slide-image.next {
+  transform: translate(-150%, -50%);
+  opacity: 0;
+}
 
-    body.is-loaded main {
-      opacity: 1;
-      transform: translateY(0);
-    }
+/* animação de entrada */
+.slide-image.next.enter {
+  transform: translate(-50%, -50%);
+  opacity: 1;
+}
 
-    /* HERO = viewport/máscara principal */
-    .hero {
-      width: 100%;
-      position: relative;
-      overflow: hidden; /* MASK principal */
-    }
+/* PAINEL QUE VEM DA DIREITA COM MÁSCARA REAL */
+.reveal-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    .hero-inner {
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-      gap: 2.6rem;
-      align-items: center;
-      min-height: 70vh;
-      position: relative;
-      z-index: 1;
-    }
+  /* A MÁSCARA IMPORTANTE */
+  mask-image: linear-gradient(to left, transparent 0%, white 100%);
+  -webkit-mask-image: linear-gradient(to left, transparent 0%, white 100%);
 
-    /* Neblina suave */
-    .hero::before,
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: -20%;
-      background:
-        radial-gradient(circle at 10% 20%, rgba(255,255,255,0.08) 0, transparent 55%),
-        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.04) 0, transparent 60%);
-      opacity: 0.6;
-      pointer-events: none;
-      mix-blend-mode: screen;
-    }
+  mask-size: 200% 100%;
+  -webkit-mask-size: 200% 100%;
 
-    .hero::after {
-      animation: drift 18s linear infinite alternate;
-      opacity: 0.4;
-    }
+  mask-position: 200% 0;
+  -webkit-mask-position: 200% 0;
 
-    @keyframes drift {
-      0% { transform: translate3d(0,0,0); }
-      100% { transform: translate3d(40px,-30px,0); }
-    }
+  transition: mask-position .7s ease, -webkit-mask-position .7s ease;
+}
 
-    .hero-left {
-      position: relative;
-      z-index: 2;
-    }
+/* painel revelando */
+.reveal-panel.reveal {
+  mask-position: 0% 0;
+  -webkit-mask-position: 0% 0;
+}
 
-    /* H1 visual: logo livre */
-    .hero-logo {
-      width: min(260px, 70vw);
-      margin-bottom: 1.2rem;
-      transform: translate3d(0,0,0);
-      transition: transform 0.4s ease-out;
-      will-change: transform;
-    }
-
-    .hero-logo img {
-      width: 100%;
-      display: block;
-      filter: drop-shadow(0 18px 32px rgba(0,0,0,0.5));
-    }
-
-    .hero-tagline {
-      font-size: 0.95rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      opacity: 0.85;
-      margin-bottom: 1.4rem;
-    }
-
-    /* MASK de texto: só essa área desliza de direita → esquerda */
-    .hero-text-mask {
-      position: relative;
-      overflow: hidden; /* MASK de layout */
-      max-width: 480px;
-    }
-
-    .hero-track {
-      display: flex;
-      width: 200%; /* 2 slides lado a lado */
-      transform: translateX(0%);
-      transition: transform 0.55s ease;
-    }
-
-    .hero-text-slide {
-      width: 50%;
-      padding-right: 1rem;
-    }
-
-    .hero-subtitle {
-      font-size: 1.4rem;
-      font-weight: 600;
-      margin-bottom: 0.4rem;
-    }
-
-    .hero-title {
-      font-size: clamp(2rem, 3vw, 2.6rem);
-      font-weight: 800;
-      text-transform: uppercase;
-      margin-bottom: 0.8rem;
-    }
-
-    .hero-desc {
-      font-size: 0.98rem;
-      opacity: 0.9;
-      margin-bottom: 1.6rem;
-      line-height: 1.7;
-    }
-
-    .hero-meta {
-      font-size: 0.85rem;
-      opacity: 0.9;
-      margin-top: 0.5rem;
-    }
-
-    .hero-meta span + span::before {
-      content: "•";
-      margin: 0 0.45rem;
-      opacity: 0.7;
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.9rem;
-      margin-bottom: 1.0rem;
-    }
-
-    .btn {
-      border-radius: 999px;
-      padding: 0.85rem 1.8rem;
-      font-size: 0.95rem;
-      font-weight: 600;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.45rem;
-      cursor: pointer;
-      border: none;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, color 0.22s ease, border-color 0.22s ease;
-      white-space: nowrap;
-    }
-
-    .btn-primary {
-      background: rgba(255,255,255,0.16);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.7);
-      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-1px) scale(1.02);
-      background: rgba(255,255,255,0.22);
-      box-shadow: 0 22px 48px rgba(0,0,0,0.8);
-    }
-
-    .btn-secondary {
-      background: rgba(0,0,0,0.35);
-      color: #fff6ea;
-      border: 1px solid rgba(255,255,255,0.25);
-      box-shadow: 0 14px 32px rgba(0,0,0,0.6);
-    }
-
-    .btn-secondary:hover {
-      transform: translateY(-1px) scale(1.01);
-      background: rgba(0,0,0,0.5);
-    }
-
-    /* Dots */
-    .hero-dots {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-      margin-top: 1.6rem;
-    }
-
-    .hero-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.6);
-      background: transparent;
-      cursor: pointer;
-      padding: 0;
-      transition: width 0.25s ease, background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
-    }
-
-    .hero-dot.active {
-      width: 24px;
-      background: #fff;
-      border-color: transparent;
-      transform: translateY(-1px);
-    }
-
-    /* IMAGEM LIVRE 100% (sem card) + MASK */
-    .hero-right {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .image-mask {
-      position: relative;
-      width: min(480px, 100%);
-      aspect-ratio: 1 / 1;
-      overflow: hidden; /* MASK da imagem */
-    }
-
-    .image-shadow {
-      position: absolute;
-      inset: auto 10% 6% 10%;
-      height: 26%;
-      background: radial-gradient(circle at 50% 0, rgba(0,0,0,0.75) 0, transparent 70%);
-      filter: blur(4px);
-      opacity: 0.9;
-      pointer-events: none;
-    }
-
-    .hero-image {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 80%;
-      max-height: 90%;
-      object-fit: contain;
-      border-radius: 40px;
-      box-shadow: 0 40px 90px rgba(0,0,0,0.95);
-      transform-origin: center;
-      transform: translate(-50%, -50%);
-      opacity: 0;
-      transition: transform 0.55s ease, opacity 0.55s ease;
-      will-change: transform, opacity;
-      pointer-events: none;
-    }
-
-    .hero-image.visible {
-      opacity: 1;
-    }
-
-    /* Navegação lateral */
-    .hero-nav {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      pointer-events: none;
-    }
-
-    .hero-nav-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
-      border: none;
-      background: rgba(0,0,0,0.55);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 16px 30px rgba(0,0,0,0.7);
-      cursor: pointer;
-      pointer-events: auto;
-      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .hero-nav-btn:hover {
-      transform: translateY(-1px);
-      background: rgba(0,0,0,0.75);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.85);
-    }
-
-    .hero-nav-btn svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    .hero-nav-btn--left { transform: translateX(-10px); }
-    .hero-nav-btn--right { transform: translateX(10px); }
-
-    /* Responsivo */
-    @media (max-width: 900px) {
-      .hero-inner {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 2rem;
-      }
-
-      .hero-right {
-        order: -1;
-      }
-
-      .hero-nav {
-        display: none; /* mobile usa swipe */
-      }
-
-      main {
-        padding-inline: 1.2rem;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .hero-inner {
-        gap: 1.8rem;
-      }
-
-      .image-mask {
-        max-width: 360px;
-      }
-
-      .hero-title {
-        font-size: 1.8rem;
-      }
-
-      .hero-actions {
-        flex-direction: column;
-      }
-
-      .hero-actions .btn {
-        width: 100%;
-      }
-    }
-  </style>
+/* botão */
+button {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 22px;
+  background: #fff;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+</style>
 </head>
-<body class="theme-0">
-<main>
-  <section class="hero" id="heroSlider">
-    <div class="hero-inner">
-      <div class="hero-left">
-        <!-- H1 visual: logo -->
-        <div class="hero-logo" id="heroLogo">
-          <img src="flor de sal.png" alt="Flor de Sal Delivery" />
-        </div>
+<body>
 
-        <div class="hero-tagline">feito com carinho</div>
-
-        <!-- Texto dentro de uma MASK -->
-        <div class="hero-text-mask">
-          <div class="hero-track" id="heroTrack">
-            <div class="hero-text-slide" id="textSlideCurrent"></div>
-            <div class="hero-text-slide" id="textSlideNext"></div>
-          </div>
-        </div>
-
-        <div class="hero-actions">
-          <a
-            href="https://wa.me/5564981245822"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-primary"
-          >
-            Peça este prato
-          </a>
-          <a
-            href="https://wa.me/5564981245822?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20sobre%20um%20evento."
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-secondary"
-          >
-            Fale sobre seu evento
-          </a>
-        </div>
-
-        <div class="hero-meta" id="heroMeta">
-          <span>Almoço · 11h às 14h</span>
-          <span>Delivery e retirada</span>
-        </div>
-
-        <div class="hero-dots" id="heroDots"></div>
-      </div>
-
-      <div class="hero-right">
-        <!-- MASK da imagem -->
-        <div class="image-mask" id="imageMask">
-          <div class="image-shadow"></div>
-          <img id="imageCurrent" class="hero-image visible" src="prato.png" alt="Prato Flor de Sal" />
-          <img id="imageNext" class="hero-image" src="" alt="" />
-        </div>
-      </div>
-
-      <!-- Navegação lateral (desktop) -->
-      <div class="hero-nav">
-        <button class="hero-nav-btn hero-nav-btn--left" id="btnPrev" aria-label="Prato anterior">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-        <button class="hero-nav-btn hero-nav-btn--right" id="btnNext" aria-label="Próximo prato">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-  </section>
-</main>
+<div class="demo-mask">
+  <img class="slide-image current" src="prato.png">
+  <div class="reveal-panel">
+    <img class="slide-image next" src="roy.png">
+  </div>
+  <button id="go">Trocar</button>
+</div>
 
 <script>
-  // Slides: texto + imagem + tema
-  const slides = [
-    {
-      theme: "theme-0",
-      image: "prato.png",
-      subtitle: "Segunda-feira · Picadinho da casa",
-      title: "Pra começar a semana com conforto",
-      desc: "Arroz soltinho, feijão caseiro, picadinho de carne com legumes e salada fresca.",
-      meta: ["Almoço · 11h às 14h", "Delivery e retirada"]
-    },
-    {
-      theme: "theme-1",
-      image: "prato1.png",
-      subtitle: "Terça-feira · Frango grelhado",
-      title: "Leve, saboroso e caprichado",
-      desc: "Frango grelhado, arroz, feijão e legumes salteados no ponto certo.",
-      meta: ["Almoço · 11h às 14h", "Opção leve e saborosa"]
-    },
-    {
-      theme: "theme-2",
-      image: "prato2.png",
-      subtitle: "Quarta-feira · Feijoada Flor de Sal",
-      title: "Clássico de quarta, do seu jeito",
-      desc: "Feijoada caseira com acompanhamentos completos pra matar a saudade.",
-      meta: ["Quarta da feijoada", "Peça antecipado e garanta o seu"]
-    },
-    {
-      theme: "theme-3",
-      image: "prato3.png",
-      subtitle: "Quinta-feira · Parmegiana da casa",
-      title: "Queijo gratinado e molho caseiro",
-      desc: "Filé à parmegiana com molho da casa, queijo gratinado e acompanhamentos.",
-      meta: ["Almoço · 11h às 14h", "Serve muito bem 1 pessoa"]
-    },
-    {
-      theme: "theme-4",
-      image: "prato2.png",
-      subtitle: "Sexta-feira · Sexta especial",
-      title: "Pra fechar a semana com chave de ouro",
-      desc: "Prato especial da semana, pensado para a sua sexta-feira ficar ainda melhor.",
-      meta: ["Consulte o prato do dia", "Fale com a gente no WhatsApp"]
-    },
-    {
-      theme: "theme-5",
-      image: "roy.png",
-      subtitle: "Especial da casa · Roy",
-      title: "Visual diferente, mesmo carinho",
-      desc: "Uma opção especial para testar novas combinações e apresentar a Flor de Sal com outro visual.",
-      meta: ["Prato especial", "Disponível por tempo limitado"]
-    }
-  ];
+const btn = document.getElementById("go");
+const panel = document.querySelector(".reveal-panel");
+const current = document.querySelector(".slide-image.current");
+const next = document.querySelector(".slide-image.next");
 
-  const body = document.body;
-  const heroSlider = document.getElementById("heroSlider");
-  const heroLogo = document.getElementById("heroLogo");
-  const heroTrack = document.getElementById("heroTrack");
-  const slideCurrentText = document.getElementById("textSlideCurrent");
-  const slideNextText = document.getElementById("textSlideNext");
-  const heroMeta = document.getElementById("heroMeta");
+btn.onclick = () => {
+  // foto atual → sai pra direita
+  current.classList.add("exit");
 
-  const currentImage = document.getElementById("imageCurrent");
-  const nextImage = document.getElementById("imageNext");
+  // máscara entra revelando painel
+  panel.classList.add("reveal");
 
-  const dotsContainer = document.getElementById("heroDots");
-  const btnPrev = document.getElementById("btnPrev");
-  const btnNext = document.getElementById("btnNext");
-
-  let currentIndex = 0;
-  let isAnimating = false;
-  const animationDuration = 550; // ms
-
-  // Render texto dentro de um slide
-  function renderTextSlide(slide, container) {
-    container.innerHTML = `
-      <div class="hero-subtitle">${slide.subtitle}</div>
-      <div class="hero-title">${slide.title}</div>
-      <p class="hero-desc">${slide.desc}</p>
-    `;
-  }
-
-  // Atualiza meta (linha de baixo)
-  function renderMeta(slide) {
-    if (!slide.meta || !slide.meta.length) return;
-    heroMeta.innerHTML = slide.meta
-      .map((m, idx) => `<span>${m}</span>`)
-      .join("");
-  }
-
-  // Aplica tema de fundo
-  function setTheme(theme) {
-    slides.forEach(s => body.classList.remove(s.theme));
-    body.classList.add(theme);
-  }
-
-  // Cria dots
-  slides.forEach((_, i) => {
-    const dot = document.createElement("button");
-    dot.type = "button";
-    dot.className = "hero-dot" + (i === 0 ? " active" : "");
-    dot.setAttribute("aria-label", "Ir para prato " + (i + 1));
-    dot.addEventListener("click", () => goToSlide(i));
-    dotsContainer.appendChild(dot);
-  });
-
-  const dots = Array.from(document.querySelectorAll(".hero-dot"));
-
-  function updateDots(index) {
-    dots.forEach((d, i) => d.classList.toggle("active", i === index));
-  }
-
-  // Anima a transição: layout (texto) vem da direita → esquerda,
-  // foto atual sai para a direita, nova foto vem da esquerda.
-  function goToSlide(newIndex) {
-    if (isAnimating || newIndex === currentIndex || newIndex < 0 || newIndex >= slides.length) return;
-    isAnimating = true;
-
-    const currentSlide = slides[currentIndex];
-    const nextSlide = slides[newIndex];
-
-    // Tema de fundo já começa mudando
-    setTheme(nextSlide.theme);
-
-    // Textos: slide atual no 1º slot, próximo no 2º
-    renderTextSlide(currentSlide, slideCurrentText);
-    renderTextSlide(nextSlide, slideNextText);
-    renderMeta(nextSlide);
-
-    // Prepara faixa de texto (track) no ponto 0
-    heroTrack.style.transition = "none";
-    heroTrack.style.transform = "translateX(0%)";
-    void heroTrack.offsetWidth; // força reflow
-
-    // Anima: track vai para -50% → novo texto entra da direita
-    heroTrack.style.transition = "transform 0.55s ease";
-    heroTrack.style.transform = "translateX(-50%)";
-
-    // Fotos: prepara nova imagem à esquerda
-    currentImage.src = currentSlide.image;
-    currentImage.alt = currentSlide.subtitle;
-    currentImage.classList.add("visible");
-    currentImage.style.transform = "translate(-50%, -50%)";
-    currentImage.style.opacity = "1";
-
-    nextImage.src = nextSlide.image;
-    nextImage.alt = nextSlide.subtitle;
-    nextImage.classList.add("visible");
-    nextImage.style.transform = "translate(-150%, -50%)";
-    nextImage.style.opacity = "1";
-
-    void nextImage.offsetWidth; // reflow para garantir transição
-
-    // Foto atual sai para a direita
-    currentImage.style.transform = "translate(80%, -50%)";
-    currentImage.style.opacity = "0";
-
-    // Nova foto entra da esquerda e para no centro
-    nextImage.style.transform = "translate(-50%, -50%)";
-    nextImage.style.opacity = "1";
-
-    // Finaliza transição
-    setTimeout(() => {
-      currentIndex = newIndex;
-      updateDots(currentIndex);
-
-      // Reseta faixa de texto com o slide atual no 1º slot
-      heroTrack.style.transition = "none";
-      heroTrack.style.transform = "translateX(0%)";
-      renderTextSlide(nextSlide, slideCurrentText);
-      slideNextText.innerHTML = "";
-
-      // Imagem corrente assume posição final
-      currentImage.src = nextSlide.image;
-      currentImage.alt = nextSlide.subtitle;
-      currentImage.style.transform = "translate(-50%, -50%)";
-      currentImage.style.opacity = "1";
-
-      // Esconde a imagem auxiliar
-      nextImage.classList.remove("visible");
-      nextImage.style.opacity = "0";
-
-      isAnimating = false;
-    }, animationDuration);
-  }
-
-  function nextSlide() {
-    const next = (currentIndex + 1) % slides.length;
-    goToSlide(next);
-  }
-
-  function prevSlide() {
-    // Quando volta, ainda usamos a mesma direção de animação (para não complicar)
-    const prev = (currentIndex - 1 + slides.length) % slides.length;
-    goToSlide(prev);
-  }
-
-  // Setas desktop
-  if (btnNext) btnNext.addEventListener("click", nextSlide);
-  if (btnPrev) btnPrev.addEventListener("click", prevSlide);
-
-  // Parallax suave no logo (opcional)
-  function updateLogoParallax(event) {
-    const rect = heroLogo.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    let x = 0;
-    let y = 0;
-
-    if (event && event.type === "mousemove") {
-      const dx = (event.clientX - centerX) / rect.width;
-      const dy = (event.clientY - centerY) / rect.height;
-      x = dx * 10;
-      y = dy * 8;
-    }
-
-    const scrollFactor = window.scrollY * 0.03;
-    heroLogo.style.transform = `translate3d(${x}px, ${y - scrollFactor}px, 0)`;
-  }
-
-  window.addEventListener("mousemove", updateLogoParallax);
-  window.addEventListener("scroll", () => updateLogoParallax());
-
-  // Swipe para mobile
-  let startX = 0;
-  let isTouching = false;
-
-  heroSlider.addEventListener("touchstart", (e) => {
-    const touch = e.touches[0];
-    startX = touch.clientX;
-    isTouching = true;
-  }, { passive: true });
-
-  heroSlider.addEventListener("touchend", (e) => {
-    if (!isTouching) return;
-    const touch = e.changedTouches[0];
-    const deltaX = touch.clientX - startX;
-    const threshold = 50;
-
-    if (Math.abs(deltaX) > threshold) {
-      if (deltaX < 0) nextSlide();
-      else prevSlide();
-    }
-    isTouching = false;
-  }, { passive: true });
-
-  // Inicialização
-  function init() {
-    body.classList.add("is-loaded");
-    const first = slides[0];
-    setTheme(first.theme);
-    renderTextSlide(first, slideCurrentText);
-    renderMeta(first);
-    currentImage.src = first.image;
-    currentImage.alt = first.subtitle;
-    currentImage.classList.add("visible");
-    currentImage.style.opacity = "1";
-  }
-
-  window.addEventListener("load", init);
+  // nova imagem entra da esquerda
+  next.classList.add("enter");
+};
 </script>
+
 </body>
 </html>
