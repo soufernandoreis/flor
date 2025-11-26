@@ -504,12 +504,15 @@
   <!-- SCRIPT: REDemoinho de “suspiros” em Three.js -->
   <script>
     const canvas = document.getElementById('bg-canvas');
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: true
-    });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: true,
+  alpha: true
+});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+// deixa o fundo do canvas bem definido (escuro, mas visível)
+renderer.setClearColor(0x050816, 1);
 
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x050816, 0.38);
