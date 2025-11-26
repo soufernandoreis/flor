@@ -1,192 +1,141 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Debug Redemoinho Suspiros</title>
+<script>
+  console.log("Debug redemoinho — versão câmera afastada");
 
-  <!-- Three.js pelo mesmo CDN que você já usou (unpkg) -->
-  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  // ===== CONFIG BÁSICA =====
+  const canvas = document.getElementById('bg-canvas');
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: false
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x050816, 1); // fundo escuro
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+  const scene = new THREE.Scene();
 
-    html, body {
-      height: 100%;
-      overflow: hidden;
-    }
+  const camera = new THREE.PerspectiveCamera(
+    45,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100
+  );
+  camera.position.set(0, 0.4, 6.0);   // 🔹 afastamos bem a câmera
 
-    body {
-      background: #050816;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: #fff;
-    }
+  // ===== LUZ MAIS SUAVE =====
+  const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+  scene.add(ambient);
 
-    #bg-canvas {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  dirLight.position.set(2.5, 4, 3.5);
+  scene.add(dirLight);
 
-    .label {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      font-size: 12px;
-      opacity: 0.7;
-      z-index: 2;
-    }
-  </style>
-</head>
-<body>
-  <canvas id="bg-canvas"></canvas>
-  <div class="label">Debug redemoinho – se você não ver nada girando, me avisa.</div>
+  // ===== GRUPO DO REDEMOINHO =====
+  const swirlGroup = new THREE.Group();
+  scene.add(swirlGroup);
 
-  <script>
-    console.log("Iniciando script de debug…");
-    console.log("THREE disponível?", typeof THREE);
+  // 🔹 menor escala geral
+  swirlGroup.scale.set(1.4, 1.4, 1.4);
+  swirlGroup.rotation.x = -0.35;
 
-    if (typeof THREE === "undefined") {
-      alert("THREE não carregou. O CDN pode estar bloqueado.");
-    }
+  // ===== GEOMETRIA DO SUSPIRO (MENOR) =====
+  const suspiroGeo = new THREE.ConeGeometry(0.15, 0.45, 28); // 🔹 menor
+  suspiroGeo.translate(0, 0.225, 0);
+  suspiroGeo.rotateX(Math.PI);
 
-    // ===== CONFIG BÁSICA =====
-    const canvas = document.getElementById('bg-canvas');
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: false
+  const pastelPalette = [
+    new THREE.Color(0xfff4fb),
+    new THREE.Color(0xffc4e1),
+    new THREE.Color(0xfff0c2),
+    new THREE.Color(0xc9fff0),
+    new THREE.Color(0xded6ff)
+  ];
+
+  const suspiros = [];
+  const count = 90; // um pouco mais, mas menores
+
+  for (let i = 0; i < count; i++) {
+    const color = pastelPalette[Math.floor(Math.random() * pastelPalette.length)];
+
+    const material = new THREE.MeshStandardMaterial({
+      color,
+      roughness: 0.35,
+      metalness: 0.2,
+      emissive: color.clone().multiplyScalar(0.3),
+      emissiveIntensity: 0.6 // 🔹 menos "estourado"
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x050816, 1);
 
-    const scene = new THREE.Scene();
+    const mesh = new THREE.Mesh(suspiroGeo, material);
 
-    const camera = new THREE.PerspectiveCamera(
-      45,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      100
+    const t = i / count;
+    const turns = 3.0;
+    const angle = t * turns * Math.PI * 2;
+
+    const baseRadius = 0.3;
+    const radius = baseRadius + t * 0.7; // 🔹 vortex mais largo
+    const height = (t - 0.5) * 1.3;
+
+    mesh.position.set(
+      Math.cos(angle) * radius,
+      height,
+      Math.sin(angle) * radius
     );
-    camera.position.set(0, 0.3, 2.2);
 
-    // ===== LUZ =====
-    const ambient = new THREE.AmbientLight(0xffffff, 1.3);
-    scene.add(ambient);
+    mesh.position.x += (Math.random() - 0.5) * 0.04;
+    mesh.position.y += (Math.random() - 0.5) * 0.04;
+    mesh.position.z += (Math.random() - 0.5) * 0.04;
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.8);
-    dirLight.position.set(1.5, 3, 2.5);
-    scene.add(dirLight);
+    mesh.rotation.y = Math.random() * Math.PI * 2;
 
-    // ===== GRUPO DO REDEMOINHO =====
-    const swirlGroup = new THREE.Group();
-    scene.add(swirlGroup);
-
-    swirlGroup.scale.set(3.2, 3.2, 3.2);
-    swirlGroup.rotation.x = -0.35;
-
-    // ===== GEOMETRIA DO SUSPIRO =====
-    const suspiroGeo = new THREE.ConeGeometry(0.35, 0.9, 32);
-    suspiroGeo.translate(0, 0.45, 0);
-    suspiroGeo.rotateX(Math.PI);
-
-    const pastelPalette = [
-      new THREE.Color(0xfff4fb),
-      new THREE.Color(0xffc4e1),
-      new THREE.Color(0xfff0c2),
-      new THREE.Color(0xc9fff0),
-      new THREE.Color(0xded6ff)
-    ];
-
-    const suspiros = [];
-    const count = 70;
-
-    for (let i = 0; i < count; i++) {
-      const color = pastelPalette[Math.floor(Math.random() * pastelPalette.length)];
-
-      const material = new THREE.MeshStandardMaterial({
-        color,
-        roughness: 0.2,
-        metalness: 0.4,
-        emissive: color.clone().multiplyScalar(0.6),
-        emissiveIntensity: 1.4
-      });
-
-      const mesh = new THREE.Mesh(suspiroGeo, material);
-
-      const t = i / count;
-      const turns = 3.0;
-      const angle = t * turns * Math.PI * 2;
-
-      const baseRadius = 0.18;
-      const radius = baseRadius + t * 0.45;
-      const height = (t - 0.5) * 0.9;
-
-      mesh.position.set(
-        Math.cos(angle) * radius,
-        height,
-        Math.sin(angle) * radius
-      );
-
-      mesh.position.x += (Math.random() - 0.5) * 0.03;
-      mesh.position.y += (Math.random() - 0.5) * 0.03;
-      mesh.position.z += (Math.random() - 0.5) * 0.03;
-
-      mesh.rotation.y = Math.random() * Math.PI * 2;
-
-      swirlGroup.add(mesh);
-      suspiros.push({
-        mesh,
-        baseY: mesh.position.y,
-        offset: Math.random() * Math.PI * 2
-      });
-    }
-
-    function onResize() {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      renderer.setSize(width, height);
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-    }
-    window.addEventListener('resize', onResize);
-    onResize();
-
-    const mouse = new THREE.Vector2(0, 0);
-    window.addEventListener('mousemove', (e) => {
-      const x = (e.clientX / window.innerWidth) * 2 - 1;
-      const y = (e.clientY / window.innerHeight) * 2 - 1;
-      mouse.set(x, y);
+    swirlGroup.add(mesh);
+    suspiros.push({
+      mesh,
+      baseY: mesh.position.y,
+      offset: Math.random() * Math.PI * 2
     });
+  }
 
-    const clock = new THREE.Clock();
+  // ===== RESIZE =====
+  function onResize() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    renderer.setSize(width, height);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', onResize);
+  onResize();
 
-    function animate() {
-      requestAnimationFrame(animate);
-      const t = clock.getElapsedTime();
+  // ===== MOUSE =====
+  const mouse = new THREE.Vector2(0, 0);
+  window.addEventListener('mousemove', (e) => {
+    const x = (e.clientX / window.innerWidth) * 2 - 1;
+    const y = (e.clientY / window.innerHeight) * 2 - 1;
+    mouse.set(x, y);
+  });
 
-      swirlGroup.rotation.y = t * 0.22;
+  const clock = new THREE.Clock();
 
-      for (const s of suspiros) {
-        s.mesh.position.y = s.baseY + Math.sin(t * 1.3 + s.offset) * 0.12;
-      }
+  function animate() {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
 
-      const targetX = mouse.x * 0.18;
-      const targetY = 0.3 + mouse.y * 0.12;
-      camera.position.x += (targetX - camera.position.x) * 0.05;
-      camera.position.y += (targetY - camera.position.y) * 0.05;
-      camera.lookAt(0, 0, 0);
+    // rotação do redemoinho
+    swirlGroup.rotation.y = t * 0.22;
 
-      renderer.render(scene, camera);
+    // “respiração” leve
+    for (const s of suspiros) {
+      s.mesh.position.y = s.baseY + Math.sin(t * 1.4 + s.offset) * 0.09;
     }
 
-    animate();
-  </script>
-</body>
-</html>
+    // leve follow da câmera
+    const targetX = mouse.x * 0.25;
+    const targetY = 0.4 + mouse.y * 0.15;
+    camera.position.x += (targetX - camera.position.x) * 0.05;
+    camera.position.y += (targetY - camera.position.y) * 0.05;
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+</script>
