@@ -526,16 +526,19 @@ renderer.setClearColor(0x050816, 1);
     camera.position.set(0, 0.6, 5);
 
     // Luz suave
-    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
-    scene.add(ambient);
+    const ambient = new THREE.AmbientLight(0xffffff, 1.1);
+scene.add(ambient);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
-    dirLight.position.set(2, 4, 2);
-    scene.add(dirLight);
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.3);
+dirLight.position.set(1.5, 3.5, 2.5);
+scene.add(dirLight);
 
     // Grupo do redemoinho
     const swirlGroup = new THREE.Group();
     scene.add(swirlGroup);
+// deixa o redemoinho maior e levemente inclinado para a câmera
+swirlGroup.scale.set(1.9, 1.9, 1.9);
+swirlGroup.rotation.x = -0.25;
 
     // Geometria "suspiro" – cone mais gordinho
     // suspiro maior e mais “cheio”
@@ -556,22 +559,28 @@ suspiroGeo.rotateX(Math.PI);
 
     for (let i = 0; i < count; i++) {
       const color = pastelPalette[Math.floor(Math.random() * pastelPalette.length)];
-      const material = new THREE.MeshStandardMaterial({
-        color,
-        roughness: 0.4,
-        metalness: 0.1
-      });
+      // material mais brilhante e com leve glow
+const material = new THREE.MeshStandardMaterial({
+  color,
+  roughness: 0.25,
+  metalness: 0.35,
+  emissive: color.clone().multiplyScalar(0.35),
+  emissiveIntensity: 0.7
+});
+
 
       const mesh = new THREE.Mesh(suspiroGeo, material);
 
       // Parâmetros para formar o redemoinho em espiral
-      const t = i / count; // 0..1
-      const turns = 3.5;   // quantidade de voltas
-      const angle = t * turns * Math.PI * 2;
+      const t = i / count;
+const turns = 3.2;
+const angle = t * turns * Math.PI * 2;
 
-      const baseRadius = 0.6;
-      const radius = baseRadius + t * 1.1; // aumenta ao longo da espiral
-      const height = (t - 0.5) * 2.0;      // distribui em altura
+// redemoinho mais compacto e central
+const baseRadius = 0.3;
+const radius = baseRadius + t * 0.7;
+const height = (t - 0.5) * 1.2;
+
 
       mesh.position.set(
         Math.cos(angle) * radius,
@@ -580,9 +589,11 @@ suspiroGeo.rotateX(Math.PI);
       );
 
       // Pequena variação aleatória
-      mesh.position.x += (Math.random() - 0.5) * 0.18;
-      mesh.position.y += (Math.random() - 0.5) * 0.18;
-      mesh.position.z += (Math.random() - 0.5) * 0.18;
+      // menos jitter, para não “explodir” demais o shape
+mesh.position.x += (Math.random() - 0.5) * 0.06;
+mesh.position.y += (Math.random() - 0.5) * 0.06;
+mesh.position.z += (Math.random() - 0.5) * 0.06;
+
 
       // Inclina levemente cada suspiro
       mesh.rotation.y = Math.random() * Math.PI * 2;
