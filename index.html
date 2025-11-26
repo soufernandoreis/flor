@@ -2,642 +2,154 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
+  <title>Teste Redemoinho 3D</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Suspiro Digital — Experiências Doces em IA</title>
-  <meta name="description" content="Landing page com animação 3D em Three.js inspirada em suspiros coloridos em redemoinho." />
 
-  <!-- Three.js (CDN estável) -->
+  <!-- Three.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    :root {
-      color-scheme: dark;
-      --accent-pink:  #ff8ac9;
-      --accent-mint:  #8df3d4;
-      --accent-lilac: #c9a6ff;
-      --accent-yellow:#ffd98a;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
       height: 100%;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+      background: #050816;  /* fundo escuro */
     }
 
-    body {
-  /* fundo escuro simples pra destacar o 3D */
-  background-color: #050816;
-  color: #f7f7ff;
-  overflow-x: hidden;
-}
-
-    /* Canvas 3D ocupa o fundo todo */
-    #bg-canvas {
-      position: fixed;
-      inset: 0;
+    canvas {
+      display: block;
       width: 100%;
       height: 100%;
-      display: block;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 5;
-      backdrop-filter: blur(16px);
-      background: linear-gradient(to bottom, rgba(10,10,30,0.55), transparent);
-    }
-
-    .nav-inner {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 1rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-
-    .logo {
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      color: #2a0020;
-    }
-
-    .logo span {
-      color: var(--accent-pink);
-    }
-
-    nav ul {
-      list-style: none;
-      display: flex;
-      gap: 0.75rem;
-      font-size: 0.85rem;
-    }
-
-    nav a {
-      color: #2a0030;
-      text-decoration: none;
-      padding: 0.5rem 0.9rem;
-      border-radius: 999px;
-      border: 1px solid transparent;
-      transition: 0.18s ease;
-      white-space: nowrap;
-      background: rgba(255,255,255,0.4);
-    }
-
-    nav a:hover {
-      border-color: rgba(255,255,255,0.9);
-      background: #ffffff;
-      color: #2a0020;
-    }
-
-    main {
-      position: relative;
-      z-index: 2;
-      min-height: 100vh;
-    }
-
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-    }
-
-    .hero-inner {
-      width: 100%;
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 7rem 1.5rem 4rem;
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-      gap: 2.5rem;
-    }
-
-    @media (max-width: 820px) {
-      .hero-inner {
-        grid-template-columns: minmax(0, 1fr);
-        padding-top: 6rem;
-      }
-    }
-
-    .hero-copy {
-      max-width: 640px;
-    }
-
-    .hero-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      padding: 0.25rem 0.75rem;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.7);
-      border: 1px solid rgba(255,255,255,0.9);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.17em;
-      color: #8a114f;
-      margin-bottom: 1.25rem;
-    }
-
-    .hero-tag span.dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, #fff, var(--accent-pink));
-      box-shadow: 0 0 14px rgba(255,138,201,0.95);
-    }
-
-    h1 {
-      font-family: "Georgia", "Times New Roman", serif;
-      font-size: clamp(2.6rem, 4vw, 3.6rem);
-      line-height: 1.05;
-      margin-bottom: 0.75rem;
-      color: #2a0020;
-      text-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-
-    h1 span.accent {
-      background: linear-gradient(120deg, var(--accent-pink), var(--accent-mint), var(--accent-lilac));
-      -webkit-background-clip: text;
-      color: transparent;
-    }
-
-    .hero-sub {
-      font-size: 1rem;
-      line-height: 1.6;
-      color: #4b1540;
-      max-width: 32rem;
-      margin-bottom: 1.75rem;
-    }
-
-    .hero-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-bottom: 1.75rem;
-      font-size: 0.78rem;
-      color: #3b0030;
-    }
-
-    .hero-pills span {
-      padding: 0.3rem 0.7rem;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.6);
-      background: rgba(255,255,255,0.8);
-      backdrop-filter: blur(10px);
-    }
-
-    .hero-cta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      align-items: center;
-    }
-
-    .btn-primary,
-    .btn-ghost {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      padding: 0.85rem 1.6rem;
-      border-radius: 999px;
-      font-weight: 600;
-      font-size: 0.92rem;
-      text-decoration: none;
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: 0.18s ease;
-      white-space: nowrap;
-    }
-
-    .btn-primary {
-      background: radial-gradient(circle at 10% 0%, #fff 0, #ffe4ff 34%, #ff8ac9 100%);
-      color: #2a0020;
-      box-shadow: 0 16px 45px rgba(0,0,0,0.35);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-1px) scale(1.01);
-      box-shadow: 0 20px 55px rgba(0,0,0,0.45);
-      filter: saturate(1.05);
-    }
-
-    .btn-ghost {
-      border-color: rgba(255,255,255,0.8);
-      color: #2a0030;
-      background: rgba(255,255,255,0.65);
-    }
-
-    .btn-ghost:hover {
-      background: #ffffff;
-    }
-
-    .hero-side-note {
-      margin-top: 1.1rem;
-      font-size: 0.8rem;
-      color: #4b1540;
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
-    .hero-side-note span.dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: var(--accent-mint);
-      box-shadow:
-        0 0 8px rgba(141,243,212,0.95),
-        0 0 18px rgba(141,243,212,0.6);
-    }
-
-    /* Card lateral */
-    .hero-info-card {
-      align-self: center;
-      justify-self: center;
-      max-width: 360px;
-      width: 100%;
-      background: rgba(255,255,255,0.85);
-      border-radius: 24px;
-      padding: 1.7rem 1.5rem 1.8rem;
-      border: 1px solid rgba(255,255,255,0.9);
-      box-shadow: 0 22px 55px rgba(0,0,0,0.35);
-      color: #2a0020;
-    }
-
-    .hero-info-card h3 {
-      font-size: 1rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .hero-info-card p {
-      font-size: 0.86rem;
-      line-height: 1.5;
-      color: #4b1540;
-    }
-
-    .hero-info-pill {
-      margin-top: 1.2rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.4rem 0.7rem;
-      border-radius: 999px;
-      background: rgba(250,240,255,0.95);
-      border: 1px solid rgba(255,200,240,0.9);
-      font-size: 0.75rem;
-      color: #4b1540;
-    }
-
-    .hero-info-pill span.swirl {
-      width: 12px;
-      height: 12px;
-      border-radius: 999px;
-      background: conic-gradient(from 0deg, var(--accent-pink), var(--accent-yellow), var(--accent-mint), var(--accent-lilac), var(--accent-pink));
-      box-shadow: 0 0 14px rgba(255,138,201,0.9);
-    }
-
-    section.features {
-      position: relative;
-      z-index: 2;
-      padding: 0 1.5rem 4rem;
-    }
-
-    .features-inner {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 2rem 0 3rem;
-      border-top: 1px solid rgba(255,255,255,0.7);
-    }
-
-    .features-inner h2 {
-      color: #2a0020;
-    }
-
-    .features-inner p {
-      color: #4b1540;
-    }
-
-    .features-grid {
-      margin-top: 1.5rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .feature-card {
-      padding: 1rem 1rem 1.2rem;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.9);
-      background: rgba(255,255,255,0.9);
-      font-size: 0.9rem;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
-    }
-
-    .feature-card h4 {
-      font-size: 0.92rem;
-      margin-bottom: 0.4rem;
-      color: #2a0020;
-    }
-
-    .feature-card p {
-      font-size: 0.84rem;
-      color: #4b1540;
-      line-height: 1.5;
-    }
-
-    footer {
-      position: relative;
-      z-index: 2;
-      padding: 1.2rem 1.5rem 1.8rem;
-      border-top: 1px solid rgba(255,255,255,0.8);
-      font-size: 0.8rem;
-      color: #4b1540;
-      text-align: center;
-      background: rgba(255,255,255,0.7);
     }
   </style>
 </head>
 <body>
+  <canvas id="bg"></canvas>
 
-  <!-- Fundo 3D -->
-  <canvas id="bg-canvas"></canvas>
-
-  <!-- Navegação -->
-  <header>
-    <div class="nav-inner">
-      <div class="logo">SUSPIRO <span>DIGITAL</span></div>
-      <nav>
-        <ul>
-          <li><a href="#como-funciona">Como funciona</a></li>
-          <li><a href="#sabores">Sabores da experiência</a></li>
-          <li><a href="#cta">Começar</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
-
-  <main>
-    <!-- HERO -->
-    <section class="hero" id="topo">
-      <div class="hero-inner">
-        <div class="hero-copy">
-          <div class="hero-tag">
-            <span class="dot"></span>
-            Experiências digitais em redemoinho
-          </div>
-
-          <h1>
-            Um redemoinho de <span class="accent">suspiros</span> para encantar quem visita sua página.
-          </h1>
-
-          <p class="hero-sub">
-            Crie uma primeira impressão doce e memorável com uma landing page animada em 3D,
-            inspirada em suspiros coloridos que giram, flutuam e respondem ao movimento.
-          </p>
-
-          <div class="hero-pills">
-            <span>Three.js + WebGL</span>
-            <span>Animação 3D em tempo real</span>
-            <span>Design pensado para conversão</span>
-          </div>
-
-          <div class="hero-cta">
-            <a href="#cta" class="btn-primary">Quero uma landing assim</a>
-            <a href="#como-funciona" class="btn-ghost">Ver como funciona</a>
-          </div>
-
-          <div class="hero-side-note">
-            <span class="dot"></span>
-            Interativo, leve e pronto para integrar com automações em n8n.
-          </div>
-        </div>
-
-        <aside class="hero-info-card">
-          <h3>Sobre o redemoinho de suspiros</h3>
-          <p>
-            Cada “suspiro” é um pequeno objeto 3D com cores pastéis,
-            posicionado em espiral, girando em camadas para criar a sensação
-            de vortex suave. O movimento é orgânico, com uma leve respiração
-            que faz a cena parecer viva.
-          </p>
-
-          <div class="hero-info-pill">
-            <span class="swirl"></span>
-            Renderizado com Three.js, otimizado para fundo de landing page.
-          </div>
-        </aside>
-      </div>
-    </section>
-
-    <!-- Seção de exemplo -->
-    <section class="features" id="como-funciona">
-      <div class="features-inner">
-        <h2>Como essa experiência pode ser usada no seu projeto</h2>
-        <div class="features-grid">
-          <div class="feature-card">
-            <h4>Hero visual impactante</h4>
-            <p>
-              Use o redemoinho como fundo dinâmico do topo da sua landing,
-              mantendo o texto nítido por cima para focar em conversão.
-            </p>
-          </div>
-          <div class="feature-card">
-            <h4>Integração com IA e n8n</h4>
-            <p>
-              Conecte formulários, botões e eventos da página a fluxos de automação
-              usando n8n, Webhooks e agentes de IA.
-            </p>
-          </div>
-          <div class="feature-card" id="sabores">
-            <h4>Performance e leveza</h4>
-            <p>
-              Cena 3D otimizada com número controlado de objetos e animação baseada
-              em tempo, garantindo fluidez em navegadores modernos.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="features" id="cta">
-      <div class="features-inner">
-        <h2>Pronto para girar os suspiros a seu favor?</h2>
-        <p style="max-width: 520px; margin-top: 0.5rem;">
-          Você pode adaptar este layout para o seu produto, serviço ou campanha
-          específica. Os textos, cores e intensidade da animação podem ser
-          ajustados por código para combinar com a sua marca.
-        </p>
-
-        <div style="margin-top: 1.6rem; display: flex; flex-wrap: wrap; gap: 0.75rem;">
-          <a href="#topo" class="btn-primary">Voltar ao topo</a>
-          <a href="https://wa.me/5562982331156" class="btn-ghost">Falar sobre um projeto</a>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    © Suspiro Digital — Exemplo de landing page com redemoinho 3D em Three.js.
-  </footer>
-
-  <!-- SCRIPT: Redemoinho de “suspiros” -->
   <script>
-    <script>
-  // ====== CONFIG BÁSICA ======
-  const canvas = document.getElementById('bg-canvas');
-  const renderer = new THREE.WebGLRenderer({
-    canvas,
-    antialias: true,
-    alpha: false  // 🔴 agora o canvas NÃO é transparente
-  });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setClearColor(0x050816, 1); // 🔴 fundo bem escuro pra dar contraste
-
-  const scene = new THREE.Scene();
-
-  const camera = new THREE.PerspectiveCamera(
-    45,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    100
-  );
-  camera.position.set(0, 0.3, 2.2); // 🔴 bem perto
-
-  // ====== LUZ FORTE ======
-  const ambient = new THREE.AmbientLight(0xffffff, 1.2);
-  scene.add(ambient);
-
-  const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-  dirLight.position.set(1.5, 3, 2.5);
-  scene.add(dirLight);
-
-  // ====== GRUPO DO REDEMOINHO ======
-  const swirlGroup = new THREE.Group();
-  scene.add(swirlGroup);
-
-  // 🔴 Aumenta MUITO o tamanho geral
-  swirlGroup.scale.set(3.0, 3.0, 3.0);
-  swirlGroup.rotation.x = -0.35;
-
-  // ====== GEOMETRIA DO “SUSPIRO” (GRANDE) ======
-  const suspiroGeo = new THREE.ConeGeometry(0.35, 0.9, 32);
-  suspiroGeo.translate(0, 0.45, 0);
-  suspiroGeo.rotateX(Math.PI);
-
-  const pastelPalette = [
-    new THREE.Color(0xfff4fb), // quase branco rosado
-    new THREE.Color(0xffc4e1),
-    new THREE.Color(0xfff0c2),
-    new THREE.Color(0xc9fff0),
-    new THREE.Color(0xded6ff)
-  ];
-
-  const suspiros = [];
-  const count = 70; // 🔴 menos objetos, cada um mais visível
-
-  for (let i = 0; i < count; i++) {
-    const color = pastelPalette[Math.floor(Math.random() * pastelPalette.length)];
-
-    const material = new THREE.MeshStandardMaterial({
-      color,
-      roughness: 0.2,
-      metalness: 0.4,
-      emissive: color.clone().multiplyScalar(0.6),
-      emissiveIntensity: 1.2  // 🔴 MUITO brilho
+    const canvas = document.getElementById("bg");
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: false
     });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x050816, 1);
 
-    const mesh = new THREE.Mesh(suspiroGeo, material);
+    const scene = new THREE.Scene();
 
-    const t = i / count;
-    const turns = 3.0;
-    const angle = t * turns * Math.PI * 2;
-
-    const baseRadius = 0.18;
-    const radius = baseRadius + t * 0.45;
-    const height = (t - 0.5) * 0.9;
-
-    mesh.position.set(
-      Math.cos(angle) * radius,
-      height,
-      Math.sin(angle) * radius
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      100
     );
+    camera.position.set(0, 0.3, 2.2);
 
-    // quase nada de jitter, pra manter a forma clara
-    mesh.position.x += (Math.random() - 0.5) * 0.03;
-    mesh.position.y += (Math.random() - 0.5) * 0.03;
-    mesh.position.z += (Math.random() - 0.5) * 0.03;
+    const ambient = new THREE.AmbientLight(0xffffff, 1.2);
+    scene.add(ambient);
 
-    mesh.rotation.y = Math.random() * Math.PI * 2;
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    dirLight.position.set(1.5, 3, 2.5);
+    scene.add(dirLight);
 
-    swirlGroup.add(mesh);
-    suspiros.push({
-      mesh,
-      baseY: mesh.position.y,
-      offset: Math.random() * Math.PI * 2
-    });
-  }
+    const swirlGroup = new THREE.Group();
+    scene.add(swirlGroup);
+    swirlGroup.scale.set(3, 3, 3);
+    swirlGroup.rotation.x = -0.35;
 
-  // ====== RESPONSIVO ======
-  function onResize() {
-    const width  = window.innerWidth;
-    const height = window.innerHeight;
-    renderer.setSize(width, height);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-  }
-  window.addEventListener('resize', onResize);
-  onResize();
+    const suspiroGeo = new THREE.ConeGeometry(0.35, 0.9, 32);
+    suspiroGeo.translate(0, 0.45, 0);
+    suspiroGeo.rotateX(Math.PI);
 
-  // ====== INTERAÇÃO LEVE COM O MOUSE ======
-  const mouse = new THREE.Vector2(0, 0);
-  window.addEventListener('mousemove', (e) => {
-    const x = (e.clientX / window.innerWidth) * 2 - 1;
-    const y = (e.clientY / window.innerHeight) * 2 - 1;
-    mouse.set(x, y);
-  });
+    const pastelPalette = [
+      new THREE.Color(0xfff4fb),
+      new THREE.Color(0xffc4e1),
+      new THREE.Color(0xfff0c2),
+      new THREE.Color(0xc9fff0),
+      new THREE.Color(0xded6ff)
+    ];
 
-  const clock = new THREE.Clock();
+    const suspiros = [];
+    const count = 70;
 
-  function animate() {
-    requestAnimationFrame(animate);
-    const t = clock.getElapsedTime();
+    for (let i = 0; i < count; i++) {
+      const color = pastelPalette[Math.floor(Math.random() * pastelPalette.length)];
 
-    // rotação do redemoinho
-    swirlGroup.rotation.y = t * 0.22;
+      const material = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.2,
+        metalness: 0.4,
+        emissive: color.clone().multiplyScalar(0.6),
+        emissiveIntensity: 1.2
+      });
 
-    // “respiração” dos suspiros
-    for (const s of suspiros) {
-      s.mesh.position.y = s.baseY + Math.sin(t * 1.3 + s.offset) * 0.12;
+      const mesh = new THREE.Mesh(suspiroGeo, material);
+
+      const t = i / count;
+      const turns = 3.0;
+      const angle = t * turns * Math.PI * 2;
+
+      const baseRadius = 0.18;
+      const radius = baseRadius + t * 0.45;
+      const height = (t - 0.5) * 0.9;
+
+      mesh.position.set(
+        Math.cos(angle) * radius,
+        height,
+        Math.sin(angle) * radius
+      );
+
+      mesh.position.x += (Math.random() - 0.5) * 0.03;
+      mesh.position.y += (Math.random() - 0.5) * 0.03;
+      mesh.position.z += (Math.random() - 0.5) * 0.03;
+
+      swirlGroup.add(mesh);
+      suspiros.push({
+        mesh,
+        baseY: mesh.position.y,
+        offset: Math.random() * Math.PI * 2
+      });
     }
 
-    // leve follow da câmera
-    const targetX = mouse.x * 0.18;
-    const targetY = 0.3 + mouse.y * 0.12;
-    camera.position.x += (targetX - camera.position.x) * 0.05;
-    camera.position.y += (targetY - camera.position.y) * 0.05;
-    camera.lookAt(0, 0, 0);
+    function onResize() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener("resize", onResize);
+    onResize();
 
-    renderer.render(scene, camera);
-  }
+    const mouse = new THREE.Vector2(0, 0);
+    window.addEventListener("mousemove", (e) => {
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = (e.clientY / window.innerHeight) * 2 - 1;
+      mouse.set(x, y);
+    });
 
-  animate();
-</script>
+    const clock = new THREE.Clock();
 
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      swirlGroup.rotation.y = t * 0.22;
+
+      for (const s of suspiros) {
+        s.mesh.position.y = s.baseY + Math.sin(t * 1.3 + s.offset) * 0.12;
+      }
+
+      const targetX = mouse.x * 0.18;
+      const targetY = 0.3 + mouse.y * 0.12;
+      camera.position.x += (targetX - camera.position.x) * 0.05;
+      camera.position.y += (targetY - camera.position.y) * 0.05;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
+    }
 
     animate();
   </script>
