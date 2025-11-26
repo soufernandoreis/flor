@@ -1,794 +1,644 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Kitchen Vortex 3D – Landing Page</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root {
-      --bg: #0e0b09;
-      --bg-soft: #1a1410;
-      --accent: #ff7b3b;
-      --accent-soft: rgba(255, 123, 59, 0.1);
-      --text: #f7f3ed;
-      --muted: #c7bfb5;
-      --radius-xl: 28px;
-      --shadow-soft: 0 26px 60px rgba(0, 0, 0, 0.6);
-    }
+  <title>Suspiro Digital — Experiências Doces em IA</title>
+  <meta name="description" content="Landing page com animação 3D em Three.js inspirada em suspiros coloridos em redemoinho." />
 
+  <!-- Three.js -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+
+  <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
+    :root {
+      color-scheme: dark;
+      --bg: #050816;
+      --accent-pink: #ff8ac9;
+      --accent-mint: #8df3d4;
+      --accent-lilac: #c9a6ff;
+      --accent-yellow: #ffd98a;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #0b1022 0, #050816 45%, #02030a 100%);
+      color: #f7f7ff;
+    }
+
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-        "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #3d2b1f 0, #080605 55%);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Canvas 3D ocupa o fundo todo */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 0;
+    }
+
+    /* Leve gradiente para dar contraste no texto */
+    .gradient-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(255,255,255,0.12), transparent 55%),
+        radial-gradient(circle at 80% 0%, rgba(255,255,255,0.08), transparent 60%),
+        linear-gradient(to bottom, rgba(5,8,24,0.9), rgba(5,8,24,0.98) 35%, #050816 100%);
+      pointer-events: none;
     }
 
     header {
-      padding: 20px clamp(20px, 4vw, 60px);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 5;
+      backdrop-filter: blur(16px);
+      background: linear-gradient(to bottom, rgba(5,8,24,0.9), transparent);
+    }
+
+    .nav-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      backdrop-filter: blur(18px);
-      background: linear-gradient(
-        to bottom,
-        rgba(8, 5, 3, 0.9),
-        rgba(8, 5, 3, 0.3)
-      );
-      position: sticky;
-      top: 0;
-      z-index: 5;
+      gap: 1rem;
     }
 
     .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
       font-weight: 700;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.1em;
+      font-size: 0.9rem;
       text-transform: uppercase;
-      font-size: 14px;
+      color: #fdf2ff;
     }
 
-    .logo-mark {
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 20%, #ffe2b3 0, #ff7b3b 40%, #f44336 100%);
-      box-shadow: 0 0 18px rgba(255, 123, 59, 0.8);
+    .logo span {
+      color: var(--accent-pink);
     }
 
-    .pill {
-      padding: 6px 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      font-size: 11px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
+    nav ul {
+      list-style: none;
       display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--muted);
-      background: radial-gradient(circle at top left, #1f130c, #0b0705);
+      gap: 0.75rem;
+      font-size: 0.85rem;
     }
 
-    .pill-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #4ade80;
-      box-shadow: 0 0 14px rgba(74, 222, 128, 0.9);
+    nav a {
+      color: #d8d8ff;
+      text-decoration: none;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: 0.18s ease;
+      white-space: nowrap;
+    }
+
+    nav a:hover {
+      border-color: rgba(255,255,255,0.2);
+      background: rgba(8,11,30,0.9);
+      color: #ffffff;
     }
 
     main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: clamp(20px, 5vw, 60px);
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
     }
 
     .hero {
-      max-width: 1180px;
-      width: 100%;
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
-      gap: clamp(32px, 4vw, 60px);
+      min-height: 100vh;
+      display: flex;
       align-items: center;
     }
 
-    .hero-copy {
-      padding: clamp(18px, 3vw, 32px);
+    .hero-inner {
+      width: 100%;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 7rem 1.5rem 4rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 2.5rem;
     }
 
-    .eyebrow {
-      font-size: 13px;
+    @media (max-width: 820px) {
+      .hero-inner {
+        grid-template-columns: minmax(0, 1fr);
+        padding-top: 6rem;
+      }
+    }
+
+    .hero-copy {
+      max-width: 640px;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.17em;
-      color: var(--muted);
-      margin-bottom: 12px;
+      color: #fce7ff;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-tag span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--accent-pink));
+      box-shadow: 0 0 14px rgba(255,138,201,0.95);
     }
 
     h1 {
-      font-size: clamp(36px, 4vw, 48px);
+      font-family: "Georgia", "Times New Roman", serif;
+      font-size: clamp(2.6rem, 4vw, 3.6rem);
       line-height: 1.05;
-      margin-bottom: 18px;
+      margin-bottom: 0.75rem;
+      text-shadow: 0 18px 45px rgba(0,0,0,0.7);
     }
 
-    h1 span {
-      background: linear-gradient(120deg, #ffb454, #ff7b3b, #ff4d4d);
+    h1 span.accent {
+      background: linear-gradient(120deg, var(--accent-pink), var(--accent-mint), var(--accent-lilac));
       -webkit-background-clip: text;
       color: transparent;
     }
 
     .hero-sub {
-      color: var(--muted);
-      font-size: 15px;
+      font-size: 1rem;
       line-height: 1.6;
-      max-width: 460px;
-      margin-bottom: 22px;
+      color: #d5d5ff;
+      max-width: 32rem;
+      margin-bottom: 1.75rem;
     }
 
-    .hero-list {
-      list-style: none;
-      display: grid;
-      gap: 9px;
-      margin-bottom: 26px;
-      font-size: 14px;
-      color: var(--muted);
-    }
-
-    .hero-list li {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .hero-list li::before {
-      content: "";
-      width: 9px;
-      height: 9px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 20%, #ffe8c1, #ff7b3b);
-      box-shadow: 0 0 12px rgba(255, 123, 59, 0.8);
-      flex-shrink: 0;
-    }
-
-    .hero-actions {
+    .hero-pills {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 1.75rem;
+      font-size: 0.78rem;
+      color: #f8f5ff;
     }
 
-    .btn-primary {
-      border: none;
-      outline: none;
-      padding: 13px 24px;
+    .hero-pills span {
+      padding: 0.3rem 0.7rem;
       border-radius: 999px;
-      background: radial-gradient(circle at 20% 0, #ffe2b3, #ff7b3b);
-      color: #20110a;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
-      display: inline-flex;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
+      backdrop-filter: blur(12px);
+    }
+
+    .hero-cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
       align-items: center;
-      gap: 8px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.15s ease;
     }
 
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
-      filter: brightness(1.02);
-    }
-
+    .btn-primary,
     .btn-ghost {
-      padding: 11px 18px;
-      border-radius: 999px;
-      background: rgba(18, 11, 8, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--muted);
-      font-size: 13px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      backdrop-filter: blur(16px);
-      transition: border-color 0.2s ease, background 0.2s ease;
-    }
-
-    .btn-ghost span.icon {
-      width: 18px;
-      height: 18px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.24);
+      position: relative;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 10px;
+      gap: 0.5rem;
+      padding: 0.85rem 1.6rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: radial-gradient(circle at 10% 0%, #fff 0, #ffe4ff 34%, #ff8ac9 100%);
+      color: #2a0020;
+      box-shadow: 0 16px 45px rgba(0,0,0,0.6);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: 0 20px 55px rgba(0,0,0,0.75);
+      filter: saturate(1.05);
+    }
+
+    .btn-ghost {
+      border-color: rgba(255,255,255,0.25);
+      color: #f5f5ff;
+      background: rgba(6,8,24,0.9);
     }
 
     .btn-ghost:hover {
-      border-color: rgba(255, 255, 255, 0.3);
-      background: rgba(18, 11, 8, 0.95);
+      background: rgba(10,14,36,0.95);
     }
 
-    .hero-3d-shell {
-      position: relative;
-      padding: 10px;
+    .cta-caption {
+      font-size: 0.78rem;
+      color: #c9c9ff;
     }
 
-    .hero-3d-card {
-      position: relative;
-      border-radius: var(--radius-xl);
-      background: radial-gradient(circle at 10% 0, #2b1c11, #050302 60%);
-      box-shadow: var(--shadow-soft);
-      padding: 14px;
-      overflow: visible;
-    }
-
-    .hero-3d-glow {
-      position: absolute;
-      inset: auto 16% 8% 16%;
-      height: 90px;
-      background: radial-gradient(circle at 50% 0, rgba(255, 152, 68, 0.48), transparent 70%);
-      opacity: 0.95;
-      filter: blur(16px);
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .hero-3d-masked {
-      position: relative;
-      border-radius: 24px;
-      overflow: hidden;
-      background: radial-gradient(circle at 30% 0, #4a301f, #120a06 55%, #050202 92%);
-      padding: 10px;
-      /* Soft circular mask (CSS mask) */
-      -webkit-mask-image: radial-gradient(circle at 50% 45%, #000 58%, transparent 90%);
-      mask-image: radial-gradient(circle at 50% 45%, #000 58%, transparent 90%);
-      -webkit-mask-repeat: no-repeat;
-      mask-repeat: no-repeat;
-      -webkit-mask-position: center;
-      mask-position: center;
-    }
-
-    #vortex-canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-      border-radius: 20px;
-      filter: drop-shadow(0 22px 60px rgba(0, 0, 0, 0.9));
-    }
-
-    .hero-3d-label {
-      position: absolute;
-      left: 24px;
-      top: 20px;
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(4, 2, 1, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
+    .hero-side-note {
+      margin-top: 1.1rem;
+      font-size: 0.8rem;
+      color: #ffebfb;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 0.35rem;
+    }
+
+    .hero-side-note span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent-mint);
+      box-shadow:
+        0 0 8px rgba(141,243,212,0.95),
+        0 0 18px rgba(141,243,212,0.6);
+    }
+
+    /* Coluna direita: card com texto sobre o redemoinho */
+    .hero-info-card {
+      align-self: center;
+      justify-self: center;
+      max-width: 360px;
+      width: 100%;
+      background: radial-gradient(circle at top, rgba(255,255,255,0.16), rgba(16,16,40,0.98));
+      border-radius: 24px;
+      padding: 1.7rem 1.5rem 1.8rem;
+      border: 1px solid rgba(255,255,255,0.16);
+      box-shadow: 0 22px 55px rgba(0,0,0,0.75);
       backdrop-filter: blur(18px);
+      color: #fdfbff;
+    }
+
+    .hero-info-card h3 {
+      font-size: 1rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .hero-info-card p {
+      font-size: 0.86rem;
+      line-height: 1.5;
+      color: #f0e9ff;
+    }
+
+    .hero-info-pill {
+      margin-top: 1.2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.4rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(5,8,20,0.9);
+      border: 1px solid rgba(255,255,255,0.2);
+      font-size: 0.75rem;
+    }
+
+    .hero-info-pill span.swirl {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: conic-gradient(from 0deg, var(--accent-pink), var(--accent-yellow), var(--accent-mint), var(--accent-lilac), var(--accent-pink));
+      box-shadow: 0 0 14px rgba(255,138,201,0.9);
+    }
+
+    /* Seção subsequente (exemplo de blocos) */
+    section.features {
+      position: relative;
       z-index: 2;
+      padding: 0 1.5rem 4rem;
     }
 
-    .hero-3d-label-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #4ade80;
-      box-shadow: 0 0 12px rgba(74, 222, 128, 0.9);
+    .features-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 2rem 0 3rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
     }
 
-    .hero-3d-meta {
-      position: absolute;
-      right: 22px;
-      bottom: 20px;
-      padding: 10px 14px;
-      border-radius: 18px;
-      background: rgba(5, 4, 3, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 11px;
-      color: var(--muted);
-      backdrop-filter: blur(16px);
+    .features-grid {
+      margin-top: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      padding: 1rem 1rem 1.2rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.12), rgba(8,10,30,0.96));
+      font-size: 0.9rem;
+    }
+
+    .feature-card h4 {
+      font-size: 0.92rem;
+      margin-bottom: 0.4rem;
+      color: #ffeafc;
+    }
+
+    .feature-card p {
+      font-size: 0.84rem;
+      color: #ddd9ff;
+      line-height: 1.5;
+    }
+
+    footer {
+      position: relative;
       z-index: 2;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      text-align: right;
-      min-width: 150px;
-    }
-
-    .hero-3d-meta strong {
-      color: var(--text);
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .hero-3d-meta span.emph {
-      color: var(--accent);
-    }
-
-    @media (max-width: 900px) {
-      main {
-        padding-top: 10px;
-      }
-      header {
-        position: static;
-        background: none;
-        backdrop-filter: none;
-      }
-      .hero {
-        grid-template-columns: minmax(0, 1fr);
-      }
-      .hero-3d-shell {
-        order: -1;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .hero-3d-card {
-        padding: 10px;
-      }
-      .hero-3d-masked {
-        padding: 4px;
-      }
-      .hero-3d-label,
-      .hero-3d-meta {
-        transform: scale(0.92);
-        transform-origin: center;
-      }
+      padding: 1.2rem 1.5rem 1.8rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.8rem;
+      color: #b9b9e6;
+      text-align: center;
     }
   </style>
 </head>
 <body>
+
+  <!-- Fundo 3D -->
+  <canvas id="bg-canvas"></canvas>
+  <div class="gradient-overlay"></div>
+
+  <!-- Navegação -->
   <header>
-    <div class="logo">
-      <div class="logo-mark"></div>
-      <span>Kitchen Vortex</span>
-    </div>
-    <div class="pill">
-      <span class="pill-dot"></span>
-      REAL-TIME 3D VORTEX
+    <div class="nav-inner">
+      <div class="logo">SUSPIRO <span>DIGITAL</span></div>
+      <nav>
+        <ul>
+          <li><a href="#como-funciona">Como funciona</a></li>
+          <li><a href="#sabores">Sabores da experiência</a></li>
+          <li><a href="#cta">Começar</a></li>
+        </ul>
+      </nav>
     </div>
   </header>
 
   <main>
-    <section class="hero">
-      <div class="hero-copy">
-        <div class="eyebrow">Interactive Hero Section</div>
-        <h1>
-          Hyper-realistic <span>3D kitchen vortex</span> for your landing page.
-        </h1>
-        <p class="hero-sub">
-          A floating green chili at the center of a miniature kitchen tornado. Utensils, vegetables,
-          fruits, spices and droplets swirl in slow-motion loops, rendered in real-time 3D.
-        </p>
-        <ul class="hero-list">
-          <li>GLTF / GLB assets, optimized for web.</li>
-          <li>Looped 10–15s vortex animation with soft volumetric lighting.</li>
-          <li>Cursor-driven parallax and scroll-reactive turbulence speed.</li>
-        </ul>
-        <div class="hero-actions">
-          <button class="btn-primary">
-            View 3D vortex
-            <span>↻</span>
-          </button>
-          <button class="btn-ghost">
-            <span class="icon">▶</span>
-            Watch setup tutorial
-          </button>
+    <!-- HERO -->
+    <section class="hero" id="topo">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <div class="hero-tag">
+            <span class="dot"></span>
+            Experiências digitais em redemoinho
+          </div>
+
+          <h1>
+            Um redemoinho de <span class="accent">suspiros</span> para encantar quem visita sua página.
+          </h1>
+
+          <p class="hero-sub">
+            Crie uma primeira impressão doce e memorável com uma landing page animada em 3D,
+            inspirada em suspiros coloridos que giram, flutuam e respondem ao movimento.
+          </p>
+
+          <div class="hero-pills">
+            <span>Three.js + WebGL</span>
+            <span>Animação 3D em tempo real</span>
+            <span>Design pensado para conversão</span>
+          </div>
+
+          <div class="hero-cta">
+            <a href="#cta" class="btn-primary">Quero uma landing assim</a>
+            <a href="#como-funciona" class="btn-ghost">Ver como funciona</a>
+          </div>
+
+          <div class="hero-side-note">
+            <span class="dot"></span>
+            Interativo, leve e pronto para integrar com automações em n8n.
+          </div>
+        </div>
+
+        <aside class="hero-info-card">
+          <h3>Sobre o redemoinho de suspiros</h3>
+          <p>
+            Cada “suspiro” é um pequeno objeto 3D com cores pastéis,
+            posicionado em espiral, girando em camadas para criar a sensação
+            de vortex suave. O movimento é orgânico, com uma leve respiração
+            que faz a cena parecer viva.
+          </p>
+
+          <div class="hero-info-pill">
+            <span class="swirl"></span>
+            Renderizado com Three.js, otimizado para fundo de landing page.
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Seção de exemplo -->
+    <section class="features" id="como-funciona">
+      <div class="features-inner">
+        <h2>Como essa experiência pode ser usada no seu projeto</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <h4>Hero visual impactante</h4>
+            <p>
+              Use o redemoinho como fundo dinâmico do topo da sua landing,
+              mantendo o texto nítido por cima para focar em conversão.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h4>Integração com IA e n8n</h4>
+            <p>
+              Conecte formulários, botões e eventos da página a fluxos de automação
+              usando n8n, Webhooks e agentes de IA.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h4>Performance e leveza</h4>
+            <p>
+              Cena 3D otimizada com número controlado de objetos e animação baseada
+              em tempo, garantindo fluidez em navegadores modernos.
+            </p>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div class="hero-3d-shell">
-        <div class="hero-3d-card">
-          <div class="hero-3d-label">
-            <span class="hero-3d-label-dot"></span>
-            live gltf preview
-          </div>
-          <div class="hero-3d-masked">
-            <!-- Three.js canvas -->
-            <canvas id="vortex-canvas"></canvas>
-          </div>
-          <div class="hero-3d-meta">
-            <strong>VORTEX LOOP</strong>
-            <span>3×4 camera, cinematic depth</span>
-            <span class="emph">Hover &amp; scroll to interact</span>
-          </div>
-          <div class="hero-3d-glow"></div>
+    <section class="features" id="cta">
+      <div class="features-inner">
+        <h2>Pronto para girar os suspiros a seu favor?</h2>
+        <p style="max-width: 520px; margin-top: 0.5rem;">
+          Você pode adaptar este layout para o seu produto, serviço ou campanha
+          específica. Os textos, cores e intensidade da animação podem ser
+          ajustados por código para combinar com a sua marca.
+        </p>
+
+        <div style="margin-top: 1.6rem; display: flex; flex-wrap: wrap; gap: 0.75rem;">
+          <a href="#topo" class="btn-primary">Voltar ao topo</a>
+          <a href="https://wa.me/5562982331156" class="btn-ghost">Falar sobre um projeto</a>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- THREE.js scene (module script) -->
-  <script type="module">
-    import * as THREE from "https://unpkg.com/three@0.161.0/build/three.module.js";
-    import { GLTFLoader } from "https://unpkg.com/three@0.161.0/examples/jsm/loaders/GLTFLoader.js";
+  <footer>
+    © Suspiro Digital — Exemplo de landing page com redemoinho 3D em Three.js.
+  </footer>
 
-    const canvas = document.getElementById("vortex-canvas");
+  <!-- SCRIPT: REDemoinho de “suspiros” em Three.js -->
+  <script>
+    const canvas = document.getElementById('bg-canvas');
     const renderer = new THREE.WebGLRenderer({
+      canvas,
       antialias: true,
-      alpha: true,
-      canvas
+      alpha: true
     });
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.physicallyCorrectLights = true;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     const scene = new THREE.Scene();
-    scene.background = null;
+    scene.fog = new THREE.FogExp2(0x050816, 0.38);
 
-    // Depth-rich fog for atmosphere
-    scene.fog = new THREE.FogExp2(0x0a0503, 0.12);
+    const camera = new THREE.PerspectiveCamera(
+      42,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      100
+    );
+    camera.position.set(0, 0.6, 5);
 
-    // Camera setup – locked roughly in 3x4 framing
-    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-    camera.position.set(0, 1.1, 5);
-    camera.lookAt(0, 0.4, 0);
+    // Luz suave
+    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambient);
 
-    function resizeRenderer() {
-      const { clientWidth, clientHeight } = canvas.parentElement;
-      renderer.setSize(clientWidth, clientHeight, false);
-      camera.aspect = clientWidth / clientHeight;
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    dirLight.position.set(2, 4, 2);
+    scene.add(dirLight);
+
+    // Grupo do redemoinho
+    const swirlGroup = new THREE.Group();
+    scene.add(swirlGroup);
+
+    // Geometria "suspiro" – cone mais gordinho
+    const suspiroGeo = new THREE.ConeGeometry(0.18, 0.4, 24);
+    suspiroGeo.translate(0, 0.2, 0); // base no "chão"
+    suspiroGeo.rotateX(Math.PI);     // ponta para cima
+
+    const pastelPalette = [
+      new THREE.Color(0xffb6df), // rosa
+      new THREE.Color(0xffe3a1), // amarelo
+      new THREE.Color(0xbfffe2), // verde-mint
+      new THREE.Color(0xcab6ff), // lilás
+      new THREE.Color(0xffffff)  // branco
+    ];
+
+    const suspiros = [];
+    const count = 140;
+
+    for (let i = 0; i < count; i++) {
+      const color = pastelPalette[Math.floor(Math.random() * pastelPalette.length)];
+      const material = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.4,
+        metalness: 0.1
+      });
+
+      const mesh = new THREE.Mesh(suspiroGeo, material);
+
+      // Parâmetros para formar o redemoinho em espiral
+      const t = i / count; // 0..1
+      const turns = 3.5;   // quantidade de voltas
+      const angle = t * turns * Math.PI * 2;
+
+      const baseRadius = 0.6;
+      const radius = baseRadius + t * 1.1; // aumenta ao longo da espiral
+      const height = (t - 0.5) * 2.0;      // distribui em altura
+
+      mesh.position.set(
+        Math.cos(angle) * radius,
+        height,
+        Math.sin(angle) * radius
+      );
+
+      // Pequena variação aleatória
+      mesh.position.x += (Math.random() - 0.5) * 0.18;
+      mesh.position.y += (Math.random() - 0.5) * 0.18;
+      mesh.position.z += (Math.random() - 0.5) * 0.18;
+
+      // Inclina levemente cada suspiro
+      mesh.rotation.y = Math.random() * Math.PI * 2;
+      mesh.rotation.x = (Math.random() - 0.5) * 0.4;
+      mesh.rotation.z = (Math.random() - 0.5) * 0.4;
+
+      swirlGroup.add(mesh);
+      suspiros.push({
+        mesh,
+        baseY: mesh.position.y,
+        offset: Math.random() * Math.PI * 2,
+        radius,
+        angle
+      });
+    }
+
+    // Responsividade
+    function onResize() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
       camera.updateProjectionMatrix();
     }
-    window.addEventListener("resize", resizeRenderer);
-    resizeRenderer();
+    window.addEventListener('resize', onResize);
+    onResize();
 
-    // ---------- Lighting ----------
-    const keyLight = new THREE.DirectionalLight(0xfff2dc, 3.2);
-    keyLight.position.set(-3, 6, 4);
-    keyLight.castShadow = true;
-    keyLight.shadow.mapSize.set(2048, 2048);
-    scene.add(keyLight);
-
-    const rimLight = new THREE.DirectionalLight(0xff8450, 2.0);
-    rimLight.position.set(3, 2, -2);
-    scene.add(rimLight);
-
-    const fillLight = new THREE.AmbientLight(0xffd4a4, 1.0);
-    scene.add(fillLight);
-
-    // ---------- Floor / cutting board ----------
-    const boardGroup = new THREE.Group();
-    scene.add(boardGroup);
-
-    const boardGeom = new THREE.BoxGeometry(3.2, 0.18, 2.2);
-    const boardMat = new THREE.MeshStandardMaterial({
-      color: 0x7a5233,
-      roughness: 0.6,
-      metalness: 0.05
-    });
-    const boardMesh = new THREE.Mesh(boardGeom, boardMat);
-    boardMesh.position.set(0, -1.1, 0);
-    boardMesh.receiveShadow = true;
-    boardMesh.castShadow = true;
-    boardGroup.add(boardMesh);
-
-    const floorGeom = new THREE.PlaneGeometry(18, 18);
-    const floorMat = new THREE.MeshStandardMaterial({
-      color: 0x2b1a12,
-      roughness: 0.9,
-      metalness: 0.0
-    });
-    const floorMesh = new THREE.Mesh(floorGeom, floorMat);
-    floorMesh.rotation.x = -Math.PI / 2;
-    floorMesh.position.y = -1.2;
-    floorMesh.receiveShadow = true;
-    scene.add(floorMesh);
-
-    // ---------- Central chili pepper (placeholder procedural mesh) ----------
-    const chiliGroup = new THREE.Group();
-    scene.add(chiliGroup);
-
-    const chiliMat = new THREE.MeshPhysicalMaterial({
-      color: 0x45aa2b,
-      roughness: 0.22,
-      metalness: 0.05,
-      clearcoat: 0.5,
-      clearcoatRoughness: 0.25
+    // Interação leve com o mouse
+    const mouse = new THREE.Vector2(0, 0);
+    window.addEventListener('mousemove', (e) => {
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = (e.clientY / window.innerHeight) * 2 - 1;
+      mouse.set(x, y);
     });
 
-    const chiliBody = new THREE.Mesh(
-      new THREE.CapsuleGeometry(0.21, 1.9, 16, 32),
-      chiliMat
-    );
-    chiliBody.castShadow = true;
-    chiliBody.position.set(0, 0.4, 0);
-    chiliBody.rotation.z = 0.3;
-    chiliGroup.add(chiliBody);
-
-    const stemMat = new THREE.MeshStandardMaterial({
-      color: 0x1f4f17,
-      roughness: 0.5
-    });
-    const stem = new THREE.Mesh(
-      new THREE.ConeGeometry(0.09, 0.32, 12),
-      stemMat
-    );
-    stem.position.set(0.15, 1.4, 0);
-    stem.rotation.z = 1.7;
-    stem.castShadow = true;
-    chiliGroup.add(stem);
-
-    // ---------- Vortex participants (vegetables, utensils, particles) ----------
-    const vortexGroup = new THREE.Group();
-    scene.add(vortexGroup);
-
-    const orbitItems = [];
-
-    function createOrbitItem(opts) {
-      const {
-        radius,
-        height,
-        speed,
-        kind,
-        phase,
-        color,
-        scale,
-        tilt = 0
-      } = opts;
-
-      let mesh;
-
-      switch (kind) {
-        case "utensil":
-          // simple stylised spoon / fork body
-          const handleGeom = new THREE.CylinderGeometry(0.03, 0.03, 0.9, 16);
-          const headGeom = new THREE.SphereGeometry(0.12, 16, 16);
-          const metalMat = new THREE.MeshStandardMaterial({
-            color: 0xd0d0d0,
-            roughness: 0.15,
-            metalness: 0.85
-          });
-
-          const utensil = new THREE.Group();
-          const handle = new THREE.Mesh(handleGeom, metalMat);
-          const head = new THREE.Mesh(headGeom, metalMat);
-          handle.position.y = 0.3;
-          head.position.y = 0.9;
-          utensil.add(handle);
-          utensil.add(head);
-          utensil.scale.setScalar(scale);
-          mesh = utensil;
-          break;
-
-        case "veg":
-          const vegGeom = new THREE.SphereGeometry(0.18, 24, 24);
-          const vegMat = new THREE.MeshStandardMaterial({
-            color,
-            roughness: 0.35,
-            metalness: 0.05
-          });
-          mesh = new THREE.Mesh(vegGeom, vegMat);
-          mesh.scale.setScalar(scale);
-          break;
-
-        case "slice":
-          const sliceGeom = new THREE.CylinderGeometry(0.22, 0.22, 0.08, 32);
-          const sliceMat = new THREE.MeshStandardMaterial({
-            color,
-            roughness: 0.4
-          });
-          mesh = new THREE.Mesh(sliceGeom, sliceMat);
-          mesh.rotation.x = Math.PI / 2;
-          mesh.scale.multiplyScalar(scale);
-          break;
-
-        default:
-          const particleGeom = new THREE.SphereGeometry(0.05, 10, 10);
-          const particleMat = new THREE.MeshPhysicalMaterial({
-            color,
-            roughness: 0.1,
-            transmission: 0.7,
-            thickness: 0.3,
-            metalness: 0
-          });
-          mesh = new THREE.Mesh(particleGeom, particleMat);
-      }
-
-      mesh.castShadow = true;
-      vortexGroup.add(mesh);
-      orbitItems.push({
-        mesh,
-        radius,
-        height,
-        speed,
-        phase,
-        kind,
-        tilt
-      });
-    }
-
-    // vegetables
-    createOrbitItem({
-      radius: 1.2,
-      height: 0.3,
-      speed: 0.55,
-      kind: "veg",
-      color: 0xff8242,
-      phase: 0
-    });
-    createOrbitItem({
-      radius: 1.45,
-      height: 0.1,
-      speed: 0.42,
-      kind: "veg",
-      color: 0xff4338,
-      phase: Math.PI * 0.6
-    });
-    createOrbitItem({
-      radius: 1.65,
-      height: 0.65,
-      speed: 0.3,
-      kind: "veg",
-      color: 0xfacc15,
-      phase: Math.PI * 1.3
-    });
-
-    // slices
-    createOrbitItem({
-      radius: 1.4,
-      height: -0.1,
-      speed: 0.45,
-      kind: "slice",
-      color: 0xeab308,
-      scale: 0.8,
-      phase: Math.PI * 0.2,
-      tilt: 0.4
-    });
-    createOrbitItem({
-      radius: 1.8,
-      height: -0.25,
-      speed: 0.33,
-      kind: "slice",
-      color: 0xa855f7,
-      scale: 0.7,
-      phase: Math.PI * 0.9,
-      tilt: -0.6
-    });
-
-    // utensils
-    createOrbitItem({
-      radius: 1.9,
-      height: 0.7,
-      speed: 0.27,
-      kind: "utensil",
-      scale: 1.0,
-      phase: 0
-    });
-    createOrbitItem({
-      radius: 2.1,
-      height: 0.0,
-      speed: -0.32,
-      kind: "utensil",
-      scale: 0.9,
-      phase: Math.PI * 0.7
-    });
-
-    // spice droplets
-    for (let i = 0; i < 40; i++) {
-      createOrbitItem({
-        radius: 1.0 + Math.random() * 1.4,
-        height: -0.2 + Math.random() * 1.0,
-        speed: 0.9 + Math.random() * 0.7,
-        kind: "particle",
-        color: Math.random() > 0.5 ? 0xffb454 : 0xf97316,
-        phase: Math.random() * Math.PI * 2,
-        scale: 1
-      });
-    }
-
-    // ---------- Optional: load external GLB/GLTF assets ----------
-    // Replace 'path/to/model.glb' with your own GLB or GLTF.
-    // This demo uses procedural placeholders, but the loader is ready.
-    const loader = new GLTFLoader();
-    // Example:
-    // loader.load("models/chili.glb", (gltf) => {
-    //   gltf.scene.traverse((obj) => {
-    //     if (obj.isMesh) {
-    //       obj.castShadow = true;
-    //       obj.receiveShadow = true;
-    //     }
-    //   });
-    //   gltf.scene.scale.setScalar(1.0);
-    //   gltf.scene.position.set(0, 0.4, 0);
-    //   scene.remove(chiliGroup);
-    //   scene.add(gltf.scene);
-    // });
-
-    // ---------- Interaction state ----------
-    let mouseX = 0;
-    let mouseY = 0;
-    let scrollStrength = 0;
-
-    window.addEventListener("mousemove", (event) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = (event.clientX - rect.left) / rect.width;
-      const y = (event.clientY - rect.top) / rect.height;
-      mouseX = (x - 0.5) * 2; // -1..1
-      mouseY = (y - 0.5) * 2;
-    });
-
-    window.addEventListener("scroll", () => {
-      const max = 400;
-      scrollStrength = Math.min(window.scrollY / max, 1);
-    });
-
-    // ---------- Animation loop ----------
     const clock = new THREE.Clock();
 
     function animate() {
       requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
 
-      const baseSpeed = 0.6;
-      const speedBoost = 0.4 * scrollStrength;
-      const turbulence = 0.08 + 0.05 * scrollStrength;
+      // redemoinho girando lentamente
+      swirlGroup.rotation.y = t * 0.18;
 
-      // Camera subtle movement based on mouse
-      camera.position.x = mouseX * 0.6;
-      camera.position.y = 1.1 + mouseY * 0.4;
-      camera.lookAt(0, 0.4, 0);
+      // movimento orgânico dos suspiros (subindo/descendo levemente)
+      for (const s of suspiros) {
+        s.mesh.position.y =
+          s.baseY + Math.sin(t * 1.2 + s.offset) * 0.12;
+      }
 
-      // Chili floating
-      chiliGroup.position.y = Math.sin(t * 1.5) * 0.08;
-      chiliGroup.rotation.z = 0.3 + Math.sin(t * 0.7) * 0.12;
-      chiliGroup.rotation.y = Math.sin(t * 0.4) * 0.2;
-
-      // Vortex items
-      orbitItems.forEach((item, i) => {
-        const { mesh, radius, height, speed, phase, tilt, kind } = item;
-        const dirSpeed = baseSpeed * speed + speedBoost * speed;
-        const angle = t * dirSpeed + phase;
-
-        const spiralOffset = turbulence * i * 0.004;
-
-        const y =
-          height +
-          Math.sin(t * 1.2 + i * 0.3) * 0.15 +
-          spiralOffset * (kind === "particle" ? 2 : 1);
-
-        mesh.position.set(
-          Math.cos(angle) * radius,
-          y,
-          Math.sin(angle) * radius * 0.85
-        );
-
-        // Spin & face the center
-        mesh.lookAt(0, 0.3, 0);
-        mesh.rotation.z += tilt || 0;
-        mesh.rotation.y += 0.02;
-
-        if (kind === "particle") {
-          mesh.rotation.x += 0.04;
-        }
-      });
+      // câmera responde levemente ao mouse
+      const targetX = mouse.x * 0.15;
+      const targetY = 0.6 + mouse.y * 0.12;
+      camera.position.x += (targetX - camera.position.x) * 0.04;
+      camera.position.y += (targetY - camera.position.y) * 0.04;
+      camera.lookAt(0, 0, 0);
 
       renderer.render(scene, camera);
     }
+
     animate();
   </script>
 </body>
