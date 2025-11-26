@@ -538,9 +538,10 @@ renderer.setClearColor(0x050816, 1);
     scene.add(swirlGroup);
 
     // Geometria "suspiro" – cone mais gordinho
-    const suspiroGeo = new THREE.ConeGeometry(0.18, 0.4, 24);
-    suspiroGeo.translate(0, 0.2, 0); // base no "chão"
-    suspiroGeo.rotateX(Math.PI);     // ponta para cima
+    // suspiro maior e mais “cheio”
+const suspiroGeo = new THREE.ConeGeometry(0.26, 0.6, 32);
+suspiroGeo.translate(0, 0.3, 0);
+suspiroGeo.rotateX(Math.PI);
 
     const pastelPalette = [
       new THREE.Color(0xffb6df), // rosa
