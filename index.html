@@ -46,13 +46,99 @@
 </head>
 <body>
   <canvas id="bg-canvas"></canvas>
-  <div class="label">Debug redemoinho v2 — se aparecer cubo, você não está neste arquivo 🙂</div>
+  <div class="label">Debug redemoinho – suspiro branco realista</div>
 
   <script>
-    console.log("Debug redemoinho v2 iniciado");
+    console.log("Debug redemoinho — suspiro realista branco");
     console.log("THREE disponível?", typeof THREE);
 
-    // ===== CONFIG BÁSICA =====
+    // ========= FUNÇÃO: cria geometria de SUSPIRO REALISTA =========
+    function createSuspiroGeometry() {
+      const pts = [];
+      const height = 1.0;
+
+      // perfil radial (raio x altura) do suspiro
+      const steps = 32;
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;         // 0 base, 1 topo
+        const y = t * height;
+
+        // base gordinha e topo afinando
+        let r = 0.55 * Math.pow(1 - t, 0.25); // barriga
+        r += 0.06 * (1 - t);                  // base mais marcada
+
+        // leve afunilamento extra perto do topo
+        if (t > 0.7) {
+          r *= 0.6 + 0.4 * (1 - t);
+        }
+
+        // evita raio zero total antes da ponta
+        r = Math.max(r, 0.05);
+
+        pts.push(new THREE.Vector2(r, y));
+      }
+
+      // ponta fina
+      pts.push(new THREE.Vector2(0.0, height * 1.08));
+
+      // revolve o perfil para formar o suspiro
+      const suspiroGeo = new THREE.LatheGeometry(pts, 64);
+      suspiroGeo.rotateX(Math.PI); // ponta para baixo
+
+      // aplicamos ranhuras + torção
+      suspiroGeo.computeBoundingBox();
+      const bb = suspiroGeo.boundingBox;
+      const minY = bb.min.y;
+      const maxY = bb.max.y;
+      const hY = maxY - minY;
+
+      const pos = suspiroGeo.attributes.position;
+      const v = new THREE.Vector3();
+
+      const ridgesCount = 14;   // número de “gomos”
+      const ridgesStrength = 0.12; // intensidade das ranhuras
+      const twistAmount = 0.8;  // torção da parte de cima
+
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i);
+
+        const angle = Math.atan2(v.z, v.x);
+        const radius = Math.sqrt(v.x * v.x + v.z * v.z);
+
+        // ranhuras em volta
+        const ridgeFactor = 1.0 + ridgesStrength * Math.sin(ridgesCount * angle);
+        let newRadius = radius * ridgeFactor;
+
+        // torção mais forte perto da ponta
+        const t = (v.y - minY) / hY;  // 0 base, 1 topo
+        const twist = twistAmount * t;
+        const ca = Math.cos(twist);
+        const sa = Math.sin(twist);
+
+        // aplica raio modificado
+        let x = Math.cos(angle) * newRadius;
+        let z = Math.sin(angle) * newRadius;
+
+        // aplica torção (rotação em Y)
+        const rx = x * ca - z * sa;
+        const rz = x * sa + z * ca;
+
+        v.x = rx;
+        v.z = rz;
+
+        pos.setXYZ(i, v.x, v.y, v.z);
+      }
+
+      pos.needsUpdate = true;
+      suspiroGeo.computeVertexNormals();
+
+      // centraliza um pouco verticalmente
+      suspiroGeo.translate(0, -height * 0.3, 0);
+
+      return suspiroGeo;
+    }
+
+    // ========= CONFIG BÁSICA =========
     const canvas = document.getElementById('bg-canvas');
     const renderer = new THREE.WebGLRenderer({
       canvas,
@@ -70,47 +156,48 @@
       0.1,
       100
     );
-    camera.position.set(0, 0.5, 7); // afastado pra ver o redemoinho inteiro
+    camera.position.set(0, 0.5, 7); // afastado para ver o redemoinho inteiro
 
-    // ===== LUZ =====
-    const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+    // ========= LUZ =========
+    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambient);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.3);
     dirLight.position.set(3, 5, 4);
     scene.add(dirLight);
 
-    // ===== GRUPO DO REDEMOINHO =====
+    // luz de preenchimento suave
+    const fillLight = new THREE.DirectionalLight(0xfff5e8, 0.6);
+    fillLight.position.set(-2, -1, -3);
+    scene.add(fillLight);
+
+    // ========= GRUPO DO REDEMOINHO =========
     const swirlGroup = new THREE.Group();
     scene.add(swirlGroup);
     swirlGroup.rotation.x = -0.4;
 
-    // ===== GEOMETRIA DO SUSPIRO =====
-    const suspiroGeo = new THREE.ConeGeometry(0.18, 0.6, 32);
-    suspiroGeo.translate(0, 0.3, 0);
-    suspiroGeo.rotateX(Math.PI);
+    // ========= GEOMETRIA E MATERIAL DO SUSPIRO =========
+    const suspiroGeo = createSuspiroGeometry();
 
-    const pastelPalette = [
-      new THREE.Color(0xfff4fb),
-      new THREE.Color(0xffc4e1),
-      new THREE.Color(0xfff0c2),
-      new THREE.Color(0xc9fff0),
-      new THREE.Color(0xded6ff)
-    ];
+    const suspiroMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xfdf6f0,          // branco creme
+      roughness: 0.45,
+      metalness: 0.0,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.9,
+      sheen: 0.4,
+      sheenColor: new THREE.Color(0xffffff)
+    });
 
     const suspiros = [];
     const count = 90;
 
     for (let i = 0; i < count; i++) {
-      const color = pastelPalette[Math.floor(Math.random() * pastelPalette.length)];
+      const mesh = new THREE.Mesh(suspiroGeo, suspiroMaterial);
 
-      const material = new THREE.MeshPhongMaterial({
-        color,
-        shininess: 80,
-        specular: 0xffffff
-      });
-
-      const mesh = new THREE.Mesh(suspiroGeo, material);
+      // escala geral do suspiro (ajuste fino)
+      const scale = 0.6 + Math.random() * 0.15;
+      mesh.scale.set(scale, scale, scale);
 
       const t = i / count;
       const turns = 3.0;
@@ -140,7 +227,7 @@
       });
     }
 
-    // ===== RESIZE =====
+    // ========= RESIZE =========
     function onResize() {
       const width = window.innerWidth;
       const height = window.innerHeight;
@@ -151,7 +238,7 @@
     window.addEventListener('resize', onResize);
     onResize();
 
-    // ===== MOUSE =====
+    // ========= MOUSE =========
     const mouse = new THREE.Vector2(0, 0);
     window.addEventListener('mousemove', (e) => {
       const x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -165,14 +252,17 @@
       requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
 
+      // rotação do redemoinho
       swirlGroup.rotation.y = t * 0.22;
 
+      // “respiração” leve dos suspiros
       for (const s of suspiros) {
         s.mesh.position.y = s.baseY + Math.sin(t * 1.3 + s.offset) * 0.1;
       }
 
+      // câmera seguindo levemente o mouse
       const targetX = mouse.x * 0.25;
-      const targetY = 0.4 + mouse.y * 0.15;
+      const targetY = 0.5 + mouse.y * 0.15;
       camera.position.x += (targetX - camera.position.x) * 0.05;
       camera.position.y += (targetY - camera.position.y) * 0.05;
       camera.lookAt(0, 0, 0);
