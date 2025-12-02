@@ -1,276 +1,277 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Debug Redemoinho Suspiros</title>
+// main.js
+import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 
-  <!-- Three.js (mesmo CDN que você já usa) -->
-  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+const canvas = document.getElementById("hero-canvas");
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+// Cena, câmera, renderer
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x020818, 0.18);
 
-    html, body {
-      height: 100%;
-      overflow: hidden;
-    }
+const camera = new THREE.PerspectiveCamera(
+  45,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  100
+);
+camera.position.set(0, 0, 7);
 
-    body {
-      background: #050816; /* fundo escuro fixo */
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: #fff;
-    }
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: true,
+});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0x020818, 1);
 
-    #bg-canvas {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
+// ---------- NÚCLEO INTERNO ----------
+const coreGeo = new THREE.SphereGeometry(1.4, 64, 64);
+const coreMat = new THREE.MeshStandardMaterial({
+  color: 0xff5a2a,
+  emissive: 0xff3b1a,
+  emissiveIntensity: 2.5,
+  roughness: 0.4,
+  metalness: 0.1,
+});
+const core = new THREE.Mesh(coreGeo, coreMat);
+scene.add(core);
 
-    .label {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      font-size: 12px;
-      opacity: 0.7;
-      z-index: 2;
-    }
-  </style>
-</head>
-<body>
-  <canvas id="bg-canvas"></canvas>
-  <div class="label">Debug redemoinho – suspiro branco realista</div>
+// ---------- SHADER DA CASCA EXTERNA ----------
+const sphereGeo = new THREE.SphereGeometry(2.3, 160, 160);
 
-  <script>
-    console.log("Debug redemoinho — suspiro realista branco");
-    console.log("THREE disponível?", typeof THREE);
+// GLSL simples com noise 3D + fresnel + “buracos”
+const vertexShader = /* glsl */ `
+  varying vec3 vWorldPosition;
+  varying vec3 vNormal;
+  varying float vNoise;
 
-    // ========= FUNÇÃO: cria geometria de SUSPIRO REALISTA =========
-    function createSuspiroGeometry() {
-      const pts = [];
-      const height = 1.0;
+  // Noise 3D (IQ)
+  vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+  vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+  vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+  vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
 
-      // perfil radial (raio x altura) do suspiro
-      const steps = 32;
-      for (let i = 0; i <= steps; i++) {
-        const t = i / steps;         // 0 base, 1 topo
-        const y = t * height;
+  float snoise(vec3 v)
+  {
+    const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+    const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
 
-        // base gordinha e topo afinando
-        let r = 0.55 * Math.pow(1 - t, 0.25); // barriga
-        r += 0.06 * (1 - t);                  // base mais marcada
+    vec3 i  = floor(v + dot(v, C.yyy) );
+    vec3 x0 =   v - i + dot(i, C.xxx);
 
-        // leve afunilamento extra perto do topo
-        if (t > 0.7) {
-          r *= 0.6 + 0.4 * (1 - t);
-        }
+    vec3 g = step(x0.yzx, x0.xyz);
+    vec3 l = 1.0 - g;
+    vec3 i1 = min( g.xyz, l.zxy );
+    vec3 i2 = max( g.xyz, l.zxy );
 
-        // evita raio zero total antes da ponta
-        r = Math.max(r, 0.05);
+    vec3 x1 = x0 - i1 + 1.0 * C.xxx;
+    vec3 x2 = x0 - i2 + 2.0 * C.xxx;
+    vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
 
-        pts.push(new THREE.Vector2(r, y));
-      }
+    i = mod289(i);
+    vec4 p = permute(permute(permute(
+              i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
+            + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))
+            + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
 
-      // ponta fina
-      pts.push(new THREE.Vector2(0.0, height * 1.08));
+    float n_ = 0.142857142857;
+    vec3  ns = n_ * D.wyz - D.xzx;
 
-      // revolve o perfil para formar o suspiro
-      const suspiroGeo = new THREE.LatheGeometry(pts, 64);
-      suspiroGeo.rotateX(Math.PI); // ponta para baixo
+    vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
 
-      // aplicamos ranhuras + torção
-      suspiroGeo.computeBoundingBox();
-      const bb = suspiroGeo.boundingBox;
-      const minY = bb.min.y;
-      const maxY = bb.max.y;
-      const hY = maxY - minY;
+    vec4 x_ = floor(j * ns.z);
+    vec4 y_ = floor(j - 7.0 * x_ );
 
-      const pos = suspiroGeo.attributes.position;
-      const v = new THREE.Vector3();
+    vec4 x = x_ *ns.x + ns.yyyy;
+    vec4 y = y_ *ns.x + ns.yyyy;
+    vec4 h = 1.0 - abs(x) - abs(y);
 
-      const ridgesCount = 14;   // número de “gomos”
-      const ridgesStrength = 0.12; // intensidade das ranhuras
-      const twistAmount = 0.8;  // torção da parte de cima
+    vec4 b0 = vec4( x.xy, y.xy );
+    vec4 b1 = vec4( x.zw, y.zw );
 
-      for (let i = 0; i < pos.count; i++) {
-        v.fromBufferAttribute(pos, i);
+    vec4 s0 = floor(b0)*2.0 + 1.0;
+    vec4 s1 = floor(b1)*2.0 + 1.0;
+    vec4 sh = -step(h, vec4(0.0));
 
-        const angle = Math.atan2(v.z, v.x);
-        const radius = Math.sqrt(v.x * v.x + v.z * v.z);
+    vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+    vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
 
-        // ranhuras em volta
-        const ridgeFactor = 1.0 + ridgesStrength * Math.sin(ridgesCount * angle);
-        let newRadius = radius * ridgeFactor;
+    vec3 p0 = vec3(a0.xy,h.x);
+    vec3 p1 = vec3(a0.zw,h.y);
+    vec3 p2 = vec3(a1.xy,h.z);
+    vec3 p3 = vec3(a1.zw,h.w);
 
-        // torção mais forte perto da ponta
-        const t = (v.y - minY) / hY;  // 0 base, 1 topo
-        const twist = twistAmount * t;
-        const ca = Math.cos(twist);
-        const sa = Math.sin(twist);
+    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+    p0 *= norm.x;
+    p1 *= norm.y;
+    p2 *= norm.z;
+    p3 *= norm.w;
 
-        // aplica raio modificado
-        let x = Math.cos(angle) * newRadius;
-        let z = Math.sin(angle) * newRadius;
+    vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1),
+                            dot(x2,x2), dot(x3,x3)), 0.0);
+    m = m * m;
+    return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),
+                                  dot(p2,x2), dot(p3,x3) ) );
+  }
 
-        // aplica torção (rotação em Y)
-        const rx = x * ca - z * sa;
-        const rz = x * sa + z * ca;
+  uniform float uTime;
 
-        v.x = rx;
-        v.z = rz;
+  void main() {
+    vNormal = normalMatrix * normal;
 
-        pos.setXYZ(i, v.x, v.y, v.z);
-      }
+    // posição base
+    vec3 pos = position;
 
-      pos.needsUpdate = true;
-      suspiroGeo.computeVertexNormals();
+    // noise baseado em posição + tempo
+    float n = snoise(normal * 2.0 + vec3(uTime * 0.15, 0.0, 0.0));
+    float displacement = n * 0.35; // intensidade do relevo
 
-      // centraliza um pouco verticalmente
-      suspiroGeo.translate(0, -height * 0.3, 0);
+    pos += normal * displacement;
 
-      return suspiroGeo;
-    }
+    vNoise = n;
+    vec4 worldPos = modelMatrix * vec4(pos, 1.0);
+    vWorldPosition = worldPos.xyz;
 
-    // ========= CONFIG BÁSICA =========
-    const canvas = document.getElementById('bg-canvas');
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: false
-    });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x050816, 1); // mesmo fundo do body
+    gl_Position = projectionMatrix * viewMatrix * worldPos;
+  }
+`;
 
-    const scene = new THREE.Scene();
+const fragmentShader = /* glsl */ `
+  varying vec3 vWorldPosition;
+  varying vec3 vNormal;
+  varying float vNoise;
 
-    const camera = new THREE.PerspectiveCamera(
-      45,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      100
-    );
-    camera.position.set(0, 0.5, 7); // afastado para ver o redemoinho inteiro
+  uniform vec3 uColor;
+  uniform vec3 uEdgeColor;
+  uniform float uTime;
 
-    // ========= LUZ =========
-    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
-    scene.add(ambient);
+  void main() {
+    // direção da câmera
+    vec3 viewDir = normalize(cameraPosition - vWorldPosition);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.3);
-    dirLight.position.set(3, 5, 4);
-    scene.add(dirLight);
+    // Fresnel para a borda brilhante
+    float fresnel = pow(1.0 - max(dot(viewDir, normalize(vNormal)), 0.0), 3.0);
 
-    // luz de preenchimento suave
-    const fillLight = new THREE.DirectionalLight(0xfff5e8, 0.6);
-    fillLight.position.set(-2, -1, -3);
-    scene.add(fillLight);
+    // mascara de "buracos" baseada no noise
+    float mask = smoothstep(-0.3, 0.15, vNoise);  // ajusta densidade de buracos
 
-    // ========= GRUPO DO REDEMOINHO =========
-    const swirlGroup = new THREE.Group();
-    scene.add(swirlGroup);
-    swirlGroup.rotation.x = -0.4;
+    // cor base da casca
+    vec3 base = uColor;
 
-    // ========= GEOMETRIA E MATERIAL DO SUSPIRO =========
-    const suspiroGeo = createSuspiroGeometry();
+    // glow azul na borda
+    vec3 edgeGlow = uEdgeColor * (fresnel * 2.5);
 
-    const suspiroMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xfdf6f0,          // branco creme
-      roughness: 0.45,
-      metalness: 0.0,
-      clearcoat: 0.8,
-      clearcoatRoughness: 0.9,
-      sheen: 0.4,
-      sheenColor: new THREE.Color(0xffffff)
-    });
+    vec3 color = mix(base, edgeGlow, fresnel);
 
-    const suspiros = [];
-    const count = 90;
+    // opacidade menor onde queremos buracos
+    float alpha = mix(0.0, 0.95, mask);
 
-    for (let i = 0; i < count; i++) {
-      const mesh = new THREE.Mesh(suspiroGeo, suspiroMaterial);
+    // um brilho sutil em partes mais altas do relevo
+    float height = smoothstep(0.0, 0.5, vNoise);
+    color += vec3(0.05, 0.1, 0.2) * height;
 
-      // escala geral do suspiro (ajuste fino)
-      const scale = 0.6 + Math.random() * 0.15;
-      mesh.scale.set(scale, scale, scale);
+    if (alpha < 0.05) discard;
 
-      const t = i / count;
-      const turns = 3.0;
-      const angle = t * turns * Math.PI * 2;
+    gl_FragColor = vec4(color, alpha);
+  }
+`;
 
-      const baseRadius = 0.4;
-      const radius = baseRadius + t * 0.9;
-      const height = (t - 0.5) * 2.0;
+const sphereMat = new THREE.ShaderMaterial({
+  vertexShader,
+  fragmentShader,
+  transparent: true,
+  uniforms: {
+    uTime: { value: 0 },
+    uColor: { value: new THREE.Color(0x021225) },
+    uEdgeColor: { value: new THREE.Color(0x30b4ff) },
+  },
+});
 
-      mesh.position.set(
-        Math.cos(angle) * radius,
-        height,
-        Math.sin(angle) * radius
-      );
+const outerSphere = new THREE.Mesh(sphereGeo, sphereMat);
+scene.add(outerSphere);
 
-      mesh.position.x += (Math.random() - 0.5) * 0.05;
-      mesh.position.y += (Math.random() - 0.5) * 0.05;
-      mesh.position.z += (Math.random() - 0.5) * 0.05;
+// ---------- HALO (GLOW EXTERNO SIMPLES) ----------
+const haloGeo = new THREE.SphereGeometry(2.5, 64, 64);
+const haloMat = new THREE.MeshBasicMaterial({
+  color: 0x1cc4ff,
+  transparent: true,
+  opacity: 0.25,
+  blending: THREE.AdditiveBlending,
+  side: THREE.BackSide,
+});
+const halo = new THREE.Mesh(haloGeo, haloMat);
+scene.add(halo);
 
-      mesh.rotation.y = Math.random() * Math.PI * 2;
+// ---------- PARTÍCULAS DE FUNDO ----------
+const particlesGeo = new THREE.BufferGeometry();
+const particleCount = 800;
+const positions = new Float32Array(particleCount * 3);
+for (let i = 0; i < particleCount * 3; i++) {
+  positions[i] = (Math.random() - 0.5) * 40;
+}
+particlesGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+const particlesMat = new THREE.PointsMaterial({
+  size: 0.04,
+  transparent: true,
+  opacity: 0.4,
+});
+const particles = new THREE.Points(particlesGeo, particlesMat);
+scene.add(particles);
 
-      swirlGroup.add(mesh);
-      suspiros.push({
-        mesh,
-        baseY: mesh.position.y,
-        offset: Math.random() * Math.PI * 2
-      });
-    }
+// Luz ambiente suave
+const ambient = new THREE.AmbientLight(0x5fa7ff, 0.35);
+scene.add(ambient);
 
-    // ========= RESIZE =========
-    function onResize() {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      renderer.setSize(width, height);
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-    }
-    window.addEventListener('resize', onResize);
-    onResize();
+// Luz principal fria
+const dirLight = new THREE.DirectionalLight(0xaad8ff, 1.2);
+dirLight.position.set(3, 4, 5);
+scene.add(dirLight);
 
-    // ========= MOUSE =========
-    const mouse = new THREE.Vector2(0, 0);
-    window.addEventListener('mousemove', (e) => {
-      const x = (e.clientX / window.innerWidth) * 2 - 1;
-      const y = (e.clientY / window.innerHeight) * 2 - 1;
-      mouse.set(x, y);
-    });
+// ---------- INTERAÇÃO / RESPONSIVO ----------
+function onResize() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+}
+window.addEventListener("resize", onResize);
 
-    const clock = new THREE.Clock();
+let mouseX = 0;
+let mouseY = 0;
 
-    function animate() {
-      requestAnimationFrame(animate);
-      const t = clock.getElapsedTime();
+window.addEventListener("pointermove", (event) => {
+  const xNorm = (event.clientX / window.innerWidth) * 2 - 1;
+  const yNorm = (event.clientY / window.innerHeight) * 2 - 1;
+  mouseX = xNorm;
+  mouseY = yNorm;
+});
 
-      // rotação do redemoinho
-      swirlGroup.rotation.y = t * 0.22;
+// ---------- ANIMAÇÃO ----------
+let lastTime = 0;
+function animate(time) {
+  const delta = (time - lastTime) * 0.001;
+  lastTime = time;
 
-      // “respiração” leve dos suspiros
-      for (const s of suspiros) {
-        s.mesh.position.y = s.baseY + Math.sin(t * 1.3 + s.offset) * 0.1;
-      }
+  sphereMat.uniforms.uTime.value = time * 0.001;
 
-      // câmera seguindo levemente o mouse
-      const targetX = mouse.x * 0.25;
-      const targetY = 0.5 + mouse.y * 0.15;
-      camera.position.x += (targetX - camera.position.x) * 0.05;
-      camera.position.y += (targetY - camera.position.y) * 0.05;
-      camera.lookAt(0, 0, 0);
+  // rotação base
+  outerSphere.rotation.y += delta * 0.15;
+  outerSphere.rotation.x += delta * 0.03;
 
-      renderer.render(scene, camera);
-    }
+  core.rotation.y -= delta * 0.05;
 
-    animate();
-  </script>
-</body>
-</html>
+  // movimento leve com mouse
+  const targetRotY = mouseX * 0.4;
+  const targetRotX = -mouseY * 0.3;
+  outerSphere.rotation.y += (targetRotY - outerSphere.rotation.y) * 0.04;
+  outerSphere.rotation.x += (targetRotX - outerSphere.rotation.x) * 0.04;
+
+  halo.rotation.y = outerSphere.rotation.y;
+  halo.rotation.x = outerSphere.rotation.x;
+
+  particles.rotation.y += delta * 0.01;
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
