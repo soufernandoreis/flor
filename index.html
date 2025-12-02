@@ -1,277 +1,433 @@
-// main.js
-import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Esfera 3D – Landing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-const canvas = document.getElementById("hero-canvas");
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: radial-gradient(circle at top, #020818 0%, #000 55%, #000 100%);
+      color: #e2edf7;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+    .hero {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+    #hero-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .hero-overlay {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      padding: 3rem clamp(2rem, 4vw, 4rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none; /* deixa mouse livre pro canvas */
+    }
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+    .hero-logo {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .hero-nav {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .hero-nav a {
+      text-decoration: none;
+      color: inherit;
+      pointer-events: auto;
+      font-size: 0.8rem;
+    }
+    .hero-center {
+      max-width: 520px;
+      margin-top: 2rem;
+    }
+    .hero-title {
+      font-size: clamp(2.2rem, 4vw, 3rem);
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+    }
+    .hero-subtitle {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      max-width: 420px;
+      opacity: 0.9;
+      margin-bottom: 2rem;
+    }
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.9rem 1.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(18px);
+      cursor: pointer;
+      pointer-events: auto;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+    .hero-bottom {
+      font-size: 0.75rem;
+      opacity: 0.7;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
 
-// Cena, câmera, renderer
-const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x020818, 0.18);
+    @media (max-width: 768px) {
+      .hero-overlay {
+        padding: 1.5rem;
+      }
+      .hero-title {
+        letter-spacing: 0.18em;
+      }
+      .hero-center {
+        margin-top: 3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <canvas id="hero-canvas"></canvas>
 
-const camera = new THREE.PerspectiveCamera(
-  45,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  100
-);
-camera.position.set(0, 0, 7);
+    <div class="hero-overlay">
+      <div class="hero-top">
+        <div class="hero-logo">SEU NOME</div>
+        <nav class="hero-nav">
+          <a href="#work">Work</a>
+          <a href="#prototypes">Prototypes</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </div>
 
-const renderer = new THREE.WebGLRenderer({
-  canvas,
-  antialias: true,
-});
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setClearColor(0x020818, 1);
+      <div class="hero-center">
+        <h1 class="hero-title">CREATIVE TECHNOLOGIST</h1>
+        <p class="hero-subtitle">
+          Experiências digitais cinematográficas em WebGL, three.js e automações inteligentes.
+          Ideal para landing pages 3D, portfólios e produtos interativos.
+        </p>
+        <button class="hero-cta">
+          Ver projetos
+          <span>↗</span>
+        </button>
+      </div>
 
-// ---------- NÚCLEO INTERNO ----------
-const coreGeo = new THREE.SphereGeometry(1.4, 64, 64);
-const coreMat = new THREE.MeshStandardMaterial({
-  color: 0xff5a2a,
-  emissive: 0xff3b1a,
-  emissiveIntensity: 2.5,
-  roughness: 0.4,
-  metalness: 0.1,
-});
-const core = new THREE.Mesh(coreGeo, coreMat);
-scene.add(core);
+      <div class="hero-bottom">
+        <span>WebGL • three.js • GLSL • GSAP</span>
+        <span>Disponível para projetos</span>
+      </div>
+    </div>
+  </section>
 
-// ---------- SHADER DA CASCA EXTERNA ----------
-const sphereGeo = new THREE.SphereGeometry(2.3, 160, 160);
+  <!-- TODO o JS fica aqui dentro -->
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
 
-// GLSL simples com noise 3D + fresnel + “buracos”
-const vertexShader = /* glsl */ `
-  varying vec3 vWorldPosition;
-  varying vec3 vNormal;
-  varying float vNoise;
+    const canvas = document.getElementById("hero-canvas");
 
-  // Noise 3D (IQ)
-  vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
-  vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+    // Cena, câmera, renderer
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x020818, 0.18);
 
-  float snoise(vec3 v)
-  {
-    const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-    const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      100
+    );
+    camera.position.set(0, 0, 7);
 
-    vec3 i  = floor(v + dot(v, C.yyy) );
-    vec3 x0 =   v - i + dot(i, C.xxx);
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x020818, 1);
 
-    vec3 g = step(x0.yzx, x0.xyz);
-    vec3 l = 1.0 - g;
-    vec3 i1 = min( g.xyz, l.zxy );
-    vec3 i2 = max( g.xyz, l.zxy );
+    // ---------- NÚCLEO INTERNO ----------
+    const coreGeo = new THREE.SphereGeometry(1.4, 64, 64);
+    const coreMat = new THREE.MeshStandardMaterial({
+      color: 0xff5a2a,
+      emissive: 0xff3b1a,
+      emissiveIntensity: 2.5,
+      roughness: 0.4,
+      metalness: 0.1,
+    });
+    const core = new THREE.Mesh(coreGeo, coreMat);
+    scene.add(core);
 
-    vec3 x1 = x0 - i1 + 1.0 * C.xxx;
-    vec3 x2 = x0 - i2 + 2.0 * C.xxx;
-    vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
+    // ---------- GEOMETRIA DA CASCA ----------
+    const sphereGeo = new THREE.SphereGeometry(2.3, 160, 160);
 
-    i = mod289(i);
-    vec4 p = permute(permute(permute(
-              i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
-            + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))
-            + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
+    // ---------- SHADERS ----------
+    const vertexShader = `
+      precision highp float;
+      precision highp int;
 
-    float n_ = 0.142857142857;
-    vec3  ns = n_ * D.wyz - D.xzx;
+      varying vec3 vNormal;
+      varying vec3 vViewDir;
+      varying float vNoise;
 
-    vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+      // Noise 3D (IQ)
+      vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+      vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+      vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+      vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
 
-    vec4 x_ = floor(j * ns.z);
-    vec4 y_ = floor(j - 7.0 * x_ );
+      float snoise(vec3 v)
+      {
+        const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+        const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
 
-    vec4 x = x_ *ns.x + ns.yyyy;
-    vec4 y = y_ *ns.x + ns.yyyy;
-    vec4 h = 1.0 - abs(x) - abs(y);
+        vec3 i  = floor(v + dot(v, C.yyy) );
+        vec3 x0 =   v - i + dot(i, C.xxx);
 
-    vec4 b0 = vec4( x.xy, y.xy );
-    vec4 b1 = vec4( x.zw, y.zw );
+        vec3 g = step(x0.yzx, x0.xyz);
+        vec3 l = 1.0 - g;
+        vec3 i1 = min( g.xyz, l.zxy );
+        vec3 i2 = max( g.xyz, l.zxy );
 
-    vec4 s0 = floor(b0)*2.0 + 1.0;
-    vec4 s1 = floor(b1)*2.0 + 1.0;
-    vec4 sh = -step(h, vec4(0.0));
+        vec3 x1 = x0 - i1 + 1.0 * C.xxx;
+        vec3 x2 = x0 - i2 + 2.0 * C.xxx;
+        vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
 
-    vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-    vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+        i = mod289(i);
+        vec4 p = permute(permute(permute(
+                  i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
+                + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))
+                + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
 
-    vec3 p0 = vec3(a0.xy,h.x);
-    vec3 p1 = vec3(a0.zw,h.y);
-    vec3 p2 = vec3(a1.xy,h.z);
-    vec3 p3 = vec3(a1.zw,h.w);
+        float n_ = 0.142857142857;
+        vec3  ns = n_ * D.wyz - D.xzx;
 
-    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-    p0 *= norm.x;
-    p1 *= norm.y;
-    p2 *= norm.z;
-    p3 *= norm.w;
+        vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
 
-    vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1),
-                            dot(x2,x2), dot(x3,x3)), 0.0);
-    m = m * m;
-    return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),
-                                  dot(p2,x2), dot(p3,x3) ) );
-  }
+        vec4 x_ = floor(j * ns.z);
+        vec4 y_ = floor(j - 7.0 * x_ );
 
-  uniform float uTime;
+        vec4 x = x_ *ns.x + ns.yyyy;
+        vec4 y = y_ *ns.x + ns.yyyy;
+        vec4 h = 1.0 - abs(x) - abs(y);
 
-  void main() {
-    vNormal = normalMatrix * normal;
+        vec4 b0 = vec4( x.xy, y.xy );
+        vec4 b1 = vec4( x.zw, y.zw );
 
-    // posição base
-    vec3 pos = position;
+        vec4 s0 = floor(b0)*2.0 + 1.0;
+        vec4 s1 = floor(b1)*2.0 + 1.0;
+        vec4 sh = -step(h, vec4(0.0));
 
-    // noise baseado em posição + tempo
-    float n = snoise(normal * 2.0 + vec3(uTime * 0.15, 0.0, 0.0));
-    float displacement = n * 0.35; // intensidade do relevo
+        vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+        vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
 
-    pos += normal * displacement;
+        vec3 p0 = vec3(a0.xy,h.x);
+        vec3 p1 = vec3(a0.zw,h.y);
+        vec3 p2 = vec3(a1.xy,h.z);
+        vec3 p3 = vec3(a1.zw,h.w);
 
-    vNoise = n;
-    vec4 worldPos = modelMatrix * vec4(pos, 1.0);
-    vWorldPosition = worldPos.xyz;
+        vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1),
+                                       dot(p2,p2), dot(p3,p3)));
+        p0 *= norm.x;
+        p1 *= norm.y;
+        p2 *= norm.z;
+        p3 *= norm.w;
 
-    gl_Position = projectionMatrix * viewMatrix * worldPos;
-  }
-`;
+        vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1),
+                                dot(x2,x2), dot(x3,x3)), 0.0);
+        m = m * m;
+        return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),
+                                      dot(p2,x2), dot(p3,x3) ) );
+      }
 
-const fragmentShader = /* glsl */ `
-  varying vec3 vWorldPosition;
-  varying vec3 vNormal;
-  varying float vNoise;
+      uniform float uTime;
 
-  uniform vec3 uColor;
-  uniform vec3 uEdgeColor;
-  uniform float uTime;
+      void main() {
+        vNormal = normalize(normalMatrix * normal);
 
-  void main() {
-    // direção da câmera
-    vec3 viewDir = normalize(cameraPosition - vWorldPosition);
+        vec3 pos = position;
 
-    // Fresnel para a borda brilhante
-    float fresnel = pow(1.0 - max(dot(viewDir, normalize(vNormal)), 0.0), 3.0);
+        // noise baseado na normal + tempo
+        float n = snoise(normal * 2.0 + vec3(uTime * 0.15, 0.0, 0.0));
+        float displacement = n * 0.35;
 
-    // mascara de "buracos" baseada no noise
-    float mask = smoothstep(-0.3, 0.15, vNoise);  // ajusta densidade de buracos
+        pos += normal * displacement;
+        vNoise = n;
 
-    // cor base da casca
-    vec3 base = uColor;
+        vec4 worldPos = modelMatrix * vec4(pos, 1.0);
+        vec4 viewPos = viewMatrix * worldPos;
 
-    // glow azul na borda
-    vec3 edgeGlow = uEdgeColor * (fresnel * 2.5);
+        // direção da câmera no espaço de visão
+        vViewDir = normalize(-viewPos.xyz);
 
-    vec3 color = mix(base, edgeGlow, fresnel);
+        gl_Position = projectionMatrix * viewPos;
+      }
+    `;
 
-    // opacidade menor onde queremos buracos
-    float alpha = mix(0.0, 0.95, mask);
+    const fragmentShader = `
+      precision highp float;
+      precision highp int;
 
-    // um brilho sutil em partes mais altas do relevo
-    float height = smoothstep(0.0, 0.5, vNoise);
-    color += vec3(0.05, 0.1, 0.2) * height;
+      varying vec3 vNormal;
+      varying vec3 vViewDir;
+      varying float vNoise;
 
-    if (alpha < 0.05) discard;
+      uniform vec3 uColor;
+      uniform vec3 uEdgeColor;
+      uniform float uTime;
 
-    gl_FragColor = vec4(color, alpha);
-  }
-`;
+      void main() {
+        // fresnel para borda brilhante
+        float fresnel = pow(1.0 - max(dot(normalize(vNormal), normalize(vViewDir)), 0.0), 3.0);
 
-const sphereMat = new THREE.ShaderMaterial({
-  vertexShader,
-  fragmentShader,
-  transparent: true,
-  uniforms: {
-    uTime: { value: 0 },
-    uColor: { value: new THREE.Color(0x021225) },
-    uEdgeColor: { value: new THREE.Color(0x30b4ff) },
-  },
-});
+        // mascara de "buracos" baseada no noise
+        float mask = smoothstep(-0.3, 0.15, vNoise);
 
-const outerSphere = new THREE.Mesh(sphereGeo, sphereMat);
-scene.add(outerSphere);
+        vec3 base = uColor;
+        vec3 edgeGlow = uEdgeColor * (fresnel * 2.5);
+        vec3 color = mix(base, edgeGlow, fresnel);
 
-// ---------- HALO (GLOW EXTERNO SIMPLES) ----------
-const haloGeo = new THREE.SphereGeometry(2.5, 64, 64);
-const haloMat = new THREE.MeshBasicMaterial({
-  color: 0x1cc4ff,
-  transparent: true,
-  opacity: 0.25,
-  blending: THREE.AdditiveBlending,
-  side: THREE.BackSide,
-});
-const halo = new THREE.Mesh(haloGeo, haloMat);
-scene.add(halo);
+        float alpha = mix(0.0, 0.95, mask);
 
-// ---------- PARTÍCULAS DE FUNDO ----------
-const particlesGeo = new THREE.BufferGeometry();
-const particleCount = 800;
-const positions = new Float32Array(particleCount * 3);
-for (let i = 0; i < particleCount * 3; i++) {
-  positions[i] = (Math.random() - 0.5) * 40;
-}
-particlesGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-const particlesMat = new THREE.PointsMaterial({
-  size: 0.04,
-  transparent: true,
-  opacity: 0.4,
-});
-const particles = new THREE.Points(particlesGeo, particlesMat);
-scene.add(particles);
+        float height = smoothstep(0.0, 0.5, vNoise);
+        color += vec3(0.05, 0.1, 0.2) * height;
 
-// Luz ambiente suave
-const ambient = new THREE.AmbientLight(0x5fa7ff, 0.35);
-scene.add(ambient);
+        if (alpha < 0.05) discard;
 
-// Luz principal fria
-const dirLight = new THREE.DirectionalLight(0xaad8ff, 1.2);
-dirLight.position.set(3, 4, 5);
-scene.add(dirLight);
+        gl_FragColor = vec4(color, alpha);
+      }
+    `;
 
-// ---------- INTERAÇÃO / RESPONSIVO ----------
-function onResize() {
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-  camera.aspect = width / height;
-  camera.updateProjectionMatrix();
-  renderer.setSize(width, height);
-}
-window.addEventListener("resize", onResize);
+    const sphereMat = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      transparent: true,
+      uniforms: {
+        uTime: { value: 0 },
+        uColor: { value: new THREE.Color(0x021225) },
+        uEdgeColor: { value: new THREE.Color(0x30b4ff) },
+      },
+    });
 
-let mouseX = 0;
-let mouseY = 0;
+    const outerSphere = new THREE.Mesh(sphereGeo, sphereMat);
+    scene.add(outerSphere);
 
-window.addEventListener("pointermove", (event) => {
-  const xNorm = (event.clientX / window.innerWidth) * 2 - 1;
-  const yNorm = (event.clientY / window.innerHeight) * 2 - 1;
-  mouseX = xNorm;
-  mouseY = yNorm;
-});
+    // ---------- HALO ----------
+    const haloGeo = new THREE.SphereGeometry(2.5, 64, 64);
+    const haloMat = new THREE.MeshBasicMaterial({
+      color: 0x1cc4ff,
+      transparent: true,
+      opacity: 0.25,
+      blending: THREE.AdditiveBlending,
+      side: THREE.BackSide,
+    });
+    const halo = new THREE.Mesh(haloGeo, haloMat);
+    scene.add(halo);
 
-// ---------- ANIMAÇÃO ----------
-let lastTime = 0;
-function animate(time) {
-  const delta = (time - lastTime) * 0.001;
-  lastTime = time;
+    // ---------- PARTÍCULAS ----------
+    const particlesGeo = new THREE.BufferGeometry();
+    const particleCount = 800;
+    const positions = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount * 3; i++) {
+      positions[i] = (Math.random() - 0.5) * 40;
+    }
+    particlesGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    const particlesMat = new THREE.PointsMaterial({
+      size: 0.04,
+      transparent: true,
+      opacity: 0.4,
+    });
+    const particles = new THREE.Points(particlesGeo, particlesMat);
+    scene.add(particles);
 
-  sphereMat.uniforms.uTime.value = time * 0.001;
+    // Luzes
+    const ambient = new THREE.AmbientLight(0x5fa7ff, 0.35);
+    scene.add(ambient);
 
-  // rotação base
-  outerSphere.rotation.y += delta * 0.15;
-  outerSphere.rotation.x += delta * 0.03;
+    const dirLight = new THREE.DirectionalLight(0xaad8ff, 1.2);
+    dirLight.position.set(3, 4, 5);
+    scene.add(dirLight);
 
-  core.rotation.y -= delta * 0.05;
+    // ---------- INTERAÇÃO / RESPONSIVO ----------
+    function onResize() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+    window.addEventListener("resize", onResize);
 
-  // movimento leve com mouse
-  const targetRotY = mouseX * 0.4;
-  const targetRotX = -mouseY * 0.3;
-  outerSphere.rotation.y += (targetRotY - outerSphere.rotation.y) * 0.04;
-  outerSphere.rotation.x += (targetRotX - outerSphere.rotation.x) * 0.04;
+    let mouseX = 0;
+    let mouseY = 0;
 
-  halo.rotation.y = outerSphere.rotation.y;
-  halo.rotation.x = outerSphere.rotation.x;
+    window.addEventListener("pointermove", (event) => {
+      const xNorm = (event.clientX / window.innerWidth) * 2 - 1;
+      const yNorm = (event.clientY / window.innerHeight) * 2 - 1;
+      mouseX = xNorm;
+      mouseY = yNorm;
+    });
 
-  particles.rotation.y += delta * 0.01;
+    // ---------- ANIMAÇÃO ----------
+    let lastTime = 0;
+    function animate(time) {
+      const delta = (time - lastTime) * 0.001;
+      lastTime = time;
 
-  renderer.render(scene, camera);
-  requestAnimationFrame(animate);
-}
-requestAnimationFrame(animate);
+      sphereMat.uniforms.uTime.value = time * 0.001;
+
+      // rotação base
+      outerSphere.rotation.y += delta * 0.15;
+      outerSphere.rotation.x += delta * 0.03;
+
+      core.rotation.y -= delta * 0.05;
+
+      const targetRotY = mouseX * 0.4;
+      const targetRotX = -mouseY * 0.3;
+      outerSphere.rotation.y += (targetRotY - outerSphere.rotation.y) * 0.04;
+      outerSphere.rotation.x += (targetRotX - outerSphere.rotation.x) * 0.04;
+
+      halo.rotation.y = outerSphere.rotation.y;
+      halo.rotation.x = outerSphere.rotation.x;
+
+      particles.rotation.y += delta * 0.01;
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
