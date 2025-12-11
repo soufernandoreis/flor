@@ -2,7 +2,11 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Flores Animadas</title>
+  <title>Flores Animadas com Three.js</title>
+
+  <!-- Three.js CDN -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+
   <style>
     * {
       margin: 0;
@@ -15,9 +19,32 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 20% 20%, #0b2832 0, #050910 45%, #020307 100%);
       overflow: hidden;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020308;
+      position: relative;
+    }
+
+    /* Canvas do Three.js no fundo */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      display: block;
+    }
+
+    .animated-flowers-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-block: 3rem;
+      background: radial-gradient(circle at 20% 20%, #0b2832 0, #050910 45%, #020307 100%);
+      overflow: hidden;
+      border-radius: 24px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
     }
 
     .flowers {
@@ -28,10 +55,7 @@
       perspective: 1000px;
     }
 
-    /* --------------------------
-       FLORES (CAULE + FLOR)
-    --------------------------- */
-
+    /* FLORES */
     .flower {
       position: absolute;
       bottom: 40px;
@@ -40,9 +64,19 @@
       animation: sway 6s ease-in-out infinite alternate;
     }
 
-    .flower--1 { transform: translateX(-50%) scale(1); }
-    .flower--2 { transform: translate(-120%, 0) scale(0.9); animation-duration: 7s; }
-    .flower--3 { transform: translate(20%, 0) scale(1.05); animation-duration: 5.5s; }
+    .flower--1 {
+      transform: translateX(-50%) scale(1);
+    }
+
+    .flower--2 {
+      transform: translate(-120%, 0) scale(0.9);
+      animation-duration: 7s;
+    }
+
+    .flower--3 {
+      transform: translate(20%, 0) scale(1.05);
+      animation-duration: 5.5s;
+    }
 
     .flower__stem {
       position: relative;
@@ -81,7 +115,7 @@
       position: absolute;
       width: 34px;
       height: 20px;
-      border-radius: 999px 999px 999px 999px;
+      border-radius: 999px;
       background: radial-gradient(circle at 30% 20%, #d7ffff 0, #7be3de 40%, #3baea9 100%);
       box-shadow: 0 0 15px rgba(121, 252, 255, 0.5);
       transform-origin: center center;
@@ -105,38 +139,42 @@
       transform: rotate(25deg);
     }
 
-    /* --------------------------
-       FOLHAS DA BASE
-    --------------------------- */
-
+    /* FOLHAS DA BASE */
     .flower__leaf {
       position: absolute;
       bottom: 0;
       left: 50%;
       width: 70px;
       height: 36px;
-      border-radius: 60px 60px 60px 60px;
+      border-radius: 60px;
       background: radial-gradient(circle at 20% 30%, #6bf0ff 0, #28a69c 40%, #0c4b4a 100%);
       transform-origin: right center;
       box-shadow: 0 0 18px rgba(73, 242, 255, 0.45);
       opacity: 0.9;
-    }
-
-    .flower__leaf.t--1 { transform: translate(-40%, -10px) rotate(-22deg) scale(1.05); }
-    .flower__leaf.t--2 { transform: translate(-55%, 5px) rotate(-8deg); }
-    .flower__leaf.t--3 { transform: translate(-60%, 20px) rotate(7deg) scale(0.95); }
-    .flower__leaf.t--4 { transform: translate(-50%, 35px) rotate(18deg) scale(0.9); }
-    .flower__leaf.t--5 { transform: translate(-30%, 50px) rotate(30deg) scale(0.85); }
-
-    .flower__leaf,
-    .grass__leaf {
       animation: sway-leaf 7s ease-in-out infinite alternate;
     }
 
-    /* --------------------------
-       GRAMA LATERAL
-    --------------------------- */
+    .flower__leaf.t--1 {
+      transform: translate(-40%, -10px) rotate(-22deg) scale(1.05);
+    }
 
+    .flower__leaf.t--2 {
+      transform: translate(-55%, 5px) rotate(-8deg);
+    }
+
+    .flower__leaf.t--3 {
+      transform: translate(-60%, 20px) rotate(7deg) scale(0.95);
+    }
+
+    .flower__leaf.t--4 {
+      transform: translate(-50%, 35px) rotate(18deg) scale(0.9);
+    }
+
+    .flower__leaf.t--5 {
+      transform: translate(-30%, 50px) rotate(30deg) scale(0.85);
+    }
+
+    /* GRAMA */
     .grass {
       position: absolute;
       bottom: 0;
@@ -144,8 +182,14 @@
       height: 220px;
     }
 
-    .grass--left { left: -10px; }
-    .grass--right { right: -10px; transform: scaleX(-1); }
+    .grass--left {
+      left: -10px;
+    }
+
+    .grass--right {
+      right: -10px;
+      transform: scaleX(-1);
+    }
 
     .grass__leaf {
       position: absolute;
@@ -155,17 +199,33 @@
       border-radius: 999px;
       background: linear-gradient(to top, #013929, #0f7150);
       transform-origin: bottom center;
+      animation: sway-leaf 7s ease-in-out infinite alternate;
     }
 
-    .grass__leaf:nth-child(1) { left: 0;   transform: rotate(-10deg); }
-    .grass__leaf:nth-child(2) { left: 20px; transform: rotate(8deg); height: 170px; }
-    .grass__leaf:nth-child(3) { left: 40px; transform: rotate(-18deg); height: 190px; }
-    .grass__leaf:nth-child(4) { left: 60px; transform: rotate(15deg); height: 160px; }
+    .grass__leaf:nth-child(1) {
+      left: 0;
+      transform: rotate(-10deg);
+    }
 
-    /* --------------------------
-       PARTÍCULAS DE LUZ
-    --------------------------- */
+    .grass__leaf:nth-child(2) {
+      left: 20px;
+      transform: rotate(8deg);
+      height: 170px;
+    }
 
+    .grass__leaf:nth-child(3) {
+      left: 40px;
+      transform: rotate(-18deg);
+      height: 190px;
+    }
+
+    .grass__leaf:nth-child(4) {
+      left: 60px;
+      transform: rotate(15deg);
+      height: 160px;
+    }
+
+    /* LUZINHAS */
     .flower__light {
       position: absolute;
       width: 6px;
@@ -177,30 +237,47 @@
       animation: firefly 4s linear infinite;
     }
 
-    .flower__light.t--1 { left: 45%; bottom: 140px; animation-delay: -0.5s; }
-    .flower__light.t--2 { left: 60%; bottom: 160px; animation-delay: -1.3s; }
-    .flower__light.t--3 { left: 35%; bottom: 180px; animation-delay: -2.1s; }
-    .flower__light.t--4 { left: 55%; bottom: 200px; animation-delay: -2.7s; }
+    .flower__light.t--1 {
+      left: 45%;
+      bottom: 140px;
+      animation-delay: -0.5s;
+    }
 
-    /* --------------------------
-       ANIMAÇÕES
-    --------------------------- */
+    .flower__light.t--2 {
+      left: 60%;
+      bottom: 160px;
+      animation-delay: -1.3s;
+    }
 
+    .flower__light.t--3 {
+      left: 35%;
+      bottom: 180px;
+      animation-delay: -2.1s;
+    }
+
+    .flower__light.t--4 {
+      left: 55%;
+      bottom: 200px;
+      animation-delay: -2.7s;
+    }
+
+    /* ANIMAÇÕES */
     @keyframes sway {
-      0%   { transform: translateX(-50%) rotate(-2deg); }
-      100% { transform: translateX(-50%) rotate(3deg); }
-    }
-
-    .flower--2 {
-      transform-origin: bottom center;
-    }
-    .flower--3 {
-      transform-origin: bottom center;
+      0% {
+        transform: translateX(-50%) rotate(-2deg);
+      }
+      100% {
+        transform: translateX(-50%) rotate(3deg);
+      }
     }
 
     @keyframes sway-leaf {
-      0%   { transform: translate(-50%, 20px) rotate(-8deg) scale(1); }
-      100% { transform: translate(-52%, 22px) rotate(4deg)  scale(1.03); }
+      0% {
+        transform: translate(-50%, 20px) rotate(-8deg) scale(1);
+      }
+      100% {
+        transform: translate(-52%, 22px) rotate(4deg) scale(1.03);
+      }
     }
 
     @keyframes firefly {
@@ -221,78 +298,175 @@
       }
     }
 
-    /* leve granulado de fundo (opcional) */
+    /* ruído opcional */
     .noise {
       pointer-events: none;
-      position: fixed;
+      position: absolute;
       inset: 0;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
       mix-blend-mode: soft-light;
       opacity: 0.25;
+      z-index: 1;
     }
   </style>
 </head>
 <body>
-  <div class="flowers">
-    <!-- Grama lateral -->
-    <div class="grass grass--left">
-      <div class="grass__leaf"></div>
-      <div class="grass__leaf"></div>
-      <div class="grass__leaf"></div>
-      <div class="grass__leaf"></div>
-    </div>
-    <div class="grass grass--right">
-      <div class="grass__leaf"></div>
-      <div class="grass__leaf"></div>
-      <div class="grass__leaf"></div>
-      <div class="grass__leaf"></div>
-    </div>
+  <!-- Canvas do fundo Three.js -->
+  <canvas id="bg-canvas"></canvas>
 
-    <!-- Folhas da base -->
-    <div class="flower__leaf t--1"></div>
-    <div class="flower__leaf t--2"></div>
-    <div class="flower__leaf t--3"></div>
-    <div class="flower__leaf t--4"></div>
-    <div class="flower__leaf t--5"></div>
-
-    <!-- Flores principais -->
-    <div class="flower flower--1">
-      <div class="flower__stem"></div>
-      <div class="flower__head">
-        <div class="flower__petal"></div>
-        <div class="flower__petal"></div>
-        <div class="flower__petal"></div>
-        <div class="flower__center"></div>
+  <!-- Conteúdo central da landing (aqui está só a animação, você pode adicionar texto) -->
+  <div class="animated-flowers-wrapper">
+    <div class="flowers">
+      <!-- Grama lateral -->
+      <div class="grass grass--left">
+        <div class="grass__leaf"></div>
+        <div class="grass__leaf"></div>
+        <div class="grass__leaf"></div>
+        <div class="grass__leaf"></div>
       </div>
-    </div>
-
-    <div class="flower flower--2">
-      <div class="flower__stem"></div>
-      <div class="flower__head">
-        <div class="flower__petal"></div>
-        <div class="flower__petal"></div>
-        <div class="flower__petal"></div>
-        <div class="flower__center"></div>
+      <div class="grass grass--right">
+        <div class="grass__leaf"></div>
+        <div class="grass__leaf"></div>
+        <div class="grass__leaf"></div>
+        <div class="grass__leaf"></div>
       </div>
-    </div>
 
-    <div class="flower flower--3">
-      <div class="flower__stem"></div>
-      <div class="flower__head">
-        <div class="flower__petal"></div>
-        <div class="flower__petal"></div>
-        <div class="flower__petal"></div>
-        <div class="flower__center"></div>
+      <!-- Folhas da base -->
+      <div class="flower__leaf t--1"></div>
+      <div class="flower__leaf t--2"></div>
+      <div class="flower__leaf t--3"></div>
+      <div class="flower__leaf t--4"></div>
+      <div class="flower__leaf t--5"></div>
+
+      <!-- Flores principais -->
+      <div class="flower flower--1">
+        <div class="flower__stem"></div>
+        <div class="flower__head">
+          <div class="flower__petal"></div>
+          <div class="flower__petal"></div>
+          <div class="flower__petal"></div>
+          <div class="flower__center"></div>
+        </div>
       </div>
+
+      <div class="flower flower--2">
+        <div class="flower__stem"></div>
+        <div class="flower__head">
+          <div class="flower__petal"></div>
+          <div class="flower__petal"></div>
+          <div class="flower__petal"></div>
+          <div class="flower__center"></div>
+        </div>
+      </div>
+
+      <div class="flower flower--3">
+        <div class="flower__stem"></div>
+        <div class="flower__head">
+          <div class="flower__petal"></div>
+          <div class="flower__petal"></div>
+          <div class="flower__petal"></div>
+          <div class="flower__center"></div>
+        </div>
+      </div>
+
+      <!-- Partículas de luz em CSS -->
+      <div class="flower__light t--1"></div>
+      <div class="flower__light t--2"></div>
+      <div class="flower__light t--3"></div>
+      <div class="flower__light t--4"></div>
     </div>
 
-    <!-- Partículas de luz -->
-    <div class="flower__light t--1"></div>
-    <div class="flower__light t--2"></div>
-    <div class="flower__light t--3"></div>
-    <div class="flower__light t--4"></div>
+    <div class="noise"></div>
   </div>
 
-  <div class="noise"></div>
+  <!-- Script Three.js -->
+  <script>
+    const canvas = document.getElementById("bg-canvas");
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x020308, 0.06);
+
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      100
+    );
+    camera.position.set(0, 0, 8);
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true
+    });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x020308, 1);
+
+    // Partículas tipo "fireflies" em 3D
+    const particleCount = 400;
+    const positions = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount; i++) {
+      const i3 = i * 3;
+      positions[i3 + 0] = (Math.random() - 0.5) * 20; // x
+      positions[i3 + 1] = Math.random() * 6 - 1;      // y
+      positions[i3 + 2] = Math.random() * -15;        // z
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
+    const material = new THREE.PointsMaterial({
+      size: 0.06,
+      transparent: true,
+      opacity: 0.9
+    });
+
+    const points = new THREE.Points(geometry, material);
+    scene.add(points);
+
+    // Pequeno movimento de câmera baseado no mouse
+    const mouse = { x: 0, y: 0 };
+
+    window.addEventListener("mousemove", (event) => {
+      const x = (event.clientX / window.innerWidth) * 2 - 1;
+      const y = -(event.clientY / window.innerHeight) * 2 + 1;
+      mouse.x = x;
+      mouse.y = y;
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const positions = geometry.attributes.position.array;
+      const time = performance.now() * 0.0002;
+
+      for (let i = 0; i < particleCount; i++) {
+        const i3 = i * 3;
+        positions[i3 + 1] += 0.003 + Math.sin(time + i) * 0.001; // sobe
+        if (positions[i3 + 1] > 4) {
+          positions[i3 + 1] = -2 - Math.random() * 2;
+        }
+      }
+      geometry.attributes.position.needsUpdate = true;
+
+      camera.position.x += (mouse.x * 1.2 - camera.position.x) * 0.02;
+      camera.position.y += (mouse.y * 0.6 - camera.position.y) * 0.02;
+      camera.lookAt(0, 0, -5);
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Resize
+    window.addEventListener("resize", () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    });
+  </script>
 </body>
 </html>
