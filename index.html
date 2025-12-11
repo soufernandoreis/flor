@@ -2,515 +2,297 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Esfera 3D – Landing</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <title>Flores Animadas</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
+
     body {
-      background: radial-gradient(circle at top, #020818 0%, #000 55%, #000 100%);
-      color: #e2edf7;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 20% 20%, #0b2832 0, #050910 45%, #020307 100%);
       overflow: hidden;
-    }
-    .hero {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-    }
-    #hero-canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-    .hero-overlay {
-      position: relative;
-      z-index: 2;
-      width: 100%;
-      height: 100%;
-      padding: 3rem clamp(2rem, 4vw, 4rem);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      pointer-events: none;
-    }
-    .hero-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.9rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      opacity: 0.8;
-    }
-    .hero-logo {
-      font-weight: 600;
-      font-size: 1rem;
-    }
-    .hero-nav {
-      display: flex;
-      gap: 1.5rem;
-    }
-    .hero-nav a {
-      text-decoration: none;
-      color: inherit;
-      pointer-events: auto;
-      font-size: 0.8rem;
-    }
-    .hero-center {
-      max-width: 520px;
-      margin-top: 2rem;
-    }
-    .hero-title {
-      font-size: clamp(2.2rem, 4vw, 3rem);
-      font-weight: 500;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      margin-bottom: 1.2rem;
-    }
-    .hero-subtitle {
-      font-size: 0.9rem;
-      line-height: 1.8;
-      max-width: 420px;
-      opacity: 0.9;
-      margin-bottom: 2rem;
-    }
-    .hero-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.9rem 1.6rem;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(18px);
-      cursor: pointer;
-      pointer-events: auto;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-    }
-    .hero-bottom {
-      font-size: 0.75rem;
-      opacity: 0.7;
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 0.5rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    @media (max-width: 768px) {
-      .hero-overlay {
-        padding: 1.5rem;
+    .flowers {
+      position: relative;
+      width: 360px;
+      height: 260px;
+      transform-origin: center bottom;
+      perspective: 1000px;
+    }
+
+    /* --------------------------
+       FLORES (CAULE + FLOR)
+    --------------------------- */
+
+    .flower {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: sway 6s ease-in-out infinite alternate;
+    }
+
+    .flower--1 { transform: translateX(-50%) scale(1); }
+    .flower--2 { transform: translate(-120%, 0) scale(0.9); animation-duration: 7s; }
+    .flower--3 { transform: translate(20%, 0) scale(1.05); animation-duration: 5.5s; }
+
+    .flower__stem {
+      position: relative;
+      width: 8px;
+      height: 150px;
+      margin: 0 auto;
+      border-radius: 999px;
+      background: linear-gradient(to top, #0a3a3a, #197b7d);
+      box-shadow: 0 0 10px rgba(46, 255, 255, 0.4);
+    }
+
+    /* Cabeça da flor */
+    .flower__head {
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70px;
+      height: 40px;
+    }
+
+    .flower__center {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #fff9b7 0, #ffeb6a 40%, #f9c94c 100%);
+      box-shadow: 0 0 18px rgba(255, 241, 173, 0.9);
+      z-index: 2;
+    }
+
+    .flower__petal {
+      position: absolute;
+      width: 34px;
+      height: 20px;
+      border-radius: 999px 999px 999px 999px;
+      background: radial-gradient(circle at 30% 20%, #d7ffff 0, #7be3de 40%, #3baea9 100%);
+      box-shadow: 0 0 15px rgba(121, 252, 255, 0.5);
+      transform-origin: center center;
+    }
+
+    .flower__petal:nth-child(1) {
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+    }
+
+    .flower__petal:nth-child(2) {
+      left: 0;
+      top: 14px;
+      transform: rotate(-25deg);
+    }
+
+    .flower__petal:nth-child(3) {
+      right: 0;
+      top: 14px;
+      transform: rotate(25deg);
+    }
+
+    /* --------------------------
+       FOLHAS DA BASE
+    --------------------------- */
+
+    .flower__leaf {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 70px;
+      height: 36px;
+      border-radius: 60px 60px 60px 60px;
+      background: radial-gradient(circle at 20% 30%, #6bf0ff 0, #28a69c 40%, #0c4b4a 100%);
+      transform-origin: right center;
+      box-shadow: 0 0 18px rgba(73, 242, 255, 0.45);
+      opacity: 0.9;
+    }
+
+    .flower__leaf.t--1 { transform: translate(-40%, -10px) rotate(-22deg) scale(1.05); }
+    .flower__leaf.t--2 { transform: translate(-55%, 5px) rotate(-8deg); }
+    .flower__leaf.t--3 { transform: translate(-60%, 20px) rotate(7deg) scale(0.95); }
+    .flower__leaf.t--4 { transform: translate(-50%, 35px) rotate(18deg) scale(0.9); }
+    .flower__leaf.t--5 { transform: translate(-30%, 50px) rotate(30deg) scale(0.85); }
+
+    .flower__leaf,
+    .grass__leaf {
+      animation: sway-leaf 7s ease-in-out infinite alternate;
+    }
+
+    /* --------------------------
+       GRAMA LATERAL
+    --------------------------- */
+
+    .grass {
+      position: absolute;
+      bottom: 0;
+      width: 120px;
+      height: 220px;
+    }
+
+    .grass--left { left: -10px; }
+    .grass--right { right: -10px; transform: scaleX(-1); }
+
+    .grass__leaf {
+      position: absolute;
+      bottom: 0;
+      width: 12px;
+      height: 150px;
+      border-radius: 999px;
+      background: linear-gradient(to top, #013929, #0f7150);
+      transform-origin: bottom center;
+    }
+
+    .grass__leaf:nth-child(1) { left: 0;   transform: rotate(-10deg); }
+    .grass__leaf:nth-child(2) { left: 20px; transform: rotate(8deg); height: 170px; }
+    .grass__leaf:nth-child(3) { left: 40px; transform: rotate(-18deg); height: 190px; }
+    .grass__leaf:nth-child(4) { left: 60px; transform: rotate(15deg); height: 160px; }
+
+    /* --------------------------
+       PARTÍCULAS DE LUZ
+    --------------------------- */
+
+    .flower__light {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #fffce1 0, #ffe26f 45%, transparent 70%);
+      box-shadow: 0 0 10px rgba(255, 246, 196, 0.9);
+      opacity: 0;
+      animation: firefly 4s linear infinite;
+    }
+
+    .flower__light.t--1 { left: 45%; bottom: 140px; animation-delay: -0.5s; }
+    .flower__light.t--2 { left: 60%; bottom: 160px; animation-delay: -1.3s; }
+    .flower__light.t--3 { left: 35%; bottom: 180px; animation-delay: -2.1s; }
+    .flower__light.t--4 { left: 55%; bottom: 200px; animation-delay: -2.7s; }
+
+    /* --------------------------
+       ANIMAÇÕES
+    --------------------------- */
+
+    @keyframes sway {
+      0%   { transform: translateX(-50%) rotate(-2deg); }
+      100% { transform: translateX(-50%) rotate(3deg); }
+    }
+
+    .flower--2 {
+      transform-origin: bottom center;
+    }
+    .flower--3 {
+      transform-origin: bottom center;
+    }
+
+    @keyframes sway-leaf {
+      0%   { transform: translate(-50%, 20px) rotate(-8deg) scale(1); }
+      100% { transform: translate(-52%, 22px) rotate(4deg)  scale(1.03); }
+    }
+
+    @keyframes firefly {
+      0% {
+        transform: translate3d(0, 0, 0) scale(0.5);
+        opacity: 0;
       }
-      .hero-title {
-        letter-spacing: 0.18em;
+      20% {
+        opacity: 1;
       }
-      .hero-center {
-        margin-top: 3rem;
+      60% {
+        transform: translate3d(10px, -40px, 0) scale(1);
+        opacity: 1;
       }
+      100% {
+        transform: translate3d(-5px, -80px, 0) scale(0.4);
+        opacity: 0;
+      }
+    }
+
+    /* leve granulado de fundo (opcional) */
+    .noise {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+      opacity: 0.25;
     }
   </style>
 </head>
 <body>
-  <section class="hero">
-    <canvas id="hero-canvas"></canvas>
+  <div class="flowers">
+    <!-- Grama lateral -->
+    <div class="grass grass--left">
+      <div class="grass__leaf"></div>
+      <div class="grass__leaf"></div>
+      <div class="grass__leaf"></div>
+      <div class="grass__leaf"></div>
+    </div>
+    <div class="grass grass--right">
+      <div class="grass__leaf"></div>
+      <div class="grass__leaf"></div>
+      <div class="grass__leaf"></div>
+      <div class="grass__leaf"></div>
+    </div>
 
-    <div class="hero-overlay">
-      <div class="hero-top">
-        <div class="hero-logo">SEU NOME</div>
-        <nav class="hero-nav">
-          <a href="#work">Work</a>
-          <a href="#prototypes">Prototypes</a>
-          <a href="#about">About</a>
-          <a href="#contact">Contact</a>
-        </nav>
-      </div>
+    <!-- Folhas da base -->
+    <div class="flower__leaf t--1"></div>
+    <div class="flower__leaf t--2"></div>
+    <div class="flower__leaf t--3"></div>
+    <div class="flower__leaf t--4"></div>
+    <div class="flower__leaf t--5"></div>
 
-      <div class="hero-center">
-        <h1 class="hero-title">CREATIVE TECHNOLOGIST</h1>
-        <p class="hero-subtitle">
-          Experiências digitais cinematográficas em WebGL, three.js e automações inteligentes.
-          Ideal para landing pages 3D, portfólios e produtos interativos.
-        </p>
-        <button class="hero-cta">
-          Ver projetos
-          <span>↗</span>
-        </button>
-      </div>
-
-      <div class="hero-bottom">
-        <span>WebGL • three.js • GLSL • GSAP</span>
-        <span>Disponível para projetos</span>
+    <!-- Flores principais -->
+    <div class="flower flower--1">
+      <div class="flower__stem"></div>
+      <div class="flower__head">
+        <div class="flower__petal"></div>
+        <div class="flower__petal"></div>
+        <div class="flower__petal"></div>
+        <div class="flower__center"></div>
       </div>
     </div>
-  </section>
 
-  <script type="module">
-    import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
-
-    const canvas = document.getElementById("hero-canvas");
-
-    // Cena, câmera, renderer
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x020818, 0.18);
-
-    const camera = new THREE.PerspectiveCamera(
-      45,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      100
-    );
-    camera.position.set(0, 0, 7);
-
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-    });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x020818, 1);
-
-    // ---------- SHARED NOISE (GLSL) ----------
-    const noiseGLSL = `
-      vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-      vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-      vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
-      vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-
-      float snoise(vec3 v)
-      {
-        const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-        const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-
-        vec3 i  = floor(v + dot(v, C.yyy) );
-        vec3 x0 =   v - i + dot(i, C.xxx);
-
-        vec3 g = step(x0.yzx, x0.xyz);
-        vec3 l = 1.0 - g;
-        vec3 i1 = min( g.xyz, l.zxy );
-        vec3 i2 = max( g.xyz, l.zxy );
-
-        vec3 x1 = x0 - i1 + 1.0 * C.xxx;
-        vec3 x2 = x0 - i2 + 2.0 * C.xxx;
-        vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
-
-        i = mod289(i);
-        vec4 p = permute(permute(permute(
-                  i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
-                + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))
-                + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
-
-        float n_ = 0.142857142857;
-        vec3  ns = n_ * D.wyz - D.xzx;
-
-        vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-
-        vec4 x_ = floor(j * ns.z);
-        vec4 y_ = floor(j - 7.0 * x_ );
-
-        vec4 x = x_ *ns.x + ns.yyyy;
-        vec4 y = y_ *ns.x + ns.yyyy;
-        vec4 h = 1.0 - abs(x) - abs(y);
-
-        vec4 b0 = vec4( x.xy, y.xy );
-        vec4 b1 = vec4( x.zw, y.zw );
-
-        vec4 s0 = floor(b0)*2.0 + 1.0;
-        vec4 s1 = floor(b1)*2.0 + 1.0;
-        vec4 sh = -step(h, vec4(0.0));
-
-        vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-        vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-
-        vec3 p0 = vec3(a0.xy,h.x);
-        vec3 p1 = vec3(a0.zw,h.y);
-        vec3 p2 = vec3(a1.xy,h.z);
-        vec3 p3 = vec3(a1.zw,h.w);
-
-        vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1),
-                                       dot(p2,p2), dot(p3,p3)));
-        p0 *= norm.x;
-        p1 *= norm.y;
-        p2 *= norm.z;
-        p3 *= norm.w;
-
-        vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1),
-                                dot(x2,x2), dot(x3,x3)), 0.0);
-        m = m * m;
-        return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),
-                                      dot(p2,x2), dot(p3,x3) ) );
-      }
-    `;
-
-    // ---------- NÚCLEO "LAVA" (SHADER) ----------
-    const coreVertexShader = `
-      precision highp float;
-      precision highp int;
-
-      varying vec3 vPos;
-      varying vec3 vNormal;
-
-      uniform float uTime;
-
-      void main() {
-        vNormal = normalize(normalMatrix * normal);
-        vec3 pos = position;
-        vPos = pos;
-
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-      }
-    `;
-
-    const coreFragmentShader = `
-      precision highp float;
-      precision highp int;
-
-      varying vec3 vPos;
-      varying vec3 vNormal;
-
-      uniform float uTime;
-      uniform vec3 uColorCool;
-      uniform vec3 uColorHot;
-
-      ${noiseGLSL}
-
-      void main() {
-        // Coordenadas para o noise: escala + animação
-        vec3 p = vPos * 3.0;
-        p += vec3(uTime * 0.35, uTime * 0.25, uTime * 0.18);
-
-        float n1 = snoise(p);
-        float n2 = snoise(p * 2.0 + 10.0);
-        float n = n1 * 0.6 + n2 * 0.4;    // mistura de frequências
-        n = 0.5 + 0.5 * n;               // 0..1
-
-        // curva mais agressiva pra dar contraste (lava viva)
-        float heat = pow(n, 2.0);
-
-        // interpolação de cores frio->quente
-        vec3 base = mix(uColorCool, uColorHot, heat);
-
-        // "glow" interno
-        float glow = pow(heat, 3.0);
-        base += vec3(1.0, 0.6, 0.3) * glow * 0.35;
-
-        // iluminação simples direcional
-        vec3 lightDir = normalize(vec3(0.2, 0.8, 0.6));
-        float diffuse = clamp(dot(normalize(vNormal), lightDir), 0.0, 1.0);
-        base *= (0.4 + 0.6 * diffuse);
-
-        gl_FragColor = vec4(base, 1.0);
-      }
-    `;
-
-    const coreGeo = new THREE.SphereGeometry(1.45, 96, 96);
-    const coreMat = new THREE.ShaderMaterial({
-      vertexShader: coreVertexShader,
-      fragmentShader: coreFragmentShader,
-      uniforms: {
-        uTime: { value: 0 },
-        uColorCool: { value: new THREE.Color(0x3b0b16) }, // vermelho escuro
-        uColorHot: { value: new THREE.Color(0xffc76a) },  // amarelo/laranja quente
-      },
-    });
-    const core = new THREE.Mesh(coreGeo, coreMat);
-    scene.add(core);
-
-    // ---------- CASCA COM "PLACAS" (SHADER) ----------
-    const shellVertexShader = `
-      precision highp float;
-      precision highp int;
-
-      varying vec3 vNormal;
-      varying vec3 vViewDir;
-      varying float vPlateMask;
-
-      uniform float uTime;
-
-      ${noiseGLSL}
-
-      void main() {
-        vNormal = normalize(normalMatrix * normal);
-
-        vec3 pos = position;
-
-        // padrão de placas: noise + leve padrão direcional
-        float n = snoise(normal * 1.4 + vec3(uTime * 0.08, 0.0, 0.0));
-        n = 0.5 + 0.5 * n; // 0..1
-
-        // mistura com padrão "faixas" usando seno
-        float bands = 0.5 + 0.5 * sin(position.y * 4.0 + uTime * 0.2);
-        float plateMask = clamp(n * 0.7 + bands * 0.3, 0.0, 1.0);
-
-        // displacement mais duro (placas)
-        float displacement = plateMask * 0.3;
-        pos += normal * displacement;
-
-        vPlateMask = plateMask;
-
-        // view dir para fresnel
-        vec4 worldPos = modelMatrix * vec4(pos, 1.0);
-        vec4 viewPos = viewMatrix * worldPos;
-        vViewDir = normalize(-viewPos.xyz);
-
-        gl_Position = projectionMatrix * viewPos;
-      }
-    `;
-
-    const shellFragmentShader = `
-      precision highp float;
-      precision highp int;
-
-      varying vec3 vNormal;
-      varying vec3 vViewDir;
-      varying float vPlateMask;
-
-      uniform vec3 uColor;
-      uniform vec3 uEdgeColor;
-      uniform float uTime;
-
-      void main() {
-        vec3 normal = normalize(vNormal);
-        vec3 viewDir = normalize(vViewDir);
-
-        // Fresnel para halo nas bordas
-        float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
-
-        // Definição das placas x buracos
-        float plates = smoothstep(0.35, 0.42, vPlateMask); // mais agressivo
-        float alpha = plates;
-
-        // Se for buraco, descarta pixel (abre janela pro núcleo)
-        if (alpha < 0.02) discard;
-
-        // Borda das placas: região de transição
-        float edge = smoothstep(0.40, 0.46, vPlateMask) - smoothstep(0.46, 0.54, vPlateMask);
-        edge = clamp(edge * 4.0, 0.0, 1.0);
-
-        // cor base da placa
-        vec3 base = uColor;
-
-        // escurece cavidades / partes internas
-        base *= 0.5 + 0.5 * vPlateMask;
-
-        // realce de bordas + fresnel azul
-        vec3 color = base;
-        color += uEdgeColor * (fresnel * 2.0 + edge * 1.6);
-
-        gl_FragColor = vec4(color, alpha);
-      }
-    `;
-
-    const sphereGeo = new THREE.SphereGeometry(2.3, 160, 160);
-    const shellMat = new THREE.ShaderMaterial({
-      vertexShader: shellVertexShader,
-      fragmentShader: shellFragmentShader,
-      transparent: true,
-      uniforms: {
-        uTime: { value: 0 },
-        uColor: { value: new THREE.Color(0x041325) },     // azul bem escuro
-        uEdgeColor: { value: new THREE.Color(0x3bd5ff) }, // bordas/neon
-      },
-    });
-    const outerSphere = new THREE.Mesh(sphereGeo, shellMat);
-    scene.add(outerSphere);
-
-    // ---------- HALO EXTERNO ----------
-    const haloGeo = new THREE.SphereGeometry(2.6, 64, 64);
-    const haloMat = new THREE.MeshBasicMaterial({
-      color: 0x1cc4ff,
-      transparent: true,
-      opacity: 0.22,
-      blending: THREE.AdditiveBlending,
-      side: THREE.BackSide,
-    });
-    const halo = new THREE.Mesh(haloGeo, haloMat);
-    scene.add(halo);
-
-    // ---------- PARTÍCULAS DE FUNDO ----------
-    const particlesGeo = new THREE.BufferGeometry();
-    const particleCount = 800;
-    const positions = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount * 3; i++) {
-      positions[i] = (Math.random() - 0.5) * 40;
-    }
-    particlesGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    const particlesMat = new THREE.PointsMaterial({
-      size: 0.04,
-      transparent: true,
-      opacity: 0.35,
-    });
-    const particles = new THREE.Points(particlesGeo, particlesMat);
-    scene.add(particles);
-
-    // Luzes de ambiente (afetam mais o núcleo, casca é mais "fake-lit")
-    const ambient = new THREE.AmbientLight(0x5fa7ff, 0.3);
-    scene.add(ambient);
-
-    const dirLight = new THREE.DirectionalLight(0xaad8ff, 1.0);
-    dirLight.position.set(3, 4, 5);
-    scene.add(dirLight);
-
-    // ---------- INTERAÇÃO / RESPONSIVO ----------
-    function onResize() {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
-    }
-    window.addEventListener("resize", onResize);
-
-    let mouseX = 0;
-    let mouseY = 0;
-
-    window.addEventListener("pointermove", (event) => {
-      const xNorm = (event.clientX / window.innerWidth) * 2 - 1;
-      const yNorm = (event.clientY / window.innerHeight) * 2 - 1;
-      mouseX = xNorm;
-      mouseY = yNorm;
-    });
-
-    // ---------- ANIMAÇÃO ----------
-    let lastTime = 0;
-    function animate(time) {
-      const delta = (time - lastTime) * 0.001;
-      lastTime = time;
-
-      const t = time * 0.001;
-
-      shellMat.uniforms.uTime.value = t;
-      coreMat.uniforms.uTime.value = t;
-
-      // rotação da casca
-      outerSphere.rotation.y += delta * 0.12;
-      outerSphere.rotation.x += delta * 0.03;
-
-      // rotação lenta do núcleo (independente)
-      core.rotation.y -= delta * 0.08;
-      core.rotation.x += delta * 0.04;
-
-      // movimento leve com mouse
-      const targetRotY = mouseX * 0.35;
-      const targetRotX = -mouseY * 0.25;
-      outerSphere.rotation.y += (targetRotY - outerSphere.rotation.y) * 0.04;
-      outerSphere.rotation.x += (targetRotX - outerSphere.rotation.x) * 0.04;
-
-      halo.rotation.copy(outerSphere.rotation);
-
-      particles.rotation.y += delta * 0.01;
-
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
-    }
-    requestAnimationFrame(animate);
-  </script>
+    <div class="flower flower--2">
+      <div class="flower__stem"></div>
+      <div class="flower__head">
+        <div class="flower__petal"></div>
+        <div class="flower__petal"></div>
+        <div class="flower__petal"></div>
+        <div class="flower__center"></div>
+      </div>
+    </div>
+
+    <div class="flower flower--3">
+      <div class="flower__stem"></div>
+      <div class="flower__head">
+        <div class="flower__petal"></div>
+        <div class="flower__petal"></div>
+        <div class="flower__petal"></div>
+        <div class="flower__center"></div>
+      </div>
+    </div>
+
+    <!-- Partículas de luz -->
+    <div class="flower__light t--1"></div>
+    <div class="flower__light t--2"></div>
+    <div class="flower__light t--3"></div>
+    <div class="flower__light t--4"></div>
+  </div>
+
+  <div class="noise"></div>
 </body>
 </html>
