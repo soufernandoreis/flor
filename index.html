@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Carousel com troca de cores</title>
+  <title>Carousel com troca de cores (Tela Cheia)</title>
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -13,8 +13,12 @@
     @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap");
 
     :root{
-      --theme: #3b5d14;
-      --theme-soft: rgba(59,93,20,.18);
+      /* cor sólida do fundo (atualizada pelo JS) */
+      --bg: #3b5d14;
+
+      /* tema do botão (atualizado pelo JS) */
+      --theme: #0b0b0f;
+      --theme-soft: rgba(11,11,15,.18);
     }
 
     *{
@@ -27,62 +31,29 @@
       text-decoration:none;
     }
 
+    /* ✅ Fundo ocupa a tela toda, cor sólida */
     body{
       min-height:100vh;
+      background: var(--bg);
       display:grid;
       place-items:center;
-      background:#0b0b0f;
       padding:24px;
+      transition: background-color .45s ease;
     }
 
-    /* =========================
-       CONTAINER / BACKGROUNDS
-    ========================= */
+    /* ✅ Remove "quadrado" e sombra: agora é só um wrapper transparente */
     .box{
       position:relative;
       width:min(1100px, 92vw);
       height:min(640px, 82vh);
-      border-radius:22px;
-      overflow:hidden;
-      background:#101015;
-      box-shadow:0 20px 60px rgba(0,0,0,.45);
+      border-radius:0;      /* opcional: deixa reto */
+      overflow:visible;     /* não corta nada */
+      background:transparent;
+      box-shadow:none;
     }
 
-    .bg{
-      position:absolute;
-      inset:0;
-      opacity:0;
-      transform:scale(1.05);
-      transition:opacity .6s ease, transform .6s ease;
-      pointer-events:none;
-    }
-
-    /* 4 cores de fundo (1 por slide) */
-    .bg:nth-child(1){
-      background:
-        radial-gradient(circle at 30% 25%, rgba(59, 93, 20, 0.70), transparent 55%),
-        linear-gradient(140deg, rgba(59, 93, 20, 0.40), rgba(15, 15, 20, 1) 70%);
-    }
-    .bg:nth-child(2){
-      background:
-        radial-gradient(circle at 30% 25%, rgba(150, 20, 20, 0.70), transparent 55%),
-        linear-gradient(140deg, rgba(150, 20, 20, 0.40), rgba(15, 15, 20, 1) 70%);
-    }
-    .bg:nth-child(3){
-      background:
-        radial-gradient(circle at 30% 25%, rgba(190, 145, 0, 0.70), transparent 55%),
-        linear-gradient(140deg, rgba(190, 145, 0, 0.40), rgba(15, 15, 20, 1) 70%);
-    }
-    .bg:nth-child(4){
-      background:
-        radial-gradient(circle at 30% 25%, rgba(200, 60, 130, 0.70), transparent 55%),
-        linear-gradient(140deg, rgba(200, 60, 130, 0.40), rgba(15, 15, 20, 1) 70%);
-    }
-
-    .bg.active{
-      opacity:1;
-      transform:scale(1);
-    }
+    /* ✅ Não usamos mais backgrounds em camadas */
+    .bg{ display:none !important; }
 
     /* =========================
        LAYOUT PRINCIPAL
@@ -96,7 +67,6 @@
       grid-template-columns: 1fr 1fr;
       gap:28px;
       align-items:center;
-      z-index:1;
     }
 
     /* =========================
@@ -121,9 +91,10 @@
       width:min(420px, 45vw);
       max-height:520px;
       object-fit:contain;
-      filter: drop-shadow(0 18px 35px rgba(0,0,0,.45));
       user-select:none;
       -webkit-user-drag:none;
+      /* ✅ sem sombra/halo */
+      filter:none;
     }
 
     /* =========================
@@ -169,7 +140,7 @@
     .info p{
       font-size:16px;
       line-height:1.6;
-      color:rgba(255,255,255,.82);
+      color:rgba(255,255,255,.88);
       margin-bottom:22px;
     }
 
@@ -181,15 +152,14 @@
       padding:0 20px;
       border-radius:999px;
       background:transparent;
-      border:2px solid var(--theme);
+      border:2px solid rgba(255,255,255,.9);
       color:#fff;
       transition: transform .2s ease, background-color .2s ease, border-color .2s ease;
     }
 
     .btn:hover{
       transform: translateY(-1px);
-      background: var(--theme-soft);
-      border-color: var(--theme);
+      background: rgba(255,255,255,.12);
     }
 
     /* =========================
@@ -197,33 +167,33 @@
     ========================= */
     .navigation{
       position:absolute;
-      left:40px;
-      right:40px;
-      bottom:32px;
+      left:0;
+      right:0;
+      top:50%;
+      transform:translateY(-50%);
       display:flex;
       justify-content:space-between;
       align-items:center;
-      z-index:2;
-      pointer-events:none; /* só os botões recebem clique */
+      pointer-events:none;
     }
 
     .prev-btn, .next-btn{
       pointer-events:auto;
-      width:48px;
-      height:48px;
+      width:52px;
+      height:52px;
       border-radius:999px;
       display:grid;
       place-items:center;
-      background:rgba(255,255,255,.10);
+      background:rgba(255,255,255,.18);
       color:#fff;
-      border:1px solid rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.25);
       cursor:pointer;
       transition: transform .2s ease, opacity .2s ease, background-color .2s ease;
     }
 
     .prev-btn:hover, .next-btn:hover{
       transform: translateY(-1px);
-      background:rgba(255,255,255,.14);
+      background:rgba(255,255,255,.24);
     }
 
     .prev-btn.disabled, .next-btn.disabled{
@@ -238,7 +208,7 @@
       .box{ height:auto; }
       .carousel{
         grid-template-columns:1fr;
-        padding:26px 22px 84px;
+        padding:26px 22px;
         gap:18px;
       }
       .item img{
@@ -246,9 +216,12 @@
         max-height:420px;
       }
       .navigation{
-        left:22px;
-        right:22px;
-        bottom:22px;
+        position:fixed;
+        left:16px;
+        right:16px;
+        top:auto;
+        bottom:18px;
+        transform:none;
       }
       .box-info{ min-height:220px; }
     }
@@ -257,12 +230,6 @@
 
 <body>
   <div class="box">
-    <!-- backgrounds (um por item) -->
-    <div class="bg active"></div>
-    <div class="bg"></div>
-    <div class="bg"></div>
-    <div class="bg"></div>
-
     <div class="carousel">
       <div class="list">
         <div class="item">
@@ -281,7 +248,7 @@
 
       <div class="box-info">
         <div class="list-info">
-          <div class="info active" data-theme="green">
+          <div class="info active">
             <h2>Gatito Verde</h2>
             <p>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
@@ -290,7 +257,7 @@
             <a href="#" class="btn">View More</a>
           </div>
 
-          <div class="info" data-theme="red">
+          <div class="info">
             <h2>Gatito Rojo</h2>
             <p>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
@@ -299,7 +266,7 @@
             <a href="#" class="btn">View More</a>
           </div>
 
-          <div class="info" data-theme="yellow">
+          <div class="info">
             <h2>Gatito Amarillo</h2>
             <p>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
@@ -308,7 +275,7 @@
             <a href="#" class="btn">View More</a>
           </div>
 
-          <div class="info" data-theme="pink">
+          <div class="info">
             <h2>Gatito Rosado</h2>
             <p>
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
@@ -331,23 +298,20 @@
   </div>
 
   <script>
-    // Elementos (seguindo o que você enviou)
     const listInfo = document.querySelectorAll(".list-info .info");
     const nextBtn  = document.querySelector(".next-btn");
     const prevBtn  = document.querySelector(".prev-btn");
     const listImg  = document.querySelector(".list");
     const items    = document.querySelectorAll(".list .item");
-    const bgs      = document.querySelectorAll(".bg");
 
-    // Total dinâmico (corrigido)
     const totalItems = items.length;
 
-    // Tema por slide (poderia vir via data-attrs)
-    const themes = [
-      { theme: "#3b5d14", soft: "rgba(59,93,20,.18)" },   // verde
-      { theme: "#961414", soft: "rgba(150,20,20,.18)" },  // vermelho
-      { theme: "#be9100", soft: "rgba(190,145,0,.18)" },  // amarelo
-      { theme: "#c83c82", soft: "rgba(200,60,130,.18)" }  // rosa
+    // ✅ Cores sólidas (tela toda)
+    const solidBgColors = [
+      "#3b5d14", // verde
+      "#961414", // vermelho
+      "#be9100", // amarelo
+      "#c83c82"  // rosa
     ];
 
     let index = 0;
@@ -358,30 +322,22 @@
       return i;
     }
 
-    // Atualiza botões (igual sua ideia)
     function updateButtons(){
       prevBtn.classList.toggle("disabled", index === 0);
       nextBtn.classList.toggle("disabled", index === totalItems - 1);
     }
 
-    // Atualiza tema (cor do botão e hover)
-    function updateTheme(){
-      const t = themes[index] || themes[0];
-      document.documentElement.style.setProperty("--theme", t.theme);
-      document.documentElement.style.setProperty("--theme-soft", t.soft);
-    }
-
-    // Atualiza fundo ativo (troca de cores do layout)
-    function updateBackground(){
-      bgs.forEach((bg, i) => bg.classList.toggle("active", i === index));
-    }
-
-    // Atualiza texto/info
     function updateInfo(){
       listInfo.forEach((info, i) => info.classList.toggle("active", i === index));
     }
 
-    // Desloca o carrossel (sem "25%" fixo; usa largura real do item)
+    // ✅ Fundo chapado na tela toda
+    function updateSolidBackground(){
+      const color = solidBgColors[index] || solidBgColors[0];
+      document.documentElement.style.setProperty("--bg", color);
+    }
+
+    // Carousel sem números mágicos
     function updateCarousel(){
       const itemWidth = items[0].getBoundingClientRect().width;
       const gap = parseFloat(getComputedStyle(listImg).gap || "0");
@@ -389,12 +345,10 @@
       listImg.style.transform = `translateX(${-index * step}px)`;
     }
 
-    // Atualiza tudo
     function render(){
       updateButtons();
-      updateTheme();
-      updateBackground();
       updateInfo();
+      updateSolidBackground();
       updateCarousel();
     }
 
@@ -410,12 +364,10 @@
       render();
     });
 
-    // Recalcula ao redimensionar (corrige desalinhamento)
     window.addEventListener("resize", () => {
       updateCarousel();
     });
 
-    // Inicial
     render();
   </script>
 </body>
