@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Carousel com troca de cores (Tela Cheia - Infinito, Swipe Mobile V3)</title>
+  <title>Carousel com troca de cores (Tela Cheia - Infinito, Swipe Mobile V4)</title>
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -58,15 +58,15 @@
     .bg{ display:none !important; }
 
     /* =========================
-       LAYOUT PRINCIPAL
+       LAYOUT PRINCIPAL (Desktop)
     ========================= */
     .carousel{
       position:relative;
-      width:min(1100px, 98vw); /* Para desktop, ainda com pequena margem */
+      width:min(1100px, 98vw);
       height:min(640px, 90vh);
-      padding:40px; /* Padding para desktop */
+      padding:40px;
       display:grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr; /* Duas colunas para desktop */
       gap:28px;
       align-items:center;
       cursor: grab;
@@ -75,23 +75,37 @@
     }
 
     /* =========================
-       LISTA DE IMAGENS
+       LISTA DE IMAGENS (Desktop)
     ========================= */
     .list{
       display:flex;
-      /* Remove o gap aqui para o mobile e controla-o pelo padding do .item */
-      /* gap:22px; */
+      gap:22px; /* Gap entre as imagens no desktop */
       align-items:center;
       height:100%;
       will-change:transform;
       transition:transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      grid-column: 1 / 2; /* Ocupa a primeira coluna no grid desktop */
     }
 
     .item{
-      flex:0 0 100%; /* Para desktop, cada item ocupa 100% do .list */
+      flex:0 0 100%; /* Cada item ocupa 100% do .list no desktop */
       display:grid;
       place-items:center;
-      padding: 0; /* Por padrão, sem padding nos itens */
+      padding: 0;
+      /* Oculta o content-wrapper no desktop para não duplicar o info */
+      display: flex; /* Adicionado para que o item seja um flex container */
+      align-items: center;
+      justify-content: center;
+    }
+
+    .item .content-wrapper-desktop {
+        /* Para o desktop, o content-wrapper será apenas a imagem */
+        display: block;
+    }
+
+    .item .content-wrapper-mobile {
+        /* Oculta o wrapper mobile no desktop */
+        display: none;
     }
 
     .item img{
@@ -104,8 +118,9 @@
     }
 
     /* =========================
-       INFOS
+       INFOS (Desktop)
     ========================= */
+    /* Este estilo para .box-info é para a versão desktop, onde é separado */
     .box-info{
       position:relative;
       width:100%;
@@ -113,7 +128,8 @@
       overflow:hidden;
       display:grid;
       place-items:center;
-      padding: 0; /* Removido padding padrão aqui */
+      padding: 0;
+      grid-column: 2 / 3; /* Ocupa a segunda coluna no grid desktop */
     }
 
     .list-info{
@@ -220,55 +236,69 @@
         padding: 0;
       }
       .carousel{
-        grid-template-columns:1fr;
-        padding: 0; /* SEM PADDING NO CAROUSEL NO MOBILE */
-        gap:0; /* SEM GAP NO CAROUSEL NO MOBILE */
-        width: 100vw; /* Ocupa 100% da largura da viewport */
-        height: 100%; /* Ajusta a altura */
-        /* display: block; ou grid com 1fr 1fr para conteúdo */
-        display: flex; /* Mudar para flex para melhor controle do layout de items */
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        grid-template-columns:1fr; /* Apenas uma coluna no mobile */
+        padding: 0;
+        gap:0;
+        width: 100vw;
+        height: 100%;
+        display: flex; /* Agora o carousel é flex para conter a lista horizontal */
+        flex-direction: row; /* Para que a lista se mova horizontalmente */
+        align-items: stretch; /* Garante que os filhos estiquem na altura */
+        justify-content: flex-start; /* Alinha o início da lista */
+      }
+      /* O box-info original (fora dos items) deve ser ocultado no mobile */
+      .box-info {
+          display: none !important;
       }
       .list {
-        gap: 0; /* SEM GAP NA LISTA NO MOBILE */
-        height: auto; /* A altura da lista deve se ajustar ao conteúdo */
-        width: 100%; /* A lista ocupa 100% do .carousel */
-        flex-grow: 1; /* Permite que a lista cresça para preencher o espaço disponível */
-        justify-content: center; /* Centraliza os items na lista */
+        gap: 0;
+        height: 100%; /* A lista ocupa 100% da altura do .carousel */
+        width: 100vw; /* A lista ocupa 100% da largura do .carousel para o swipe */
+        flex-grow: 1;
+        justify-content: flex-start; /* Alinha os items ao início da lista flex */
+        /* Remover este display flex e place-items, pois já está no .item */
+        /* display: flex; place-items: center; */
       }
       .item{
         flex:0 0 100vw; /* CRÍTICO: Cada item ocupa EXATAMENTE 100% da largura da viewport */
-        padding: 20px 0; /* Padding vertical, se precisar de espaçamento vertical */
-        /* Podemos adicionar um contêiner interno para o padding lateral do conteúdo */
+        padding: 0; /* SEM PADDING NO ITEM NO MOBILE */
+        display: flex; /* O item é um flex container para a imagem e info */
+        flex-direction: column; /* Organiza imagem e info verticalmente */
+        align-items: center; /* Centraliza verticalmente */
+        justify-content: center; /* Centraliza horizontalmente */
+        height: 100%; /* Item ocupa 100% da altura da lista */
       }
-      .item .content-wrapper { /* Novo wrapper para conteúdo com padding */
-        padding: 0 20px;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+
+      /* Estilo para o content-wrapper que agora contém imagem + info */
+      .item .content-wrapper-desktop {
+          display: none; /* Oculta a imagem "pura" do desktop no mobile */
       }
-      .item img{
-        width:min(420px, 85vw);
-        max-height:40vh; /* Ajustado para melhor proporção em mobile */
+
+      .item .content-wrapper-mobile {
+          display: flex; /* Mostra o wrapper mobile */
+          flex-direction: column; /* Conteúdo interno vertical */
+          align-items: center; /* Centraliza o conteúdo */
+          justify-content: center; /* Centraliza o conteúdo */
+          width: 100%;
+          height: 100%;
+          padding: 20px; /* Padding interno para espaçamento do conteúdo */
+      }
+
+      .item .content-wrapper-mobile img {
+        width:min(300px, 80vw); /* Ajustado para um tamanho mais razoável */
+        max-height:35vh; /* Ajustado para melhor proporção em mobile */
         object-fit: contain;
+        margin-bottom: 20px; /* Espaço entre imagem e info */
+      }
+
+      .item .content-wrapper-mobile h2,
+      .item .content-wrapper-mobile p,
+      .item .content-wrapper-mobile .btn {
+          text-align: center;
+          max-width: 90vw;
       }
       .navigation{
         display: none !important; /* FORÇA A OCULTAÇÃO DAS SETAS NO MOBILE */
-      }
-      .box-info{
-        min-height:auto; /* Altura flexível para o bloco de info */
-        height: auto;
-        padding: 20px;
-        flex-shrink: 0; /* Impede que o bloco de info encolha demais */
-      }
-      .info h2, .info p {
-        max-width: 90vw;
-        margin-left: auto;
-        margin-right: auto;
       }
     }
   </style>
@@ -276,32 +306,81 @@
 
 <body>
   <div class="box">
-    <div class="carousel" id="carousel-area"> <!-- Adicionado ID para o swipe -->
+    <div class="carousel" id="carousel-area">
+
+      <!-- O .list agora conterá TODOS os slides, cada um com sua imagem e info -->
       <div class="list">
+        <!-- SLIDE 1: Gatito Verde -->
         <div class="item">
-          <div class="content-wrapper"> <!-- Novo wrapper para padding interno -->
+          <!-- Conteúdo para Desktop (apenas imagem, info separada) -->
+          <div class="content-wrapper-desktop">
             <img src="./img/img1.png" alt="Gatito Verde">
           </div>
+          <!-- Conteúdo para Mobile (imagem + info juntas) -->
+          <div class="content-wrapper-mobile">
+            <img src="./img/img1.png" alt="Gatito Verde">
+            <h2>Gatito Verde</h2>
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
+              laborem quae fugit deleniti amet hic officiis modi animi!
+            </p>
+            <a href="#" class="btn">View More</a>
+          </div>
         </div>
+
+        <!-- SLIDE 2: Gatito Rojo -->
         <div class="item">
-          <div class="content-wrapper">
+          <div class="content-wrapper-desktop">
             <img src="./img/img2.png" alt="Gatito Rojo">
           </div>
-        </div>
-        <div class="item">
-          <div class="content-wrapper">
-            <img src="./img/img3.png" alt="Gatito Amarillo">
+          <div class="content-wrapper-mobile">
+            <img src="./img/img2.png" alt="Gatito Rojo">
+            <h2>Gatito Rojo</h2>
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
+              laborem quae fugit deleniti amet hic officiis modi animi!
+            </p>
+            <a href="#" class="btn">View More</a>
           </div>
         </div>
+
+        <!-- SLIDE 3: Gatito Amarillo -->
         <div class="item">
-          <div class="content-wrapper">
+          <div class="content-wrapper-desktop">
+            <img src="./img/img3.png" alt="Gatito Amarillo">
+          </div>
+          <div class="content-wrapper-mobile">
+            <img src="./img/img3.png" alt="Gatito Amarillo">
+            <h2>Gatito Amarillo</h2>
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
+              laborem quae fugit deleniti amet hic officiis modi animi!
+            </p>
+            <a href="#" class="btn">View More</a>
+          </div>
+        </div>
+
+        <!-- SLIDE 4: Gatito Rosado -->
+        <div class="item">
+          <div class="content-wrapper-desktop">
             <img src="./img/img4.png" alt="Gatito Rosado">
+          </div>
+          <div class="content-wrapper-mobile">
+            <img src="./img/img4.png" alt="Gatito Rosado">
+            <h2>Gatito Rosado</h2>
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
+              laborem quae fugit deleniti amet hic officiis modi animi!
+            </p>
+            <a href="#" class="btn">View More</a>
           </div>
         </div>
       </div>
 
+      <!-- O original .box-info agora é APENAS para desktop. Ele será ocultado no mobile via CSS -->
       <div class="box-info">
         <div class="list-info">
+          <!-- As informações estão duplicadas aqui para desktop, mas serão ocultadas no mobile -->
           <div class="info active">
             <h2>Gatito Verde</h2>
             <p>
@@ -353,12 +432,13 @@
   </div>
 
   <script>
-    const listInfo = document.querySelectorAll(".list-info .info");
+    const listInfoDesktop = document.querySelectorAll(".box-info .list-info .info"); // Referência para info do desktop
+    const listInfoMobile = document.querySelectorAll(".content-wrapper-mobile h2"); // Referência para os títulos no mobile (para ativar o .info no desktop)
+
     const nextBtn  = document.querySelector(".next-btn");
     const prevBtn  = document.querySelector(".prev-btn");
-    const listImg  = document.querySelector(".list");
-    const items    = document.querySelectorAll(".list .item");
-    const carouselArea = document.getElementById("carousel-area");
+    const listImg  = document.querySelector(".list"); // Ainda a lista que se move
+    const items    = document.querySelectorAll(".list .item"); // Agora cada item tem imagem e info
 
     const totalItems = items.length;
 
@@ -373,14 +453,18 @@
     let startX = 0;
     let currentTranslateX = 0;
     let isSwiping = false;
-    let currentStepWidth = 0; // Armazenará a largura do passo para otimização
+    let currentStepWidth = 0;
 
     function updateButtons(){
-      // Setas são ocultadas por CSS no mobile, então não precisamos de lógica JS aqui.
+      // Setas são ocultadas por CSS no mobile.
     }
 
     function updateInfo(){
-      listInfo.forEach((info, i) => info.classList.toggle("active", i === index));
+      // Atualiza o info correto dependendo da largura da tela
+      if (window.innerWidth > 860) { // Desktop
+        listInfoDesktop.forEach((info, i) => info.classList.toggle("active", i === index));
+      }
+      // No mobile, a informação já está dentro do slide ativo, então não precisa de .active extra
     }
 
     function updateSolidBackground(){
@@ -389,10 +473,8 @@
     }
 
     function calculateStepWidth() {
-      // Calcula a largura do "passo" do carrossel.
-      // No mobile, a largura é 100vw, no desktop é a largura real do item + gap.
       if (window.innerWidth <= 860) {
-        return window.innerWidth; // 100vw
+        return window.innerWidth; // 100vw no mobile
       } else {
         const itemWidth = items[0].getBoundingClientRect().width;
         const gap = parseFloat(getComputedStyle(listImg).gap || "0");
@@ -401,8 +483,8 @@
     }
 
     function updateCarousel(transition = true){
-      currentStepWidth = calculateStepWidth(); // Atualiza a largura do passo
-      currentTranslateX = -index * currentStepWidth; // Atualiza a posição X final
+      currentStepWidth = calculateStepWidth();
+      currentTranslateX = -index * currentStepWidth;
       listImg.style.transform = `translateX(${currentTranslateX}px)`;
       listImg.style.transition = transition ? 'transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55)' : 'none';
     }
@@ -419,26 +501,23 @@
     // ======================================
 
     function handleStart(e) {
-      // Ignora eventos de mouse no mobile e touch no desktop para evitar conflitos
       if (window.innerWidth > 860 && e.type.startsWith('touch')) return;
       if (window.innerWidth <= 860 && e.type.startsWith('mouse')) return;
 
       isSwiping = true;
       startX = (e.touches ? e.touches[0].clientX : e.clientX);
-      listImg.style.transition = 'none'; // Remove a transição durante o arrasto
+      listImg.style.transition = 'none';
 
-      // Garante que currentTranslateX esteja atualizado com a posição inicial correta
       currentTranslateX = -index * currentStepWidth;
     }
 
     function handleMove(e) {
       if (!isSwiping) return;
-      e.preventDefault(); // Previne o scroll padrão do navegador durante o arrasto horizontal
+      e.preventDefault();
 
       const currentX = (e.touches ? e.touches[0].clientX : e.clientX);
       const diffX = currentX - startX;
 
-      // Move o carrossel em tempo real somando a diferença ao translateX atual
       listImg.style.transform = `translateX(${currentTranslateX + diffX}px)`;
     }
 
@@ -446,28 +525,28 @@
       if (!isSwiping) return;
       isSwiping = false;
 
-      listImg.style.transition = 'transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55)'; // Reaplica a transição
+      listImg.style.transition = 'transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
 
       const endX = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX);
       const diffX = endX - startX;
-      const threshold = window.innerWidth / 4; // Um quarto da largura da tela como limite para o swipe
+      const threshold = window.innerWidth / 4;
 
       let newIndex = index;
-      if (diffX > threshold) { // Swipe para a direita (voltar)
+      if (diffX > threshold) {
         newIndex = (index - 1 + totalItems) % totalItems;
-      } else if (diffX < -threshold) { // Swipe para a esquerda (avançar)
+      } else if (diffX < -threshold) {
         newIndex = (index + 1) % totalItems;
       }
 
       if (newIndex !== index) {
         index = newIndex;
-        render(true); // Renderiza com transição para o novo slide
+        render(true);
       } else {
-        render(true); // Se não mudou de slide, retorna à posição original com transição
+        render(true);
       }
     }
 
-    // Adiciona os event listeners para os botões (apenas para desktop)
+    // Event listeners para desktop (botões)
     nextBtn.addEventListener("click", () => {
       if (window.innerWidth <= 860) return;
       index = (index + 1) % totalItems;
@@ -480,24 +559,21 @@
       render();
     });
 
-    // Adiciona os event listeners para o swipe na área do carrossel
+    // Event listeners para swipe (mobile e desktop)
     carouselArea.addEventListener("mousedown", handleStart);
     carouselArea.addEventListener("mousemove", handleMove);
     carouselArea.addEventListener("mouseup", handleEnd);
     carouselArea.addEventListener("mouseleave", handleEnd);
 
-    carouselArea.addEventListener("touchstart", handleStart, { passive: false }); // Passive: false para permitir preventDefault
-    carouselArea.addEventListener("touchmove", handleMove, { passive: false });  // Passive: false para permitir preventDefault
+    carouselArea.addEventListener("touchstart", handleStart, { passive: false });
+    carouselArea.addEventListener("touchmove", handleMove, { passive: false });
     carouselArea.addEventListener("touchend", handleEnd);
 
-
     window.addEventListener("resize", () => {
-      // Ao redimensionar, recalcula a largura do passo e a posição sem transição inicial
-      render(false);
+      render(false); // Renderiza sem transição ao redimensionar
     });
 
-    // Renderiza o carrossel na inicialização (sem transição na primeira carga)
-    render(false);
+    render(false); // Renderiza na inicialização
   </script>
 </body>
 </html>
