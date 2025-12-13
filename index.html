@@ -13,6 +13,7 @@
     @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap");
 
     :root{
+      /* cor sólida do fundo (atualizada pelo JS) */
       --bg: #3b5d14;
     }
 
@@ -33,7 +34,7 @@
       place-items:center;
       padding:0;
       margin:0;
-      overflow-x: hidden;
+      overflow-x: hidden; /* Garantir que não há scroll horizontal no body */
       transition: background-color .15s linear;
       touch-action: pan-y;
     }
@@ -43,7 +44,7 @@
       width:100vw;
       height:100vh;
       border-radius:0;
-      overflow:hidden;
+      overflow:hidden; /* Essencial para esconder o overflow dos slides */
       background:transparent;
       box-shadow:none;
       display:grid;
@@ -52,13 +53,16 @@
 
     .bg{ display:none !important; }
 
+    /* =========================
+       LAYOUT PRINCIPAL (Desktop)
+    ========================= */
     .carousel{
       position:relative;
-      width:min(1100px, 98vw);
+      width:min(1100px, 98vw); /* Para desktop, ainda com pequena margem */
       height:min(640px, 90vh);
-      padding:40px;
+      padding:40px; /* Padding para desktop */
       display:grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr; /* Duas colunas para desktop */
       gap:28px;
       align-items:center;
       cursor: grab;
@@ -66,23 +70,27 @@
       -webkit-user-drag: none;
     }
 
+    /* =========================
+       LISTA DE IMAGENS (Desktop)
+    ========================= */
     .list{
       display:flex;
-      gap:22px;
+      gap:22px; /* Gap entre as imagens no desktop */
       align-items:center;
       height:100%;
       will-change:transform;
       transition:transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-      grid-column: 1 / 2;
+      grid-column: 1 / 2; /* Ocupa a primeira coluna no grid desktop */
     }
 
     .item{
-      flex:0 0 100%;
+      flex:0 0 100%; /* Cada item ocupa 100% do .list no desktop */
       display:grid;
       place-items:center;
       padding: 0;
     }
 
+    /* Oculta as informações internas do item no desktop */
     .item .info-mobile-wrapper {
         display: none;
     }
@@ -96,6 +104,9 @@
       filter:none;
     }
 
+    /* =========================
+       INFOS SEPARADAS (Desktop)
+    ========================= */
     .box-info{
       position:relative;
       width:100%;
@@ -104,7 +115,7 @@
       display:grid;
       place-items:center;
       padding: 0;
-      grid-column: 2 / 3;
+      grid-column: 2 / 3; /* Ocupa a segunda coluna no grid desktop */
     }
 
     .list-info{
@@ -162,6 +173,9 @@
       background: rgba(255,255,255,.12);
     }
 
+    /* =========================
+       NAVEGAÇÃO (SETAS)
+    ========================= */
     .navigation{
       position:absolute;
       left:0;
@@ -194,6 +208,9 @@
       background:rgba(255,255,255,.24);
     }
 
+    /* =========================
+       RESPONSIVO - Mobile (Layout de coluna única por slide)
+    ========================= */
     @media (max-width: 860px){
       body {
         padding: 0;
@@ -215,6 +232,7 @@
         gap: 0;
       }
 
+      /* Esconde o box-info original (separado) no mobile */
       .box-info {
           display: none !important;
       }
@@ -242,6 +260,7 @@
         margin-bottom: 20px;
       }
 
+      /* Mostra e estiliza as informações internas do item no mobile */
       .item .info-mobile-wrapper {
           display: flex;
           flex-direction: column;
@@ -270,7 +289,7 @@
     <div class="carousel" id="carousel-area">
 
       <div class="list">
-        <!-- CLONE DO ÚLTIMO SLIDE -->
+        <!-- CLONES DO ÚLTIMO SLIDE (para transição do primeiro para o último) -->
         <div class="item cloned" data-index="3">
           <img src="./img/img4.png" alt="Gatito Rosado">
           <div class="info-mobile-wrapper">
@@ -284,7 +303,6 @@
         </div>
 
         <!-- SLIDES REAIS -->
-        <!-- ✅ VERDE (data-index="0") => tom.png -->
         <div class="item" data-index="0">
           <img src="tom.png" alt="Tom">
           <div class="info-mobile-wrapper">
@@ -333,8 +351,7 @@
           </div>
         </div>
 
-        <!-- CLONE DO PRIMEIRO SLIDE -->
-        <!-- ✅ VERDE (data-index="0") clone => tom.png -->
+        <!-- CLONES DO PRIMEIRO SLIDE (para transição do último para o primeiro) -->
         <div class="item cloned" data-index="0">
           <img src="tom.png" alt="Tom">
           <div class="info-mobile-wrapper">
@@ -348,7 +365,7 @@
         </div>
       </div>
 
-      <!-- Desktop info -->
+      <!-- O box-info original permanece para a versão desktop, mas é ocultado no mobile -->
       <div class="box-info">
         <div class="list-info">
           <div class="info active" data-index="0">
@@ -390,6 +407,7 @@
       </div>
     </div>
 
+    <!-- As setas são para desktop, ocultadas no mobile via CSS -->
     <div class="navigation">
       <button class="prev-btn" aria-label="Anterior">
         <i class="fa-solid fa-chevron-left"></i>
@@ -405,13 +423,13 @@
     const nextBtn  = document.querySelector(".next-btn");
     const prevBtn  = document.querySelector(".prev-btn");
     const listImg  = document.querySelector(".list");
-    const items    = document.querySelectorAll(".list .item");
+    const items    = document.querySelectorAll(".list .item"); // Todos os items, incluindo clones
     const carouselArea = document.getElementById("carousel-area");
 
     const realItemsCount = 4;
     const totalItemsWithClones = items.length;
 
-    let internalIndex = 1;
+    let internalIndex = 1; // Começamos no primeiro slide REAL
 
     const solidBgColors = [
       "#3b5d14",
@@ -425,12 +443,9 @@
     let isSwiping = false;
     let currentStepWidth = 0;
 
+    // ✅ Desktop mantém original; Mobile ganha "bounce" (mesma curva do desktop, só mais rápido)
     const DESKTOP_TRANSITION = 'transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-    const MOBILE_TRANSITION  = 'transform .12s linear';
-
-    const MOBILE_OVERSHOOT_PX = 26;
-    const MOBILE_OVERSHOOT_TRANSITION = 'transform .10s ease-out';
-    const MOBILE_SETTLE_TRANSITION    = 'transform .12s ease-in';
+    const MOBILE_TRANSITION  = 'transform .22s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
 
     function updateButtons(){}
 
@@ -513,14 +528,13 @@
 
       const isMobile = window.innerWidth <= 860;
 
+      // ✅ aplica o bounce rápido no mobile
       listImg.style.transition = isMobile ? MOBILE_TRANSITION : DESKTOP_TRANSITION;
 
       const endX = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX);
       const diffX = endX - startX;
 
       const threshold = isMobile ? (window.innerWidth / 6) : (window.innerWidth / 4);
-
-      const prevInternalIndex = internalIndex;
 
       let newInternalIndex = internalIndex;
       if (diffX > threshold) {
@@ -536,30 +550,7 @@
       }
 
       internalIndex = newInternalIndex;
-      const didChange = (internalIndex !== prevInternalIndex);
-
       render(true);
-
-      if (isMobile && didChange) {
-        listImg.addEventListener('transitionend', () => {
-          if (internalIndex === 0 || internalIndex === totalItemsWithClones - 1) return;
-
-          const baseX = -internalIndex * currentStepWidth;
-          const dir = diffX < 0 ? -1 : 1;               // avançar (esq) = -1, voltar (dir) = +1
-const overshootX = baseX + (dir * MOBILE_OVERSHOOT_PX);
-
-
-          listImg.style.transition = MOBILE_OVERSHOOT_TRANSITION;
-          listImg.style.transform = `translateX(${overshootX}px)`;
-
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              listImg.style.transition = MOBILE_SETTLE_TRANSITION;
-              listImg.style.transform = `translateX(${baseX}px)`;
-            });
-          });
-        }, { once: true });
-      }
 
       listImg.addEventListener('transitionend', checkForCloneAndReposition, { once: true });
     }
