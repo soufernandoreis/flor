@@ -1,578 +1,336 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Carousel com troca de cores</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Magic Slider</title>
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap");
-
     :root{
-      --bg: #3b5d14;
+      --bg: #0b0f14;
+      --text: #eaf0ff;
+      --muted: rgba(234,240,255,.75);
+      --stroke: rgba(255,255,255,.12);
     }
 
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:"Montserrat",sans-serif;
-      outline:none;
-      border:none;
-      text-decoration:none;
-    }
-
-    /* ✅ FIX: html também pinta o topo/status-bar */
-    html{
-      background: var(--bg);
-    }
-
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
     body{
-      min-height:100vh;
-      background: var(--bg);
-      display:grid;
-      place-items:center;
-      padding:0;
       margin:0;
-      overflow-x: hidden;
-      transition: background-color .15s linear;
-      touch-action: pan-y;
-    }
-
-    .box{
-      position:relative; /* ✅ necessário para posicionar as setas */
-      width:100vw;
-      height:100vh;
-      border-radius:0;
+      font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
       overflow:hidden;
-      background:transparent;
-      box-shadow:none;
-      display:grid;
-      place-items:center;
     }
 
-    /* =========================
-       LAYOUT PRINCIPAL (Desktop)
-    ========================= */
-    .carousel{
-      position:relative;
-      width:min(1100px, 98vw);
-      height:min(640px, 90vh);
-      padding:40px;
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:28px;
-      align-items:center;
-      cursor: grab;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
-
-    .list{
+    header.topbar{
+      position:fixed;
+      inset:0 0 auto 0;
+      z-index:50;
       display:flex;
-      gap:22px;
       align-items:center;
-      height:100%;
-      will-change:transform;
-      transition:transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-      grid-column: 1 / 2;
+      justify-content:space-between;
+      padding:18px 28px;
+      background: linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,0));
     }
-
-    .item{
-      flex:0 0 100%;
-      display:grid;
-      place-items:center;
-      padding: 0;
+    .brand{
+      font-weight:700;
+      letter-spacing:.5px;
+      text-transform:lowercase;
+      opacity:.9;
     }
-
-    /* Oculta infos internas no desktop */
-    .item .info-mobile-wrapper{
-      display:none;
+    .menu{ display:flex; gap:18px; }
+    .menu a{
+      color: var(--text);
+      text-decoration:none;
+      font-size:14px;
+      opacity:.85;
     }
+    .menu a:hover{ opacity:1; }
 
-    .item img{
-      width:min(420px, 45vw);
-      max-height:520px;
-      object-fit:contain;
-      user-select:none;
-      -webkit-user-drag:none;
-      filter:none;
-    }
-
-    /* =========================
-       INFOS (Desktop)
-    ========================= */
-    .box-info{
+    main.slider{
       position:relative;
-      width:100%;
-      height:100%;
+      height:100vh;
       overflow:hidden;
-      display:grid;
-      place-items:center;
-      padding: 0;
-      grid-column: 2 / 3;
     }
 
-    .list-info{
+    /* LISTA PRINCIPAL (hero) */
+    .list{ position:absolute; inset:0; }
+    .item{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      transform: scale(1.02);
+      transition: opacity .5s ease, transform .6s ease;
+    }
+    .item img{
       width:100%;
       height:100%;
-      display:grid;
-      place-items:center;
+      object-fit:cover;
+      filter:saturate(1.05) contrast(1.05);
     }
-
-    .info{
-      opacity:0;
-      transform:translateY(20px);
-      pointer-events:none;
-      max-width:460px;
-      transition:opacity .35s ease, transform .35s ease;
-      text-align:center;
-    }
-
-    .info.active{
-      opacity:1;
-      transform:translateY(0);
-      pointer-events:auto;
-    }
-
-    .info h2{
-      font-size:clamp(34px, 3.2vw, 52px);
-      line-height:1.05;
-      color:#fff;
-      margin-bottom:10px;
-      text-align:center;
-      text-transform:uppercase;
-    }
-
-    .info p{
-      font-size:16px;
-      line-height:1.6;
-      color:rgba(255,255,255,.88);
-      margin-bottom:22px;
-      text-align:center;
-      font-weight:600;
-    }
-
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      height:44px;
-      padding:0 20px;
-      border-radius:999px;
-      background:transparent;
-      border:2px solid rgba(255,255,255,.9);
-      color:#fff;
-      transition: transform .2s ease, background-color .2s ease, border-color .2s ease;
-    }
-
-    .btn:hover{
-      transform: translateY(-1px);
-      background: rgba(255,255,255,.12);
-    }
-
-    /* =========================
-       NAV (setas Desktop)
-    ========================= */
-    .navigation{
+    .item::after{
+      content:"";
       position:absolute;
-      left:0;
-      right:0;
+      inset:0;
+      background: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
+    }
+    .item.is-active{
+      opacity:1;
+      transform: scale(1);
+    }
+
+    /* TEXTO DO SLIDE */
+    .content{
+      position:absolute;
+      left:70px;
       top:50%;
       transform:translateY(-50%);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      pointer-events:none;
-      padding: 0 10px;
-      z-index: 10;
+      width:min(520px, 85vw);
+      z-index:2;
     }
-
-    .prev-btn, .next-btn{
-      pointer-events:auto;
-      width:52px;
-      height:52px;
-      border-radius:999px;
-      display:grid;
-      place-items:center;
-      background:rgba(255,255,255,.18);
-      color:#fff;
-      border:1px solid rgba(255,255,255,.25);
+    .tag{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:10px;
+      background: rgba(0,0,0,.35);
+      border:1px solid var(--stroke);
+      font-size:12px;
+      letter-spacing:.08em;
+      margin:0 0 14px;
+      color:var(--muted);
+    }
+    .content h2{ margin:0; font-size:28px; font-weight:600; }
+    .content h1{ margin:6px 0 12px; font-size:44px; line-height:1.05; }
+    .desc{ margin:0 0 16px; color:var(--muted); font-size:14px; }
+    .btn{
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.35);
+      color: var(--text);
       cursor:pointer;
-      transition: transform .2s ease, opacity .2s ease, background-color .2s ease;
+    }
+    .btn:hover{ background: rgba(0,0,0,.5); }
+
+    /* SETAS */
+    .controls{
+      position:absolute;
+      left:70px;
+      bottom:120px;
+      z-index:5;
+      display:flex;
+      gap:10px;
+    }
+    .arrow{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.35);
+      color: var(--text);
+      font-size:26px;
+      line-height:1;
+      cursor:pointer;
+      user-select:none;
+    }
+    .arrow:hover{ background: rgba(0,0,0,.55); }
+
+    /* THUMBNAILS (bloco menor) */
+    .thumbnail{
+      position:absolute;
+      right:70px;
+      bottom:55px;
+      z-index:6;
+      display:flex;
+      gap:12px;
+      align-items:flex-end;
+      padding:14px;
+      border-radius:18px;
+      background: rgba(0,0,0,.22);
+      border:1px solid var(--stroke);
+      backdrop-filter: blur(10px);
+    }
+    .thumb{
+      width:110px;
+      height:70px;
+      padding:0;
+      border:0;
+      background:transparent;
+      cursor:pointer;
+      border-radius:12px;
+      overflow:hidden;
+      outline:2px solid transparent;
+      opacity:.85;
+      transform: translateY(0);
+      transition: opacity .2s ease, transform .2s ease, outline-color .2s ease;
+    }
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .thumb.is-front{
+      opacity:1;
+      outline-color: rgba(255,255,255,.35);
+      transform: translateY(-6px);
     }
 
-    .prev-btn:hover, .next-btn:hover{
-      transform: translateY(-1px);
-      background:rgba(255,255,255,.24);
-    }
-
-    /* =========================
-       MOBILE
-    ========================= */
-    @media (max-width: 860px){
-      html, body { /* ✅ ALTERAÇÃO AQUI: Adicionado 'html' */
-        padding:0;
-        margin:0;
-        min-height:100dvh;
-        background: var(--bg);
+    @media (max-width: 900px){
+      .content{ left:22px; }
+      .controls{ left:22px; }
+      .thumbnail{
+        left:22px;
+        right:22px;
+        overflow:auto;
       }
-
-      .box{
-        height:100dvh;
-        width:100vw;
-        padding:0;
-        overflow:hidden;
-      }
-
-      .carousel{
-        display:flex;
-        flex-direction: row;
-        align-items: stretch;
-        width: 100vw;
-        height: 100%;
-        padding: 0;
-        gap: 0;
-      }
-
-      .box-info{
-        display:none !important;
-      }
-
-      .list{
-        gap: 0;
-        width: 100vw;
-        height: 100%;
-        flex-grow: 1;
-      }
-
-      .item{
-        flex:0 0 100vw;
-        padding: 0;
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        justify-content:center;
-        height: 100%;
-      }
-
-      .item img{
-        width:min(300px, 80vw);
-        max-height:35vh;
-        object-fit: contain;
-        margin-bottom: 20px;
-      }
-
-      .item .info-mobile-wrapper{
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        padding:0 20px;
-        width:100%;
-        margin-top: 10px;
-        text-align:center;
-      }
-
-      .item .info-mobile-wrapper h2{
-        color:#fff;
-        font-size: 34px;
-        line-height: 1.05;
-        margin-bottom: 10px;
-        text-transform: uppercase;
-      }
-
-      .item .info-mobile-wrapper p{
-        color: rgba(255,255,255,.9);
-        font-weight: 600;
-        margin-bottom: 18px;
-      }
-
-      .navigation{
-        display:none !important;
-      }
+      .thumb{ flex:0 0 auto; }
+      header.topbar{ padding:14px 16px; }
+      .menu{ gap:12px; }
     }
   </style>
 </head>
 
 <body>
-  <div class="box">
-    <div class="carousel" id="carousel-area">
+  <header class="topbar">
+    <div class="brand">der fuel</div>
+    <nav class="menu">
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">Portfolio</a>
+      <a href="#">Services</a>
+      <a href="#">Contact</a>
+    </nav>
+  </header>
 
-      <div class="list">
-        <!-- CLONE DO ÚLTIMO (rosa) -->
-        <div class="item cloned" data-index="3">
-          <img src="rosa.png" alt="Rosa">
-          <div class="info-mobile-wrapper">
-            <h2>PAGINA TESTE</h2>
-            <p>Fernando Reis</p>
-            <a href="#" class="btn">View More</a>
-          </div>
+  <main class="slider" id="slider">
+    <div class="list" id="sliderList">
+      <!-- DICA: o item ativo é sempre o PRIMEIRO elemento -->
+      <article class="item">
+        <img src="images/1.jpg" alt="slide 1" />
+        <div class="content">
+          <p class="tag">DESIGN</p>
+          <h2>Magic Slider</h2>
+          <h1>Flower</h1>
+          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          <button class="btn">SEE MORE</button>
         </div>
+      </article>
 
-        <!-- SLIDES REAIS -->
-        <div class="item" data-index="0">
-          <img src="verde.png" alt="Verde">
-          <div class="info-mobile-wrapper">
-            <h2>PAGINA TESTE</h2>
-            <p>Fernando Reis</p>
-            <a href="#" class="btn">View More</a>
-          </div>
+      <article class="item">
+        <img src="images/2.jpg" alt="slide 2" />
+        <div class="content">
+          <p class="tag">NATURE</p>
+          <h2>Magic Slider</h2>
+          <h1>Lake</h1>
+          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          <button class="btn">SEE MORE</button>
         </div>
+      </article>
 
-        <div class="item" data-index="1">
-          <img src="vermelho.png" alt="Vermelho">
-          <div class="info-mobile-wrapper">
-            <h2>PAGINA TESTE</h2>
-            <p>Fernando Reis</p>
-            <a href="#" class="btn">View More</a>
-          </div>
+      <article class="item">
+        <img src="images/3.jpg" alt="slide 3" />
+        <div class="content">
+          <p class="tag">TRAVEL</p>
+          <h2>Magic Slider</h2>
+          <h1>Valley</h1>
+          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          <button class="btn">SEE MORE</button>
         </div>
+      </article>
 
-        <div class="item" data-index="2">
-          <img src="amarelo.png" alt="Amarelo">
-          <div class="info-mobile-wrapper">
-            <h2>PAGINA TESTE</h2>
-            <p>Fernando Reis</p>
-            <a href="#" class="btn">View More</a>
-          </div>
+      <article class="item">
+        <img src="images/4.jpg" alt="slide 4" />
+        <div class="content">
+          <p class="tag">MOUNTAIN</p>
+          <h2>Magic Slider</h2>
+          <h1>Snow</h1>
+          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          <button class="btn">SEE MORE</button>
         </div>
-
-        <div class="item" data-index="3">
-          <img src="rosa.png" alt="Rosa">
-          <div class="info-mobile-wrapper">
-            <h2>PAGINA TESTE</h2>
-            <p>Fernando Reis</p>
-            <a href="#" class="btn">View More</a>
-          </div>
-        </div>
-
-        <!-- CLONE DO PRIMEIRO (verde) -->
-        <div class="item cloned" data-index="0">
-          <img src="verde.png" alt="Verde">
-          <div class="info-mobile-wrapper">
-            <h2>PAGINA TESTE</h2>
-            <p>Fernando Reis</p>
-            <a href="#" class="btn">View More</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- INFOS DESKTOP -->
-      <div class="box-info">
-        <div class="list-info">
-          <div class="info active" data-index="0">
-            <h2>PAGINA TESTE</h2>
-            <p>Fernando Reis</p>
-            <a href="#" class="btn">View More</a>
-          </div>
-
-          <div class="info" data-index="1">
-            <h2>PAGINA TESTE</h2>
-            <p>Fernando Reis</p>
-            <a href="#" class="btn">View More</a>
-          </div>
-
-          <div class="info" data-index="2">
-            <h2>PAGINA TESTE</h2>
-            <p>Fernando Reis</p>
-            <a href="#" class="btn">View More</a>
-          </div>
-
-          <div class="info" data-index="3">
-            <h2>PAGINA TESTE</h2>
-            <p>Fernando Reis</p>
-            <a href="#" class="btn">View More</a>
-          </div>
-        </div>
-      </div>
+      </article>
     </div>
 
-    <!-- SETAS (Desktop) -->
-    <div class="navigation">
-      <button class="prev-btn" aria-label="Anterior">
-        <i class="fa-solid fa-chevron-left"></i>
-      </button>
-      <button class="next-btn" aria-label="Próximo">
-        <i class="fa-solid fa-chevron-right"></i>
-      </button>
+    <div class="controls">
+      <button class="arrow" id="prev" aria-label="Anterior">‹</button>
+      <button class="arrow" id="next" aria-label="Próximo">›</button>
     </div>
-  </div>
+
+    <div class="thumbnail" id="thumbList" aria-label="Miniaturas">
+      <!-- thumbs na mesma ordem da lista -->
+      <button class="thumb" type="button"><img src="images/1.jpg" alt="thumb 1" /></button>
+      <button class="thumb" type="button"><img src="images/2.jpg" alt="thumb 2" /></button>
+      <button class="thumb" type="button"><img src="images/3.jpg" alt="thumb 3" /></button>
+      <button class="thumb" type="button"><img src="images/4.jpg" alt="thumb 4" /></button>
+    </div>
+  </main>
 
   <script>
-    const listInfoDesktop = document.querySelectorAll(".box-info .list-info .info");
-    const nextBtn  = document.querySelector(".next-btn");
-    const prevBtn  = document.querySelector(".prev-btn");
-    const listImg  = document.querySelector(".list");
-    const items    = document.querySelectorAll(".list .item");
-    const carouselArea = document.getElementById("carousel-area");
+    const sliderList = document.getElementById("sliderList");
+    const thumbList  = document.getElementById("thumbList");
+    const btnNext    = document.getElementById("next");
+    const btnPrev    = document.getElementById("prev");
 
-    const realItemsCount = 4;
-    const totalItemsWithClones = items.length;
+    let isAnimating = false;
 
-    // começa no 1º real (porque o item 0 é clone do último)
-    let internalIndex = 1;
+    function syncUI() {
+      // item ativo = primeiro da lista
+      const items = sliderList.querySelectorAll(".item");
+      const thumbs = thumbList.querySelectorAll(".thumb");
 
-    const solidBgColors = [
-      "#3b5d14", // verde
-      "#961414", // vermelho
-      "#be9100", // amarelo
-      "#c83c82"  // rosa
-    ];
-
-    let startX = 0;
-    let currentTranslateX = 0;
-    let isSwiping = false;
-    let currentStepWidth = 0;
-
-    const DESKTOP_TRANSITION = 'transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-    const MOBILE_TRANSITION  = 'transform .22s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-
-    function updateInfo(){
-      const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount;
-      if (window.innerWidth > 860) {
-        listInfoDesktop.forEach((info, i) => info.classList.toggle("active", i === realIndex));
-      }
+      items.forEach((el, i) => el.classList.toggle("is-active", i === 0));
+      thumbs.forEach((el, i) => el.classList.toggle("is-front", i === 0));
     }
 
-    function updateSolidBackground(){
-      const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount;
-      const color = solidBgColors[realIndex] || solidBgColors[0];
+    function next() {
+      if (isAnimating) return;
+      isAnimating = true;
 
-      // variável CSS
-      document.documentElement.style.setProperty("--bg", color);
+      // HERO: o primeiro vai pro final (o segundo vira o grande)
+      sliderList.appendChild(sliderList.firstElementChild);
 
-      // 🔥 FIX DEFINITIVO DA FAIXA NO MOBILE
-      document.documentElement.style.backgroundColor = color;
-      document.body.style.backgroundColor = color;
+      // THUMBS: a primeira thumb vai pro final
+      thumbList.appendChild(thumbList.firstElementChild);
+
+      syncUI();
+      setTimeout(() => (isAnimating = false), 380);
     }
 
-    function calculateStepWidth() {
-      if (window.innerWidth <= 860) {
-        return window.innerWidth; // 100vw no mobile
-      } else {
-        const itemWidth = items[0].getBoundingClientRect().width;
-        const gap = parseFloat(getComputedStyle(listImg).gap || "0");
-        return itemWidth + gap;
-      }
+    function prev() {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      // HERO: o último vem pro começo
+      sliderList.prepend(sliderList.lastElementChild);
+
+      // THUMBS: a última thumb vem pro começo
+      thumbList.prepend(thumbList.lastElementChild);
+
+      syncUI();
+      setTimeout(() => (isAnimating = false), 380);
     }
 
-    function updateCarousel(transition = true){
-      currentStepWidth = calculateStepWidth();
-      currentTranslateX = -internalIndex * currentStepWidth;
+    btnNext.addEventListener("click", next);
+    btnPrev.addEventListener("click", prev);
 
-      const isMobile = window.innerWidth <= 860;
-      listImg.style.transition = transition
-        ? (isMobile ? MOBILE_TRANSITION : DESKTOP_TRANSITION)
-        : 'none';
+    // opcional: clicar numa thumb traz ela pro front (girando a fila)
+    thumbList.addEventListener("click", (e) => {
+      const btn = e.target.closest(".thumb");
+      if (!btn) return;
 
-      listImg.style.transform = `translateX(${currentTranslateX}px)`;
-    }
+      const thumbs = Array.from(thumbList.querySelectorAll(".thumb"));
+      const idx = thumbs.indexOf(btn);
+      if (idx <= 0) return;
 
-    function render(transition = true){
-      updateInfo();
-      updateSolidBackground();
-      updateCarousel(transition);
-    }
-
-    function checkForCloneAndReposition() {
-      if (internalIndex === totalItemsWithClones - 1) {
-        internalIndex = 1; // volta pro 1º real
-        render(false);
-      } else if (internalIndex === 0) {
-        internalIndex = realItemsCount; // volta pro último real
-        render(false);
-      }
-    }
-
-    // ======================
-    // Swipe (mobile) e drag (desktop)
-    // ======================
-    function handleStart(e) {
-      if (window.innerWidth > 860 && e.type.startsWith('touch')) return;
-      if (window.innerWidth <= 860 && e.type.startsWith('mouse')) return;
-
-      isSwiping = true;
-      startX = (e.touches ? e.touches[0].clientX : e.clientX);
-      listImg.style.transition = 'none';
-
-      currentStepWidth = calculateStepWidth();
-      currentTranslateX = -internalIndex * currentStepWidth;
-    }
-
-    function handleMove(e) {
-      if (!isSwiping) return;
-
-      // importante no touch
-      if (e.cancelable) e.preventDefault();
-
-      const currentX = (e.touches ? e.touches[0].clientX : e.clientX);
-      const diffX = currentX - startX;
-
-      listImg.style.transform = `translateX(${currentTranslateX + diffX}px)`;
-    }
-
-    function handleEnd(e) {
-      if (!isSwiping) return;
-      isSwiping = false;
-
-      const isMobile = window.innerWidth <= 860;
-      listImg.style.transition = isMobile ? MOBILE_TRANSITION : DESKTOP_TRANSITION;
-
-      const endX = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX);
-      const diffX = endX - startX;
-
-      const threshold = isMobile ? (window.innerWidth / 6) : (currentStepWidth / 4);
-
-      let newInternalIndex = internalIndex;
-      if (diffX > threshold) newInternalIndex--;
-      else if (diffX < -threshold) newInternalIndex++;
-
-      if (newInternalIndex < 0) newInternalIndex = totalItemsWithClones - 1;
-      else if (newInternalIndex >= totalItemsWithClones) newInternalIndex = 0;
-
-      internalIndex = newInternalIndex;
-      render(true);
-
-      listImg.addEventListener('transitionend', checkForCloneAndReposition, { once: true });
-    }
-
-    // setas desktop
-    nextBtn.addEventListener("click", () => {
-      if (window.innerWidth <= 860) return;
-      internalIndex++;
-      render(true);
-      listImg.addEventListener('transitionend', checkForCloneAndReposition, { once: true });
+      for (let i = 0; i < idx; i++) next();
     });
 
-    prevBtn.addEventListener("click", () => {
-      if (window.innerWidth <= 860) return;
-      internalIndex--;
-      render(true);
-      listImg.addEventListener('transitionend', checkForCloneAndReposition, { once: true });
-    });
-
-    // mouse (desktop)
-    carouselArea.addEventListener("mousedown", handleStart);
-    carouselArea.addEventListener("mousemove", handleMove);
-    carouselArea.addEventListener("mouseup", handleEnd);
-    carouselArea.addEventListener("mouseleave", handleEnd);
-
-    // touch (mobile)
-    carouselArea.addEventListener("touchstart", handleStart, { passive: true });
-    carouselArea.addEventListener("touchmove", handleMove, { passive: false });
-    carouselArea.addEventListener("touchend", handleEnd, { passive: true });
-
-    window.addEventListener("resize", () => {
-      const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount;
-      internalIndex = realIndex + 1;
-      render(false);
-    });
-
-    render(false);
+    syncUI();
   </script>
 </body>
 </html>
