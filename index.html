@@ -428,7 +428,7 @@
     const DESKTOP_TRANSITION = 'transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
     const MOBILE_TRANSITION  = 'transform .12s linear';
 
-    const MOBILE_OVERSHOOT_PX = 18;
+    const MOBILE_OVERSHOOT_PX = 26;
     const MOBILE_OVERSHOOT_TRANSITION = 'transform .10s ease-out';
     const MOBILE_SETTLE_TRANSITION    = 'transform .12s ease-in';
 
@@ -545,8 +545,9 @@
           if (internalIndex === 0 || internalIndex === totalItemsWithClones - 1) return;
 
           const baseX = -internalIndex * currentStepWidth;
-          const dir = diffX < 0 ? -1 : 1;
-          const overshootX = baseX + (dir * -MOBILE_OVERSHOOT_PX);
+          const dir = diffX < 0 ? -1 : 1;               // avançar (esq) = -1, voltar (dir) = +1
+const overshootX = baseX + (dir * MOBILE_OVERSHOOT_PX);
+
 
           listImg.style.transition = MOBILE_OVERSHOOT_TRANSITION;
           listImg.style.transform = `translateX(${overshootX}px)`;
