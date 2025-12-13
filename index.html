@@ -215,15 +215,15 @@
        MOBILE
     ========================= */
     @media (max-width: 860px){
-      body{
+      html, body { /* ✅ ALTERAÇÃO AQUI: Adicionado 'html' */
         padding:0;
         margin:0;
-        min-height:100dvh;       /* ✅ FIX faixa topo */
+        min-height:100dvh;
         background: var(--bg);
       }
 
       .box{
-        height:100dvh;           /* ✅ FIX faixa topo */
+        height:100dvh;
         width:100vw;
         padding:0;
         overflow:hidden;
@@ -439,15 +439,15 @@
     }
 
     function updateSolidBackground(){
-  const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount;
-  const color = solidBgColors[realIndex] || solidBgColors[0];
+      const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount;
+      const color = solidBgColors[realIndex] || solidBgColors[0];
 
-  // variável CSS
-  document.documentElement.style.setProperty("--bg", color);
+      // variável CSS
+      document.documentElement.style.setProperty("--bg", color);
 
-  // 🔥 FIX DEFINITIVO DA FAIXA NO MOBILE
-  document.documentElement.style.backgroundColor = color;
-  document.body.style.backgroundColor = color;
+      // 🔥 FIX DEFINITIVO DA FAIXA NO MOBILE
+      document.documentElement.style.backgroundColor = color;
+      document.body.style.backgroundColor = color;
     }
 
     function calculateStepWidth() {
