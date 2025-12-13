@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Carousel com troca de cores (Tela Cheia - Infinito, sem scroll horizontal, com Swipe Mobile)</title>
+  <title>Carousel com troca de cores (Tela Cheia - Infinito, Swipe Mobile V2)</title>
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -40,8 +40,7 @@
       margin:0;
       overflow-x: hidden;
       transition: background-color .15s linear;
-      /* Impede o zoom e scroll padrão do mobile durante o swipe */
-      touch-action: pan-y; /* Permite scroll vertical, mas não horizontal */
+      touch-action: pan-y; /* Permite scroll vertical, mas não horizontal, útil para swipe */
     }
 
     .box{
@@ -49,7 +48,7 @@
       width:100vw;
       height:100vh;
       border-radius:0;
-      overflow:hidden;
+      overflow:hidden; /* Mantido para ocultar o overflow dos slides */
       background:transparent;
       box-shadow:none;
       display:grid;
@@ -70,7 +69,6 @@
       grid-template-columns: 1fr 1fr;
       gap:28px;
       align-items:center;
-      /* Adicionado para permitir o swipe no mobile */
       cursor: grab;
       user-select: none;
       -webkit-user-drag: none;
@@ -89,7 +87,7 @@
     }
 
     .item{
-      flex:0 0 100%;
+      flex:0 0 100%; /* Cada item ocupa 100% do espaço disponível em .list */
       display:grid;
       place-items:center;
     }
@@ -211,42 +209,38 @@
     @media (max-width: 860px){
       body {
         padding: 0;
-        /* Garantir que o body não tenha margens ou padding que afetem o layout */
         margin: 0;
       }
       .box{
         height:100vh;
         width:100vw;
-        /* Removido o padding para que o carousel possa ocupar a largura total */
         padding: 0;
       }
       .carousel{
         grid-template-columns:1fr;
-        padding:26px 22px;
-        gap:18px;
-        width: 100vw; /* ESSENCIAL: Ocupa 100% da largura da viewport */
-        height: auto;
-        /* Removido o padding para que as setas possam se posicionar melhor */
+        /* IMPORTANTE: Removi o padding horizontal para que o item.flex: 0 0 100vw funcione */
         padding: 0;
+        gap:18px;
+        width: 100vw; /* Ocupa 100% da largura da viewport */
+        height: auto;
       }
       .item{
-        /* Garante que o item ocupe a largura total disponível após as mudanças no carousel */
-        flex:0 0 100vw; /* Cada item ocupa 100% da largura da viewport no mobile */
-        padding: 0 20px; /* Adiciona padding interno aos itens para espaçamento do conteúdo */
+        flex:0 0 100vw; /* ESSENCIAL: Cada item ocupa 100% da largura da viewport no mobile */
+        /* Adicione padding interno aqui se quiser espaçamento nas laterais do conteúdo */
+        padding: 0 20px;
       }
       .item img{
-        width:min(420px, 85vw); /* Ajustado para um pouco mais de largura para a imagem */
+        width:min(420px, 85vw);
         max-height:420px;
       }
       .navigation{
-        display: none; /* OCULTA AS SETAS NO MOBILE */
+        display: none !important; /* FORÇA A OCULTAÇÃO DAS SETAS NO MOBILE */
       }
       .box-info{
         min-height:220px;
-        padding: 20px; /* Adiciona padding para o bloco de informações no mobile */
+        padding: 20px;
       }
       .info h2, .info p {
-        /* Garante que o texto não transborde */
         max-width: 90vw;
         margin-left: auto;
         margin-right: auto;
@@ -314,6 +308,7 @@
       </div>
     </div>
 
+    <!-- As setas são para desktop, ocultadas no mobile via CSS -->
     <div class="navigation">
       <button class="prev-btn" aria-label="Anterior">
         <i class="fa-solid fa-chevron-left"></i>
@@ -330,11 +325,10 @@
     const prevBtn  = document.querySelector(".prev-btn");
     const listImg  = document.querySelector(".list");
     const items    = document.querySelectorAll(".list .item");
-    const carouselArea = document.getElementById("carousel-area"); // Referência para a área do swipe
+    const carouselArea = document.getElementById("carousel-area");
 
     const totalItems = items.length;
 
-    // ✅ Cores sólidas (tela toda)
     const solidBgColors = [
       "#3b5d14", // verde
       "#961414", // vermelho
@@ -343,45 +337,48 @@
     ];
 
     let index = 0;
-    let startX = 0; // Posição inicial do toque/clique
-    let isSwiping = false; // Flag para indicar que o swipe está ativo
+    let startX = 0;
+    let currentTranslateX = 0; // Armazena a posição atual do transform para o swipe
+    let isSwiping = false;
 
     function updateButtons(){
-      // Não é mais necessário desabilitar os botões em carrossel infinito.
+      // Setas são ocultadas por CSS no mobile, então não precisamos de lógica JS aqui.
     }
 
     function updateInfo(){
       listInfo.forEach((info, i) => info.classList.toggle("active", i === index));
     }
 
-    // ✅ Fundo chapado na tela toda
     function updateSolidBackground(){
       const color = solidBgColors[index] || solidBgColors[0];
       document.documentElement.style.setProperty("--bg", color);
     }
 
-    // Carousel sem números mágicos
-    function updateCarousel(){
-      let itemWidth;
-      // No mobile (largura < 860px), a largura do item deve ser 100vw
+    function getStepWidth() {
+      // Calcula a largura do "passo" do carrossel.
+      // No mobile, a largura é 100vw, no desktop é a largura real do item + gap.
       if (window.innerWidth <= 860) {
-        // Pega a largura da viewport, não do item do DOM diretamente
-        // E remove o padding do item para o cálculo do deslocamento
-        itemWidth = window.innerWidth;
+        return window.innerWidth; // 100vw
       } else {
-        itemWidth = items[0].getBoundingClientRect().width;
+        const itemWidth = items[0].getBoundingClientRect().width;
+        const gap = parseFloat(getComputedStyle(listImg).gap || "0");
+        return itemWidth + gap;
       }
-
-      const gap = parseFloat(getComputedStyle(listImg).gap || "0");
-      const step = itemWidth + gap;
-      listImg.style.transform = `translateX(${-index * step}px)`;
     }
 
-    function render(){
+    function updateCarousel(transition = true){
+      const step = getStepWidth();
+      currentTranslateX = -index * step; // Atualiza a posição X final
+      listImg.style.transform = `translateX(${currentTranslateX}px)`;
+      // Aplica a transição apenas se for uma mudança "normal" e não durante o swipe
+      listImg.style.transition = transition ? 'transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55)' : 'none';
+    }
+
+    function render(transition = true){ // Adicionado parâmetro para controlar a transição
       updateButtons();
       updateInfo();
       updateSolidBackground();
-      updateCarousel();
+      updateCarousel(transition);
     }
 
     // ======================================
@@ -389,57 +386,56 @@
     // ======================================
 
     function handleStart(e) {
+      if (window.innerWidth > 860 && e.type.startsWith('touch')) return; // Apenas swipe no mobile ou mouse no desktop
+      if (window.innerWidth <= 860 && e.type.startsWith('mouse')) return; // Apenas mouse no desktop
+
       isSwiping = true;
-      // Obtém a posição inicial do toque ou clique
       startX = (e.touches ? e.touches[0].clientX : e.clientX);
-      // Remove a transição para que o arrasto seja suave e instantâneo
-      listImg.style.transition = 'none';
+      listImg.style.transition = 'none'; // Remove a transição durante o arrasto
     }
 
     function handleMove(e) {
       if (!isSwiping) return;
 
       const currentX = (e.touches ? e.touches[0].clientX : e.clientX);
-      const diffX = currentX - startX; // Diferença no arrasto
+      const diffX = currentX - startX;
 
-      let itemWidth;
-      if (window.innerWidth <= 860) {
-        itemWidth = window.innerWidth;
-      } else {
-        itemWidth = items[0].getBoundingClientRect().width;
-      }
-      const gap = parseFloat(getComputedStyle(listImg).gap || "0");
-      const step = itemWidth + gap;
-
-      // Move o carrossel em tempo real durante o arrasto
-      listImg.style.transform = `translateX(${-index * step + diffX}px)`;
+      // Move o carrossel em tempo real somando a diferença ao translateX atual
+      listImg.style.transform = `translateX(${currentTranslateX + diffX}px)`;
     }
 
     function handleEnd(e) {
       if (!isSwiping) return;
       isSwiping = false;
-      // Adiciona a transição de volta
-      listImg.style.transition = 'transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
 
       const endX = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX);
       const diffX = endX - startX;
-      const threshold = 50; // Mínimo de pixels para considerar um swipe
+      const threshold = window.innerWidth / 4; // Um quarto da largura da tela como limite para o swipe
 
+      let newIndex = index;
       if (diffX > threshold) { // Swipe para a direita (voltar)
-        index = (index - 1 + totalItems) % totalItems;
+        newIndex = (index - 1 + totalItems) % totalItems;
       } else if (diffX < -threshold) { // Swipe para a esquerda (avançar)
-        index = (index + 1) % totalItems;
+        newIndex = (index + 1) % totalItems;
       }
-      render(); // Atualiza para o slide correto
+
+      if (newIndex !== index) {
+        index = newIndex;
+        render(true); // Renderiza com transição para o novo slide
+      } else {
+        render(true); // Se não mudou de slide, retorna à posição original com transição
+      }
     }
 
-    // Adiciona os event listeners para os botões (para desktop)
+    // Adiciona os event listeners para os botões (apenas para desktop)
     nextBtn.addEventListener("click", () => {
+      if (window.innerWidth <= 860) return; // Ignora clique no mobile
       index = (index + 1) % totalItems;
       render();
     });
 
     prevBtn.addEventListener("click", () => {
+      if (window.innerWidth <= 860) return; // Ignora clique no mobile
       index = (index - 1 + totalItems) % totalItems;
       render();
     });
@@ -448,18 +444,20 @@
     carouselArea.addEventListener("mousedown", handleStart);
     carouselArea.addEventListener("mousemove", handleMove);
     carouselArea.addEventListener("mouseup", handleEnd);
-    carouselArea.addEventListener("mouseleave", handleEnd); // Resetar se o mouse sair da área
+    carouselArea.addEventListener("mouseleave", handleEnd); // Garante que o estado isSwiping seja resetado
 
-    carouselArea.addEventListener("touchstart", handleStart);
-    carouselArea.addEventListener("touchmove", handleMove);
+    carouselArea.addEventListener("touchstart", handleStart, { passive: true });
+    carouselArea.addEventListener("touchmove", handleMove, { passive: true });
     carouselArea.addEventListener("touchend", handleEnd);
 
 
     window.addEventListener("resize", () => {
-      render(); // Recalcula o posicionamento ao redimensionar
+      // Quando a janela redimensiona, queremos recalcular a posição sem transição inicial
+      render(false);
     });
 
-    render(); // Renderiza o carrossel na inicialização
+    // Renderiza o carrossel na inicialização (sem transição na primeira carga)
+    render(false);
   </script>
 </body>
 </html>
