@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Carousel com troca de cores (Tela Cheia)</title>
+  <title>Carousel com troca de cores (Tela Cheia - Infinito)</title>
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -196,10 +196,11 @@
       background:rgba(255,255,255,.24);
     }
 
-    .prev-btn.disabled, .next-btn.disabled{
+    /* Removido o disabled para botões, pois o carrossel é infinito */
+    /* .prev-btn.disabled, .next-btn.disabled{
       opacity:.35;
       cursor:not-allowed;
-    }
+    } */
 
     /* =========================
        RESPONSIVO
@@ -316,15 +317,11 @@
 
     let index = 0;
 
-    function clampIndex(i){
-      if (i < 0) return 0;
-      if (i > totalItems - 1) return totalItems - 1;
-      return i;
-    }
-
+    // A função updateButtons não é mais necessária para desabilitar,
+    // mas a mantemos para a estrutura, caso queira adicionar outra lógica.
     function updateButtons(){
-      prevBtn.classList.toggle("disabled", index === 0);
-      nextBtn.classList.toggle("disabled", index === totalItems - 1);
+      // prevBtn.classList.toggle("disabled", index === 0);
+      // nextBtn.classList.toggle("disabled", index === totalItems - 1);
     }
 
     function updateInfo(){
@@ -353,14 +350,13 @@
     }
 
     nextBtn.addEventListener("click", () => {
-      if (index >= totalItems - 1) return;
-      index = clampIndex(index + 1);
+      index = (index + 1) % totalItems;
       render();
     });
 
     prevBtn.addEventListener("click", () => {
-      if (index <= 0) return;
-      index = clampIndex(index - 1);
+      // Garante que o índice não seja negativo ao ir para trás do primeiro item.
+      index = (index - 1 + totalItems) % totalItems;
       render();
     });
 
