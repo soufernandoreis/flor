@@ -439,9 +439,15 @@
     }
 
     function updateSolidBackground(){
-      const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount;
-      const color = solidBgColors[realIndex] || solidBgColors[0];
-      document.documentElement.style.setProperty("--bg", color);
+  const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount;
+  const color = solidBgColors[realIndex] || solidBgColors[0];
+
+  // variável CSS
+  document.documentElement.style.setProperty("--bg", color);
+
+  // 🔥 FIX DEFINITIVO DA FAIXA NO MOBILE
+  document.documentElement.style.backgroundColor = color;
+  document.body.style.backgroundColor = color;
     }
 
     function calculateStepWidth() {
