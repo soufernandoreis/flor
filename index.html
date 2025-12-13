@@ -13,7 +13,6 @@
     @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap");
 
     :root{
-      /* cor sólida do fundo (atualizada pelo JS) */
       --bg: #3b5d14;
     }
 
@@ -34,7 +33,7 @@
       place-items:center;
       padding:0;
       margin:0;
-      overflow-x: hidden; /* Garantir que não há scroll horizontal no body */
+      overflow-x: hidden;
       transition: background-color .15s linear;
       touch-action: pan-y;
     }
@@ -44,7 +43,7 @@
       width:100vw;
       height:100vh;
       border-radius:0;
-      overflow:hidden; /* Essencial para esconder o overflow dos slides */
+      overflow:hidden;
       background:transparent;
       box-shadow:none;
       display:grid;
@@ -53,16 +52,13 @@
 
     .bg{ display:none !important; }
 
-    /* =========================
-       LAYOUT PRINCIPAL (Desktop)
-    ========================= */
     .carousel{
       position:relative;
-      width:min(1100px, 98vw); /* Para desktop, ainda com pequena margem */
+      width:min(1100px, 98vw);
       height:min(640px, 90vh);
-      padding:40px; /* Padding para desktop */
+      padding:40px;
       display:grid;
-      grid-template-columns: 1fr 1fr; /* Duas colunas para desktop */
+      grid-template-columns: 1fr 1fr;
       gap:28px;
       align-items:center;
       cursor: grab;
@@ -70,27 +66,23 @@
       -webkit-user-drag: none;
     }
 
-    /* =========================
-       LISTA DE IMAGENS (Desktop)
-    ========================= */
     .list{
       display:flex;
-      gap:22px; /* Gap entre as imagens no desktop */
+      gap:22px;
       align-items:center;
       height:100%;
       will-change:transform;
       transition:transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-      grid-column: 1 / 2; /* Ocupa a primeira coluna no grid desktop */
+      grid-column: 1 / 2;
     }
 
     .item{
-      flex:0 0 100%; /* Cada item ocupa 100% do .list no desktop */
+      flex:0 0 100%;
       display:grid;
       place-items:center;
       padding: 0;
     }
 
-    /* Oculta as informações internas do item no desktop */
     .item .info-mobile-wrapper {
         display: none;
     }
@@ -104,9 +96,6 @@
       filter:none;
     }
 
-    /* =========================
-       INFOS SEPARADAS (Desktop)
-    ========================= */
     .box-info{
       position:relative;
       width:100%;
@@ -115,7 +104,7 @@
       display:grid;
       place-items:center;
       padding: 0;
-      grid-column: 2 / 3; /* Ocupa a segunda coluna no grid desktop */
+      grid-column: 2 / 3;
     }
 
     .list-info{
@@ -173,9 +162,6 @@
       background: rgba(255,255,255,.12);
     }
 
-    /* =========================
-       NAVEGAÇÃO (SETAS)
-    ========================= */
     .navigation{
       position:absolute;
       left:0;
@@ -208,9 +194,6 @@
       background:rgba(255,255,255,.24);
     }
 
-    /* =========================
-       RESPONSIVO - Mobile (Layout de coluna única por slide)
-    ========================= */
     @media (max-width: 860px){
       body {
         padding: 0;
@@ -220,7 +203,6 @@
         height:100vh;
         width:100vw;
         padding: 0;
-        /* Certifique-se que o .box cobre toda a área e esconde qualquer vazamento */
         overflow: hidden;
       }
       .carousel{
@@ -233,7 +215,6 @@
         gap: 0;
       }
 
-      /* Esconde o box-info original (separado) no mobile */
       .box-info {
           display: none !important;
       }
@@ -245,7 +226,7 @@
         flex-grow: 1;
       }
       .item{
-        flex:0 0 100vw; /* CRÍTICO: Cada item ocupa EXATAMENTE 100% da largura da viewport */
+        flex:0 0 100vw;
         padding: 0;
         display: flex;
         flex-direction: column;
@@ -261,7 +242,6 @@
         margin-bottom: 20px;
       }
 
-      /* Mostra e estiliza as informações internas do item no mobile */
       .item .info-mobile-wrapper {
           display: flex;
           flex-direction: column;
@@ -279,7 +259,7 @@
       }
 
       .navigation{
-        display: none !important; /* FORÇA A OCULTAÇÃO DAS SETAS NO MOBILE */
+        display: none !important;
       }
     }
   </style>
@@ -290,7 +270,7 @@
     <div class="carousel" id="carousel-area">
 
       <div class="list">
-        <!-- CLONES DO ÚLTIMO SLIDE (para transição do primeiro para o último) -->
+        <!-- CLONE DO ÚLTIMO SLIDE -->
         <div class="item cloned" data-index="3">
           <img src="./img/img4.png" alt="Gatito Rosado">
           <div class="info-mobile-wrapper">
@@ -304,8 +284,9 @@
         </div>
 
         <!-- SLIDES REAIS -->
+        <!-- ✅ VERDE (data-index="0") => tom.png -->
         <div class="item" data-index="0">
-          <img src="./img/img1.png" alt="tom.png">
+          <img src="tom.png" alt="Tom">
           <div class="info-mobile-wrapper">
             <h2>Gatito Verde</h2>
             <p>
@@ -352,10 +333,10 @@
           </div>
         </div>
 
-        <!-- CLONES DO PRIMEIRO SLIDE (para transição do último para o primeiro) -->
+        <!-- CLONE DO PRIMEIRO SLIDE -->
+        <!-- ✅ VERDE (data-index="0") clone => tom.png -->
         <div class="item cloned" data-index="0">
           <img src="tom.png" alt="Tom">
-
           <div class="info-mobile-wrapper">
             <h2>Gatito Verde</h2>
             <p>
@@ -367,7 +348,7 @@
         </div>
       </div>
 
-      <!-- O box-info original permanece para a versão desktop, mas é ocultado no mobile -->
+      <!-- Desktop info -->
       <div class="box-info">
         <div class="list-info">
           <div class="info active" data-index="0">
@@ -409,7 +390,6 @@
       </div>
     </div>
 
-    <!-- As setas são para desktop, ocultadas no mobile via CSS -->
     <div class="navigation">
       <button class="prev-btn" aria-label="Anterior">
         <i class="fa-solid fa-chevron-left"></i>
@@ -425,19 +405,19 @@
     const nextBtn  = document.querySelector(".next-btn");
     const prevBtn  = document.querySelector(".prev-btn");
     const listImg  = document.querySelector(".list");
-    const items    = document.querySelectorAll(".list .item"); // Todos os items, incluindo clones
+    const items    = document.querySelectorAll(".list .item");
     const carouselArea = document.getElementById("carousel-area");
 
-    const realItemsCount = 4; // Número de slides originais (sem clones)
-    const totalItemsWithClones = items.length; // Deve ser 6
+    const realItemsCount = 4;
+    const totalItemsWithClones = items.length;
 
-    let internalIndex = 1; // Começamos no primeiro slide REAL (índice 1 da lista)
+    let internalIndex = 1;
 
     const solidBgColors = [
-      "#3b5d14", // verde (índice 0 real)
-      "#961414", // vermelho (índice 1 real)
-      "#be9100", // amarelo (índice 2 real)
-      "#c83c82"  // rosa (índice 3 real)
+      "#3b5d14",
+      "#961414",
+      "#be9100",
+      "#c83c82"
     ];
 
     let startX = 0;
@@ -445,33 +425,31 @@
     let isSwiping = false;
     let currentStepWidth = 0;
 
-    // ✅ MOBILE: saída rápida + aterrissagem (overshoot real)
     const DESKTOP_TRANSITION = 'transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-    const MOBILE_TRANSITION  = 'transform .12s linear'; // saída rápida no mobile
+    const MOBILE_TRANSITION  = 'transform .12s linear';
 
-    const MOBILE_OVERSHOOT_PX = 18; // <-- aumente aqui para mais "passar do ponto"
+    const MOBILE_OVERSHOOT_PX = 18;
     const MOBILE_OVERSHOOT_TRANSITION = 'transform .10s ease-out';
     const MOBILE_SETTLE_TRANSITION    = 'transform .12s ease-in';
 
-    function updateButtons(){ /* Ocultas por CSS no mobile */ }
+    function updateButtons(){}
 
     function updateInfo(){
-      const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount; // Calcula o índice real
-      if (window.innerWidth > 860) { // Desktop
+      const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount;
+      if (window.innerWidth > 860) {
         listInfoDesktop.forEach((info, i) => info.classList.toggle("active", i === realIndex));
       }
-      // No mobile, a informação já está dentro do item ativo, então não precisa de .active extra
     }
 
     function updateSolidBackground(){
-      const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount; // Calcula o índice real
+      const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount;
       const color = solidBgColors[realIndex] || solidBgColors[0];
       document.documentElement.style.setProperty("--bg", color);
     }
 
     function calculateStepWidth() {
       if (window.innerWidth <= 860) {
-        return window.innerWidth; // 100vw no mobile
+        return window.innerWidth;
       } else {
         const itemWidth = items[0].getBoundingClientRect().width;
         const gap = parseFloat(getComputedStyle(listImg).gap || "0");
@@ -500,18 +478,14 @@
     }
 
     function checkForCloneAndReposition() {
-      if (internalIndex === totalItemsWithClones - 1) { // clone do primeiro (final)
-        internalIndex = 1; // primeiro REAL
+      if (internalIndex === totalItemsWithClones - 1) {
+        internalIndex = 1;
         render(false);
-      } else if (internalIndex === 0) { // clone do último (início)
-        internalIndex = realItemsCount; // último REAL
+      } else if (internalIndex === 0) {
+        internalIndex = realItemsCount;
         render(false);
       }
     }
-
-    // ======================================
-    // Lógica de Swipe / Arrastar
-    // ======================================
 
     function handleStart(e) {
       if (window.innerWidth > 860 && e.type.startsWith('touch')) return;
@@ -520,7 +494,6 @@
       isSwiping = true;
       startX = (e.touches ? e.touches[0].clientX : e.clientX);
       listImg.style.transition = 'none';
-
       currentTranslateX = -internalIndex * currentStepWidth;
     }
 
@@ -540,7 +513,6 @@
 
       const isMobile = window.innerWidth <= 860;
 
-      // saída rápida no mobile (mantém desktop original)
       listImg.style.transition = isMobile ? MOBILE_TRANSITION : DESKTOP_TRANSITION;
 
       const endX = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX);
@@ -550,11 +522,10 @@
 
       const prevInternalIndex = internalIndex;
 
-      // Decide qual será o próximo índice baseado no swipe
       let newInternalIndex = internalIndex;
-      if (diffX > threshold) { // direita (voltar)
+      if (diffX > threshold) {
         newInternalIndex--;
-      } else if (diffX < -threshold) { // esquerda (avançar)
+      } else if (diffX < -threshold) {
         newInternalIndex++;
       }
 
@@ -569,24 +540,17 @@
 
       render(true);
 
-      // ✅ MOBILE: aterrissagem real (passa do ponto e volta), só se mudou e não caiu em clone
       if (isMobile && didChange) {
         listImg.addEventListener('transitionend', () => {
-          // Se parou em um clone, não aplica overshoot (para não conflitar com o teleport)
           if (internalIndex === 0 || internalIndex === totalItemsWithClones - 1) return;
 
           const baseX = -internalIndex * currentStepWidth;
-
-          // direção baseada no gesto: avançar (diffX<0) overshoot "mais para a esquerda" (mais negativo)
-          // voltar (diffX>0) overshoot "mais para a direita" (mais positivo)
           const dir = diffX < 0 ? -1 : 1;
           const overshootX = baseX + (dir * -MOBILE_OVERSHOOT_PX);
 
-          // Passo 1: passa do ponto
           listImg.style.transition = MOBILE_OVERSHOOT_TRANSITION;
           listImg.style.transform = `translateX(${overshootX}px)`;
 
-          // Passo 2: volta e assenta
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               listImg.style.transition = MOBILE_SETTLE_TRANSITION;
@@ -596,11 +560,9 @@
         }, { once: true });
       }
 
-      // Reposiciona após a transição terminar (mantém sua lógica)
       listImg.addEventListener('transitionend', checkForCloneAndReposition, { once: true });
     }
 
-    // Event listeners para desktop (botões)
     nextBtn.addEventListener("click", () => {
       if (window.innerWidth <= 860) return;
       internalIndex++;
@@ -615,7 +577,6 @@
       listImg.addEventListener('transitionend', checkForCloneAndReposition, { once: true });
     });
 
-    // Event listeners para swipe (mobile e desktop)
     carouselArea.addEventListener("mousedown", handleStart);
     carouselArea.addEventListener("mousemove", handleMove);
     carouselArea.addEventListener("mouseup", handleEnd);
