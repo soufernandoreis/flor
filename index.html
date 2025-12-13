@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Carousel com troca de cores (Tela Cheia - Infinito)</title>
+  <title>Carousel com troca de cores (Tela Cheia - Infinito, sem scroll horizontal)</title>
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -37,19 +37,24 @@
       background: var(--bg);
       display:grid;
       place-items:center;
-      padding:24px;
+      padding:0; /* Removido o padding do body para evitar scroll em telas menores */
+      margin:0; /* Garantir que não há margin no body */
+      overflow-x: hidden; /* ESSENCIAL: Esconde qualquer estouro horizontal */
       transition: background-color .15s linear;
     }
 
     /* ✅ Remove "quadrado" e sombra: agora é só um wrapper transparente */
     .box{
       position:relative;
-      width:min(1100px, 92vw);
-      height:min(640px, 82vh);
+      /* Ajustado para usar 100vw e 100vh para ocupar a tela toda */
+      width:100vw; /* Ocupa 100% da largura da viewport */
+      height:100vh; /* Ocupa 100% da altura da viewport */
       border-radius:0;      /* opcional: deixa reto */
-      overflow:visible;     /* não corta nada */
+      overflow:hidden;     /* Oculta qualquer conteúdo que transborde dentro da .box */
       background:transparent;
       box-shadow:none;
+      display:grid; /* Adicionado display grid para centralizar o carousel */
+      place-items:center;
     }
 
     /* ✅ Não usamos mais backgrounds em camadas */
@@ -60,8 +65,9 @@
     ========================= */
     .carousel{
       position:relative;
-      width:100%;
-      height:100%;
+      /* Ajustado para uma largura máxima para que caiba na tela sem scroll */
+      width:min(1100px, 98vw); /* Usa 98vw para deixar uma pequena margem e não apertar muito */
+      height:min(640px, 90vh); /* Altura também ajustada à viewport */
       padding:40px;
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -82,7 +88,7 @@
     }
 
     .item{
-      flex:0 0 100%;
+      flex:0 0 100%; /* Cada item ocupa 100% do espaço disponível em .list */
       display:grid;
       place-items:center;
     }
@@ -93,7 +99,6 @@
       object-fit:contain;
       user-select:none;
       -webkit-user-drag:none;
-      /* ✅ sem sombra/halo */
       filter:none;
     }
 
@@ -104,7 +109,7 @@
       position:relative;
       width:100%;
       height:100%;
-      overflow:hidden;
+      overflow:hidden; /* Garante que o texto não cause scroll interno se for muito longo */
       display:grid;
       place-items:center;
     }
@@ -135,6 +140,7 @@
       line-height:1.05;
       color:#fff;
       margin-bottom:14px;
+      text-align: center; /* Centraliza o texto para melhor visualização */
     }
 
     .info p{
@@ -142,6 +148,7 @@
       line-height:1.6;
       color:rgba(255,255,255,.88);
       margin-bottom:22px;
+      text-align: center; /* Centraliza o texto para melhor visualização */
     }
 
     .btn{
@@ -175,6 +182,8 @@
       justify-content:space-between;
       align-items:center;
       pointer-events:none;
+      /* Adicionado padding para os botões não colarem nas bordas da tela */
+      padding: 0 10px;
     }
 
     .prev-btn, .next-btn{
@@ -196,21 +205,18 @@
       background:rgba(255,255,255,.24);
     }
 
-    /* Removido o disabled para botões, pois o carrossel é infinito */
-    /* .prev-btn.disabled, .next-btn.disabled{
-      opacity:.35;
-      cursor:not-allowed;
-    } */
-
     /* =========================
        RESPONSIVO
     ========================= */
     @media (max-width: 860px){
-      .box{ height:auto; }
+      body { padding: 0; } /* Remove padding em telas menores também */
+      .box{ height:100vh; width:100vw; padding: 20px 0; } /* Ajusta o box para ser totalmente responsivo */
       .carousel{
         grid-template-columns:1fr;
         padding:26px 22px;
         gap:18px;
+        width: 100%; /* Ocupa 100% da largura do .box */
+        height: auto; /* Altura flexível */
       }
       .item img{
         width:min(420px, 78vw);
@@ -223,6 +229,7 @@
         top:auto;
         bottom:18px;
         transform:none;
+        padding: 0; /* Remove padding extra nos botões fixos */
       }
       .box-info{ min-height:220px; }
     }
@@ -317,11 +324,8 @@
 
     let index = 0;
 
-    // A função updateButtons não é mais necessária para desabilitar,
-    // mas a mantemos para a estrutura, caso queira adicionar outra lógica.
     function updateButtons(){
-      // prevBtn.classList.toggle("disabled", index === 0);
-      // nextBtn.classList.toggle("disabled", index === totalItems - 1);
+      // Não é mais necessário desabilitar os botões em carrossel infinito.
     }
 
     function updateInfo(){
@@ -355,8 +359,7 @@
     });
 
     prevBtn.addEventListener("click", () => {
-      // Garante que o índice não seja negativo ao ir para trás do primeiro item.
-      index = (index - 1 + totalItems) % totalItems;
+      index = (index - 1 + totalItems) % totalItems; // Garante que o índice não seja negativo
       render();
     });
 
@@ -364,7 +367,7 @@
       updateCarousel();
     });
 
-    render();
+    render(); // Renderiza o carrossel na inicialização
   </script>
 </body>
 </html>
