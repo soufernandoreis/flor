@@ -428,7 +428,7 @@
     const carouselArea = document.getElementById("carousel-area");
 
     const realItemsCount = 4; // Número de slides originais (sem clones)
-    const totalItemsWithClones = items.length; // 6
+    const totalItemsWithClones = items.length; // Deve ser 6
 
     let internalIndex = 1; // Começamos no primeiro slide REAL (índice 1 da lista)
 
@@ -444,21 +444,23 @@
     let isSwiping = false;
     let currentStepWidth = 0;
 
-    // ✅ MOBILE FAST: transições separadas
+    // ✅ Alterações solicitadas (somente para sensação de saída/chegada no MOBILE)
     const DESKTOP_TRANSITION = 'transform .6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-    const MOBILE_TRANSITION  = 'transform .12s linear';
+    const MOBILE_TRANSITION  = 'transform .12s linear'; // velocidade de saída rápida no mobile
+    const MOBILE_ELASTIC_TRANSITION = 'transform .18s cubic-bezier(0.34, 1.56, 0.64, 1)'; // “chegada elástica” curta
 
     function updateButtons(){ /* Ocultas por CSS no mobile */ }
 
     function updateInfo(){
-      const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount;
+      const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount; // Calcula o índice real
       if (window.innerWidth > 860) { // Desktop
         listInfoDesktop.forEach((info, i) => info.classList.toggle("active", i === realIndex));
       }
+      // No mobile, a informação já está dentro do item ativo, então não precisa de .active extra
     }
 
     function updateSolidBackground(){
-      const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount;
+      const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount; // Calcula o índice real
       const color = solidBgColors[realIndex] || solidBgColors[0];
       document.documentElement.style.setProperty("--bg", color);
     }
@@ -477,8 +479,8 @@
       currentStepWidth = calculateStepWidth();
       currentTranslateX = -internalIndex * currentStepWidth;
 
-      // ✅ MOBILE FAST: aplica transição rápida só no mobile
       const isMobile = window.innerWidth <= 860;
+
       listImg.style.transition = transition
         ? (isMobile ? MOBILE_TRANSITION : DESKTOP_TRANSITION)
         : 'none';
@@ -494,14 +496,18 @@
     }
 
     function checkForCloneAndReposition() {
-      if (internalIndex === totalItemsWithClones - 1) {
-        internalIndex = 1;
-        render(false);
-      } else if (internalIndex === 0) {
-        internalIndex = realItemsCount;
-        render(false);
+      if (internalIndex === totalItemsWithClones - 1) { // Se chegamos ao clone do primeiro slide (no final)
+        internalIndex = 1; // Voltar para o primeiro slide REAL
+        render(false); // Renderiza sem transição para reposicionar
+      } else if (internalIndex === 0) { // Se chegamos ao clone do último slide (no início)
+        internalIndex = realItemsCount; // Voltar para o último slide REAL
+        render(false); // Renderiza sem transição para reposicionar
       }
     }
+
+    // ======================================
+    // Lógica de Swipe / Arrastar
+    // ======================================
 
     function handleStart(e) {
       if (window.innerWidth > 860 && e.type.startsWith('touch')) return;
@@ -510,6 +516,7 @@
       isSwiping = true;
       startX = (e.touches ? e.touches[0].clientX : e.clientX);
       listImg.style.transition = 'none';
+
       currentTranslateX = -internalIndex * currentStepWidth;
     }
 
@@ -527,35 +534,50 @@
       if (!isSwiping) return;
       isSwiping = false;
 
-      // ✅ MOBILE FAST: ao soltar, usa transição rápida no mobile
       const isMobile = window.innerWidth <= 860;
+
+      // ✅ saída rápida no mobile (mantém desktop original)
       listImg.style.transition = isMobile ? MOBILE_TRANSITION : DESKTOP_TRANSITION;
 
       const endX = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX);
       const diffX = endX - startX;
 
-      // ✅ MOBILE FAST: threshold menor no mobile (melhora sensação de resposta)
+      // ✅ threshold menor no mobile para sensação de resposta (mantém desktop)
       const threshold = isMobile ? (window.innerWidth / 6) : (window.innerWidth / 4);
 
+      // Decide qual será o próximo índice baseado no swipe
       let newInternalIndex = internalIndex;
-      if (diffX > threshold) {
+      if (diffX > threshold) { // Swipe para a direita (voltar)
         newInternalIndex--;
-      } else if (diffX < -threshold) {
+      } else if (diffX < -threshold) { // Swipe para a esquerda (avançar)
         newInternalIndex++;
       }
 
+      // Garante que o índice não vá muito além dos limites dos clones durante o arrasto
       if (newInternalIndex < 0) {
           newInternalIndex = totalItemsWithClones - 1;
       } else if (newInternalIndex >= totalItemsWithClones) {
           newInternalIndex = 0;
       }
 
+      // Atualiza o índice e renderiza (com transição rápida no mobile)
       internalIndex = newInternalIndex;
       render(true);
 
+      // ✅ chegada com micro “elastic/bounce” APÓS terminar a transição rápida (somente mobile)
+      if (isMobile) {
+        listImg.addEventListener('transitionend', () => {
+          // aplica micro elasticidade para “assentar”
+          listImg.style.transition = MOBILE_ELASTIC_TRANSITION;
+          listImg.style.transform = `translateX(${-internalIndex * currentStepWidth}px)`;
+        }, { once: true });
+      }
+
+      // Verifica e reposiciona após a transição terminar (mantém sua lógica)
       listImg.addEventListener('transitionend', checkForCloneAndReposition, { once: true });
     }
 
+    // Event listeners para desktop (botões)
     nextBtn.addEventListener("click", () => {
       if (window.innerWidth <= 860) return;
       internalIndex++;
@@ -570,6 +592,7 @@
       listImg.addEventListener('transitionend', checkForCloneAndReposition, { once: true });
     });
 
+    // Event listeners para swipe (mobile e desktop)
     carouselArea.addEventListener("mousedown", handleStart);
     carouselArea.addEventListener("mousemove", handleMove);
     carouselArea.addEventListener("mouseup", handleEnd);
@@ -580,11 +603,13 @@
     carouselArea.addEventListener("touchend", handleEnd);
 
     window.addEventListener("resize", () => {
+      // Reposiciona para o índice real ao redimensionar, sem transição
       const realIndex = (internalIndex - 1 + realItemsCount) % realItemsCount;
-      internalIndex = realIndex + 1;
+      internalIndex = realIndex + 1; // Voltar para a posição do slide real
       render(false);
     });
 
+    // Renderiza o carrossel na inicialização (sem transição na primeira carga)
     render(false);
   </script>
 </body>
