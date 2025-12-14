@@ -18,273 +18,160 @@
     }
 
     *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    html,body{ height:100%; margin:0; }
     body{
-      margin:0;
-      font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-family:Poppins, sans-serif;
       background: var(--bg);
       color: var(--text);
       overflow:hidden;
     }
 
+    /* CAMADA DE INTERFACE (Sempre no topo) */
+    header.topbar, .content, .controls, .thumbnail {
+      z-index: 100;
+    }
+
     header.topbar{
       position:fixed;
       inset:0 0 auto 0;
-      z-index:50;
       display:flex;
       align-items:center;
       justify-content:space-between;
       padding:18px 28px;
-      background: linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,0));
+      background: linear-gradient(to bottom, rgba(0,0,0,.7), rgba(0,0,0,0));
     }
-    .brand{
-      font-weight:700;
-      letter-spacing:.5px;
-      text-transform:lowercase;
-      opacity:.9;
-    }
+    .brand{ font-weight:700; text-transform:lowercase; }
     .menu{ display:flex; gap:18px; }
-    .menu a{
-      color: var(--text);
-      text-decoration:none;
-      font-size:14px;
-      opacity:.85;
-    }
-    .menu a:hover{ opacity:1; }
+    .menu a{ color: var(--text); text-decoration:none; font-size:14px; opacity:.85; }
 
     main.slider{
       position:relative;
       height:100vh;
+      width: 100vw;
       overflow:hidden;
     }
 
-    .list{
-      position:absolute;
-      inset:0;
-    }
+    .list{ position:absolute; inset:0; z-index: 10; }
     .item{
       position:absolute;
       inset:0;
       opacity:0;
-      transform: scale(1.02);
-      transition: opacity .45s ease, transform .6s ease;
-      z-index: 0;
-      display: flex; /* Para centralizar o conteúdo do item */
-      align-items: center;
-      justify-content: center;
-      flex-direction: column; /* Para empilhar o conteúdo */
+      visibility: hidden;
+      transition: opacity .8s ease;
+    }
+    .item.is-active{
+      opacity:1;
+      visibility: visible;
     }
 
-    /* O `.media` agora contém apenas a imagem de fundo que será animada */
-    .item .media {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0; /* Sempre atrás do conteúdo */
-      overflow: hidden; /* Para garantir que o zoom não vaze */
-    }
-    .item .media img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover; /* Para preencher 100% da tela */
-      display: block;
-      /* Propriedades para a imagem ativa */
-      filter: blur(18px) brightness(.65);
-      transform: scale(1.08);
-      transition: filter .8s ease, transform .8s ease; /* Transição para o blur/zoom */
+    /* Imagem de Fundo */
+    .media{ position:absolute; inset:0; }
+    .media img{
+      width:100%;
+      height:100%;
+      object-fit:cover; /* Ocupa 100% da tela mesmo cortando */
+      display:block;
     }
 
-
-    /* Camada de escurecimento sobre o fundo */
+    /* Overlay sutil para leitura do texto */
     .item::after{
       content:"";
       position:absolute;
       inset:0;
-      background: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
-      z-index:1; /* Acima da imagem de fundo */
+      background: linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 60%);
+      z-index:1;
     }
 
-    .item.is-active{
-      opacity:1;
-      transform: scale(1);
-      z-index: 10; /* Slide ativo acima dos outros */
-    }
-    /* O item inativo terá o z-index padrão de 0 e opacity 0 */
-
-    /* UI sempre acima de tudo */
+    /* Conteúdo */
     .content{
       position:absolute;
       left:70px;
       top:50%;
       transform:translateY(-50%);
       width:min(520px, 85vw);
-      z-index:30; /* Z-index alto para o conteúdo */
-      pointer-events: auto; /* Garante que o conteúdo seja clicável */
     }
     .tag{
       display:inline-block;
-      padding:6px 10px;
-      border-radius:10px;
-      background: rgba(0,0,0,.35);
+      padding:6px 12px;
+      background: rgba(0,0,0,0.5);
       border:1px solid var(--stroke);
       font-size:12px;
-      letter-spacing:.08em;
-      margin:0 0 14px;
-      color:var(--muted);
+      margin-bottom: 15px;
     }
-    .content h2{ margin:0; font-size:28px; font-weight:600; }
-    .content h1{ margin:6px 0 12px; font-size:44px; line-height:1.05; }
-    .desc{ margin:0 0 16px; color:var(--muted); font-size:14px; }
+    .content h1{ margin:10px 0; font-size:54px; line-height:1; }
+    .desc{ margin-bottom:20px; color:var(--muted); font-size:15px; }
     .btn{
-      padding:10px 14px;
-      border-radius:12px;
-      border:1px solid var(--stroke);
-      background: rgba(0,0,0,.35);
+      padding:12px 24px;
+      background: transparent;
+      border:1px solid var(--text);
       color: var(--text);
       cursor:pointer;
-      z-index: 30; /* Z-index para manter o botão visível */
+      font-weight: 600;
     }
 
     .controls{
       position:absolute;
       left:70px;
-      bottom:120px;
-      z-index:30; /* Z-index alto para as setas */
+      bottom:80px;
       display:flex;
-      gap:10px;
-      pointer-events: auto; /* Garante que as setas sejam clicáveis */
+      gap:15px;
     }
     .arrow{
-      width:44px;
-      height:44px;
-      border-radius:14px;
+      width:50px;
+      height:50px;
+      border-radius:50%;
       border:1px solid var(--stroke);
-      background: rgba(0,0,0,.35);
+      background: rgba(255,255,255,0.1);
       color: var(--text);
-      font-size:26px;
+      font-size:24px;
       cursor:pointer;
-      user-select:none;
+      transition: background 0.3s;
     }
+    .arrow:hover{ background: rgba(255,255,255,0.2); }
 
+    /* CARROSSEL NO CANTO DIREITO */
     .thumbnail{
       position:absolute;
-      right:0px; /* Alinhado à direita */
-      bottom:55px;
-      z-index:30; /* Z-index alto para o carrossel */
+      right:0; /* Encostado no limite da tela */
+      bottom:50px;
       display:flex;
-      gap:12px;
-      align-items:flex-end;
-      padding:0px; /* Sem padding para remover a "sobra escura" */
-      background: transparent; /* Fundo transparente */
-      border:0; /* Sem borda */
-      backdrop-filter: none; /* Sem blur de fundo */
-      max-width: calc(100vw - 140px);
-      overflow:hidden;
-      transform: translateX(0);
-      pointer-events: auto; /* Garante que os thumbs sejam clicáveis */
+      gap:10px;
+      padding: 10px;
     }
-    .thumb-wrapper {
-        position: relative;
-        flex: 0 0 auto;
-        transform: translateX(0);
-        transition: transform .4s ease;
-        overflow: hidden;
-    }
+    .thumb-wrapper{ flex: 0 0 auto; }
     .thumb{
-      width:150px; /* Aumentado o tamanho */
-      height:100px; /* Aumentado o tamanho */
+      width:160px; /* Miniaturas maiores */
+      height:110px;
       padding:0;
       border:0;
-      background:transparent;
       cursor:pointer;
-      border-radius:0px; /* Quadrados perfeitos */
+      border-radius:0; /* Quadrados perfeitos */
       overflow:hidden;
-      outline:2px solid transparent;
-      opacity:.85;
-      transition: opacity .2s ease, transform .2s ease, outline-color .2s ease;
-      flex:0 0 auto;
-    }
-    .thumb img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
+      opacity: 0.6;
+      transition: all 0.4s ease;
     }
     .thumb.is-front{
-      opacity:1;
-      outline-color: rgba(255,255,255,.35);
-      transform: translateY(-6px);
+      opacity: 1;
+      transform: translateY(-10px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
     }
+    .thumb img{ width:100%; height:100%; object-fit:cover; }
 
-    /* ====== RESPONSIVO ====== */
-    @media (max-width: 1024px){
-      header.topbar{ padding:14px 16px; }
-      .menu{ gap:12px; }
-      .content{ left:18px; width:min(520px, calc(100vw - 36px)); }
-      .controls{ left:18px; bottom:106px; }
-      .thumbnail{ left:18px; right:0px; max-width: calc(100vw - 36px); }
-      .thumb{ width:120px; height:80px; } /* Aumentado o tamanho para tablets */
-      .content h2{ font-size:24px; }
-      .content h1{ font-size:38px; }
-    }
-    @media (max-width: 768px){
-      .content{
-        left:14px;
-        top:auto;
-        bottom:128px;
-        transform:none;
-        width: calc(100vw - 28px);
-      }
-      .content h2{ font-size:20px; }
-      .content h1{ font-size:30px; }
-      .desc{ font-size:13px; }
-
-      .controls{
-        left:14px;
-        bottom:84px;
-      }
-      .arrow{
-        width:40px;
-        height:40px;
-        border-radius:14px;
-        font-size:22px;
-      }
-
-      .thumbnail{
-        left:14px;
-        right:0px;
-        bottom:14px;
-        padding:0px;
-        border-radius:0px;
-        gap:8px;
-        max-width: calc(100vw - 28px);
-      }
-      .thumb{
-        width:100px; /* Aumentado o tamanho para mobile */
-        height:66px;
-        border-radius:0px; /* Quadrados perfeitos para mobile */
-      }
-    }
-    @media (max-width: 420px){
-      .content h1{ font-size:28px; }
-      .thumb{ width:90px; height:60px; } /* Aumentado o tamanho para mobile menor */
-      .controls{ bottom:80px; }
-    }
-
-    /* Estilo para a imagem durante a transição */
-    .item.is-transitioning .media img {
+    /* IMAGEM QUE CRESCE (Efeito Especial) */
+    .growing-img {
       position: fixed;
-      z-index: 5; /* Atrás do conteúdo (30) mas na frente do slide inativo (0) */
-      will-change: transform, width, height, left, top, filter;
-      transition:
-        left 800ms cubic-bezier(.22,.61,.36,1),
-        top 800ms cubic-bezier(.22,.61,.36,1),
-        width 800ms cubic-bezier(.22,.61,.36,1),
-        height 800ms cubic-bezier(.22,.61,.36,1),
-        transform 800ms cubic-bezier(.22,.61,.36,1),
-        filter 800ms cubic-bezier(.22,.61,.36,1);
-      border-radius: 0px; /* Garante que não tenha borda arredondada na transição */
+      z-index: 20; /* Fica atrás da UI (100) mas na frente do fundo antigo (10) */
+      object-fit: cover;
+      transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1); /* Velocidade diminuída */
+      pointer-events: none;
+    }
+
+    @media (max-width: 768px){
+      .content{ left:20px; bottom:200px; top:auto; transform:none; }
+      .content h1{ font-size:36px; }
+      .controls{ left:20px; bottom:140px; }
+      .thumbnail{ bottom:20px; left:20px; right:auto; }
+      .thumb{ width:100px; height:70px; }
     }
   </style>
 </head>
@@ -303,40 +190,10 @@
 
   <main class="slider" id="slider">
     <div class="list" id="sliderList">
-
-      <article class="item">
-        <div class="media">
-          <img src="conjuntoescuro.png" alt="slide 1">
-        </div>
-        <div class="content">
-          <p class="tag">DESIGN</p>
-          <h2>Magic Slider</h2>
-          <h1>Flower</h1>
-          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-          <button class="btn">SEE MORE</button>
-        </div>
-      </article>
-
-      <article class="item">
-        <div class="media">
-          <img src="jaquetaverde.png" alt="slide 2">
-        </div>
-        <div class="content">
-          <p class="tag">NATURE</p>
-          <h2>Magic Slider</h2>
-          <h1>Lake</h1>
-          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-          <button class="btn">SEE MORE</button>
-        </div>
-      </article>
-
-      <article class="item">
-        <div class="media">
-          <img src="conjuntoescuro.png" alt="slide 3">
-        </div>
+      <article class="item is-active">
+        <div class="media"><img src="conjuntoescuro.png" alt=""></div>
         <div class="content">
           <p class="tag">TRAVEL</p>
-          <h2>Magic Slider</h2>
           <h1>Valley</h1>
           <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
           <button class="btn">SEE MORE</button>
@@ -344,238 +201,120 @@
       </article>
 
       <article class="item">
-        <div class="media">
-          <img src="conjunto.png" alt="slide 4">
-        </div>
+        <div class="media"><img src="jaquetaverde.png" alt=""></div>
         <div class="content">
-          <p class="tag">MOUNTAIN</p>
-          <h2>Magic Slider</h2>
-          <h1>Snow</h1>
+          <p class="tag">NATURE</p>
+          <h1>Forest</h1>
           <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
           <button class="btn">SEE MORE</button>
         </div>
       </article>
 
+      <article class="item">
+        <div class="media"><img src="conjunto.png" alt=""></div>
+        <div class="content">
+          <p class="tag">FASHION</p>
+          <h1>Style</h1>
+          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          <button class="btn">SEE MORE</button>
+        </div>
+      </article>
+      
+      <article class="item">
+        <div class="media"><img src="conjuntoescuro.png" alt=""></div>
+        <div class="content">
+          <p class="tag">DESIGN</p>
+          <h1>Modern</h1>
+          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          <button class="btn">SEE MORE</button>
+        </div>
+      </article>
     </div>
 
     <div class="controls">
-      <button class="arrow" id="prev" aria-label="Anterior">‹</button>
-      <button class="arrow" id="next" aria-label="Próximo">›</button>
+      <button class="arrow" id="prev">‹</button>
+      <button class="arrow" id="next">›</button>
     </div>
 
-    <div class="thumbnail" id="thumbList" aria-label="Miniaturas">
-      <div class="thumb-wrapper"><button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button></div>
-      <div class="thumb-wrapper"><button class="thumb" type="button"><img src="jaquetaverde.png" alt=""></button></div>
-      <div class="thumb-wrapper"><button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button></div>
-      <div class="thumb-wrapper"><button class="thumb" type="button"><img src="conjunto.png" alt=""></button></div>
+    <div class="thumbnail" id="thumbList">
+      <div class="thumb-wrapper"><button class="thumb"><img src="conjuntoescuro.png"></button></div>
+      <div class="thumb-wrapper"><button class="thumb"><img src="jaquetaverde.png"></button></div>
+      <div class="thumb-wrapper"><button class="thumb"><img src="conjunto.png"></button></div>
+      <div class="thumb-wrapper"><button class="thumb"><img src="conjuntoescuro.png"></button></div>
     </div>
   </main>
 
   <script>
-    const slider = document.getElementById("slider");
     const sliderList = document.getElementById("sliderList");
-    const thumbList  = document.getElementById("thumbList");
-    const btnNext    = document.getElementById("next");
-    const btnPrev    = document.getElementById("prev");
+    const thumbList = document.getElementById("thumbList");
+    const btnNext = document.getElementById("next");
+    const btnPrev = document.getElementById("prev");
 
     let isAnimating = false;
 
-    function syncUI() {
+    function updateClasses() {
       const items = sliderList.querySelectorAll(".item");
       const thumbs = thumbList.querySelectorAll(".thumb");
-
-      items.forEach((el,i)=>el.classList.toggle("is-active",i===0));
-      thumbs.forEach((el,i)=>el.classList.toggle("is-front",i===0));
+      items.forEach((item, i) => item.classList.toggle("is-active", i === 0));
+      thumbs.forEach((thumb, i) => thumb.classList.toggle("is-front", i === 0));
     }
 
-    function getThumbStepPx() {
-      const first = thumbList.querySelector(".thumb-wrapper:first-child");
-      if (!first) return 0;
-      const rect = first.getBoundingClientRect();
-      const cs = getComputedStyle(thumbList);
-      const gap = parseFloat(cs.gap || "0") || 0;
-      return rect.width + gap;
-    }
-
-    // Função para animar a imagem do slide de entrada
-    async function animateSlideInImage(itemElement, fromRect, toRect, duration) {
-        const imgElement = itemElement.querySelector(".media img");
-
-        // Aplica estilos iniciais para a transição
-        itemElement.style.zIndex = '15'; // Temporariamente acima do item anterior, mas abaixo do UI
-        imgElement.style.position = 'fixed';
-        imgElement.style.left = fromRect.left + 'px';
-        imgElement.style.top = fromRect.top + 'px';
-        imgElement.style.width = fromRect.width + 'px';
-        imgElement.style.height = fromRect.height + 'px';
-        imgElement.style.filter = 'none'; // Sem blur/zoom no início da transição
-        imgElement.style.transform = 'scale(1)';
-        imgElement.style.opacity = '1'; // Visível
-
-        // Força o reflow para garantir que os estilos iniciais sejam aplicados antes da transição
-        imgElement.getBoundingClientRect();
-
-        // Aplica os estilos finais para a transição
-        imgElement.style.left = toRect.left + 'px';
-        imgElement.style.top = toRect.top + 'px';
-        imgElement.style.width = toRect.width + 'px';
-        imgElement.style.height = toRect.height + 'px';
-        imgElement.style.filter = 'blur(18px) brightness(.65)'; // Aplica o filtro final
-        imgElement.style.transform = 'scale(1.08)'; // Aplica o zoom final
-
-        // Adiciona a classe is-transitioning para as transições CSS
-        itemElement.classList.add('is-transitioning');
-
-        return new Promise(resolve => {
-            const handleTransitionEnd = () => {
-                imgElement.removeEventListener('transitionend', handleTransitionEnd);
-                resolve();
-            };
-            imgElement.addEventListener('transitionend', handleTransitionEnd);
-            // Timeout de segurança caso o transitionend não dispare
-            setTimeout(handleTransitionEnd, duration + 100);
-        });
-    }
-
-    function resetSlideInImage(itemElement) {
-        const imgElement = itemElement.querySelector(".media img");
-        // Remove os estilos inline aplicados durante a transição
-        imgElement.style.cssText = '';
-        itemElement.style.zIndex = ''; // Reseta o z-index temporário
-        itemElement.classList.remove('is-transitioning');
-        // Força reflow para aplicar os estilos CSS padrão da classe
-        imgElement.getBoundingClientRect();
-    }
-
-
-    async function next() {
+    async function moveSlide(direction) {
       if (isAnimating) return;
       isAnimating = true;
 
-      const duration = 800; // Tempo de transição ajustado
+      const duration = 1200; // Velocidade da imagem crescendo
+      const thumbs = thumbList.querySelectorAll(".thumb");
+      
+      // Qual miniatura vai virar o fundo?
+      // Se for NEXT, é a segunda miniatura (índice 1)
+      // Se for PREV, é a última miniatura
+      const targetThumb = direction === 'next' ? thumbs[1] : thumbs[thumbs.length - 1];
+      const imgRect = targetThumb.getBoundingClientRect();
+      const imgSource = targetThumb.querySelector("img").src;
 
-      const currentActiveItem = sliderList.querySelector(".item.is-active");
-      const nextItemElement = sliderList.firstElementChild.nextElementSibling || sliderList.firstElementChild;
+      // 1. Criar a imagem temporária que vai crescer
+      const growImg = document.createElement("img");
+      growImg.src = imgSource;
+      growImg.className = "growing-img";
+      growImg.style.top = imgRect.top + "px";
+      growImg.style.left = imgRect.left + "px";
+      growImg.style.width = imgRect.width + "px";
+      growImg.style.height = imgRect.height + "px";
+      document.body.appendChild(growImg);
 
-      const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
-      const originThumbWrapper = thumbWrappers[1]; // O segundo thumb, que se tornará o primeiro
+      // 2. Animar para preencher a tela (atrás da UI)
+      requestAnimationFrame(() => {
+        growImg.style.top = "0";
+        growImg.style.left = "0";
+        growImg.style.width = "100vw";
+        growImg.style.height = "100vh";
+      });
 
-      if (!originThumbWrapper || !nextItemElement) {
-        isAnimating = false;
-        return;
-      }
-
-      const fromRect = originThumbWrapper.getBoundingClientRect();
-      const toRect = slider.getBoundingClientRect();
-
-      // Esconde o slide atual para que a transição do próximo slide seja visível por baixo
-      if (currentActiveItem) {
-        currentActiveItem.style.opacity = '0';
-        currentActiveItem.style.zIndex = '0';
-      }
-
-      // Reordena o sliderList ANTES de iniciar a animação visual da imagem
-      sliderList.appendChild(sliderList.firstElementChild);
-      syncUI(); // Isso fará com que o nextItemElement seja agora o primeiro item e tenha is-active
-
-      // Agora, anima a imagem do slide que ACABOU DE SE TORNAR ATIVO (o antigo nextItemElement)
-      await animateSlideInImage(nextItemElement, fromRect, toRect, duration);
-
-      // Resetar os estilos inline da imagem após a transição
-      resetSlideInImage(nextItemElement);
-
-      const step = getThumbStepPx();
-      animateThumbStripToLeft(step, duration);
-      // Aguarda a animação da faixa de miniaturas, se necessário
+      // 3. Esperar a animação completar
       await new Promise(resolve => setTimeout(resolve, duration));
 
-      resetThumbStrip();
-      thumbList.appendChild(thumbList.firstElementChild);
+      // 4. Trocar os slides reais no fundo
+      if (direction === 'next') {
+        sliderList.appendChild(sliderList.firstElementChild);
+        thumbList.appendChild(thumbList.firstElementChild);
+      } else {
+        sliderList.prepend(sliderList.lastElementChild);
+        thumbList.prepend(thumbList.lastElementChild);
+      }
+      
+      updateClasses();
 
-      syncUI(); // Sincroniza a UI novamente para garantir estados corretos
+      // 5. Remover a imagem temporária (agora o slide real já está por baixo)
+      growImg.remove();
+      
       isAnimating = false;
     }
 
-    async function prev() {
-      if (isAnimating) return;
-      isAnimating = true;
+    btnNext.onclick = () => moveSlide('next');
+    btnPrev.onclick = () => moveSlide('prev');
 
-      const duration = 800; // Tempo de transição ajustado
-
-      const currentActiveItem = sliderList.querySelector(".item.is-active");
-      const prevItemElement = sliderList.lastElementChild; // O último item, que se tornará o primeiro
-
-      const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
-      const lastThumbWrapper = thumbWrappers[thumbWrappers.length - 1];
-
-      if (!lastThumbWrapper || !prevItemElement) {
-        isAnimating = false;
-        return;
-      }
-
-      const fromRect = lastThumbWrapper.getBoundingClientRect();
-      const toRect = slider.getBoundingClientRect();
-
-      // Esconde o slide atual
-      if (currentActiveItem) {
-        currentActiveItem.style.opacity = '0';
-        currentActiveItem.style.zIndex = '0';
-      }
-
-      // Reordena o sliderList ANTES de iniciar a animação visual da imagem
-      sliderList.prepend(sliderList.lastElementChild);
-      syncUI(); // Isso fará com que o prevItemElement seja agora o primeiro item e tenha is-active
-
-      // Agora, anima a imagem do slide que ACABOU DE SE TORNAR ATIVO (o antigo prevItemElement)
-      await animateSlideInImage(prevItemElement, fromRect, toRect, duration);
-
-      // Resetar os estilos inline da imagem após a transição
-      resetSlideInImage(prevItemElement);
-
-      const step = getThumbStepPx();
-      // strip para direita (pré-posição e volta)
-      thumbList.style.transition = "none";
-      const allThumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
-      allThumbWrappers.forEach(wrapper => {
-          wrapper.style.transform = `translateX(${-step}px)`;
-      });
-      thumbList.getBoundingClientRect();
-      allThumbWrappers.forEach(wrapper => {
-          wrapper.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
-          wrapper.style.transform = `translateX(0px)`;
-      });
-      await new Promise(resolve => setTimeout(resolve, duration)); // Espera a animação do thumbnail
-
-
-      thumbList.prepend(thumbList.lastElementChild); // Move o thumbnail para o começo
-
-      syncUI();
-      isAnimating = false;
-    }
-
-    // Funções para animação do thumbnail strip
-    function animateThumbStripToLeft(delta, duration) {
-      const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
-      thumbWrappers.forEach((wrapper) => {
-        wrapper.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
-        wrapper.style.transform = `translateX(${-delta}px)`;
-      });
-    }
-
-    function resetThumbStrip() {
-        const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
-        thumbWrappers.forEach(wrapper => {
-            wrapper.style.transition = "none";
-            wrapper.style.transform = "translateX(0px)";
-            wrapper.getBoundingClientRect();
-        });
-    }
-
-
-    btnNext.addEventListener("click", next);
-    btnPrev.addEventListener("click", prev);
-
-    syncUI();
+    updateClasses();
   </script>
 </body>
 </html>
