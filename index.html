@@ -61,9 +61,6 @@
     .list{
       position:absolute;
       inset:0;
-      display: flex; /* Para centralizar o item ativo */
-      justify-content: center;
-      align-items: center;
     }
     .item{
       position:absolute;
@@ -71,51 +68,59 @@
       opacity:0;
       transform: scale(1.02);
       transition: opacity .45s ease, transform .6s ease;
-      z-index: 0; /* Z-index padrão, a imagem ativa terá um z-index maior */
+      z-index: 0;
+      display: flex; /* Para centralizar o conteúdo do item */
+      align-items: center;
+      justify-content: center;
+      flex-direction: column; /* Para empilhar o conteúdo */
     }
 
-    /* Imagem principal do slide, sempre cobrindo */
-    .media{
-      position:absolute;
-      inset:0;
-      z-index:0; /* Fica atrás do conteúdo */
+    /* O `.media` agora contém apenas a imagem de fundo que será animada */
+    .item .media {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0; /* Sempre atrás do conteúdo */
+      overflow: hidden; /* Para garantir que o zoom não vaze */
     }
-    .media img{ /* Alterado para usar apenas uma imagem */
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      display:block;
-      object-fit:cover; /* Para preencher 100% mesmo que corte */
-      filter: blur(0px) brightness(1); /* Sem blur ou brilho aqui, isso será feito no item ativo */
-      transform: scale(1);
+    .item .media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Para preencher 100% da tela */
+      display: block;
+      /* Propriedades para a imagem ativa */
+      filter: blur(18px) brightness(.65);
+      transform: scale(1.08);
+      transition: filter .8s ease, transform .8s ease; /* Transição para o blur/zoom */
     }
 
-    .item::after{ /* Camada de escurecimento sobre o fundo */
+
+    /* Camada de escurecimento sobre o fundo */
+    .item::after{
       content:"";
       position:absolute;
       inset:0;
       background: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
-      z-index:1;
+      z-index:1; /* Acima da imagem de fundo */
     }
+
     .item.is-active{
       opacity:1;
       transform: scale(1);
-      z-index: 10; /* Z-index maior para o slide ativo */
+      z-index: 10; /* Slide ativo acima dos outros */
     }
-    .item.is-active .media img {
-        filter: blur(18px) brightness(.65); /* Adiciona blur e brilho apenas à imagem ativa */
-        transform: scale(1.08); /* E o zoom */
-    }
+    /* O item inativo terá o z-index padrão de 0 e opacity 0 */
 
-    /* UI sempre acima */
+    /* UI sempre acima de tudo */
     .content{
       position:absolute;
       left:70px;
       top:50%;
       transform:translateY(-50%);
       width:min(520px, 85vw);
-      z-index:30; /* Z-index para manter o conteúdo visível */
+      z-index:30; /* Z-index alto para o conteúdo */
+      pointer-events: auto; /* Garante que o conteúdo seja clicável */
     }
     .tag{
       display:inline-block;
@@ -145,9 +150,10 @@
       position:absolute;
       left:70px;
       bottom:120px;
-      z-index:30; /* Z-index para manter as setas visíveis */
+      z-index:30; /* Z-index alto para as setas */
       display:flex;
       gap:10px;
+      pointer-events: auto; /* Garante que as setas sejam clicáveis */
     }
     .arrow{
       width:44px;
@@ -165,7 +171,7 @@
       position:absolute;
       right:0px; /* Alinhado à direita */
       bottom:55px;
-      z-index:30; /* Z-index para manter o carrossel visível */
+      z-index:30; /* Z-index alto para o carrossel */
       display:flex;
       gap:12px;
       align-items:flex-end;
@@ -176,13 +182,14 @@
       max-width: calc(100vw - 140px);
       overflow:hidden;
       transform: translateX(0);
+      pointer-events: auto; /* Garante que os thumbs sejam clicáveis */
     }
     .thumb-wrapper {
         position: relative;
         flex: 0 0 auto;
         transform: translateX(0);
         transition: transform .4s ease;
-        overflow: hidden; /* Garante que a imagem do último quadrado não vaze */
+        overflow: hidden;
     }
     .thumb{
       width:150px; /* Aumentado o tamanho */
@@ -265,23 +272,19 @@
       .controls{ bottom:80px; }
     }
 
-    /* ====== CAMADA DE TRANSIÇÃO (abaixo do UI) ====== */
-    /* Removida, pois a imagem principal agora fará a transição */
-
-    /* Novo estilo para a imagem que está em transição */
+    /* Estilo para a imagem durante a transição */
     .item.is-transitioning .media img {
-        position: fixed; /* Fixa a imagem na tela para a transição */
-        transform-origin: top left;
-        z-index: 5; /* Coloca a imagem em transição atrás do conteúdo mas à frente do slide anterior */
-        transition: transform 800ms cubic-bezier(.22,.61,.36,1),
-                    width 800ms cubic-bezier(.22,.61,.36,1),
-                    height 800ms cubic-bezier(.22,.61,.36,1),
-                    left 800ms cubic-bezier(.22,.61,.36,1),
-                    top 800ms cubic-bezier(.22,.61,.36,1),
-                    border-radius 800ms cubic-bezier(.22,.61,.36,1),
-                    filter 800ms cubic-bezier(.22,.61,.36,1),
-                    opacity 800ms cubic-bezier(.22,.61,.36,1); /* Transições para todas as propriedades */
-        border-radius: 0px; /* Para remover o arredondamento durante a transição */
+      position: fixed;
+      z-index: 5; /* Atrás do conteúdo (30) mas na frente do slide inativo (0) */
+      will-change: transform, width, height, left, top, filter;
+      transition:
+        left 800ms cubic-bezier(.22,.61,.36,1),
+        top 800ms cubic-bezier(.22,.61,.36,1),
+        width 800ms cubic-bezier(.22,.61,.36,1),
+        height 800ms cubic-bezier(.22,.61,.36,1),
+        transform 800ms cubic-bezier(.22,.61,.36,1),
+        filter 800ms cubic-bezier(.22,.61,.36,1);
+      border-radius: 0px; /* Garante que não tenha borda arredondada na transição */
     }
   </style>
 </head>
@@ -368,8 +371,6 @@
     </div>
   </main>
 
-  <!-- Removida a transition-layer pois não será mais necessário um elemento temporário -->
-
   <script>
     const slider = document.getElementById("slider");
     const sliderList = document.getElementById("sliderList");
@@ -382,6 +383,7 @@
     function syncUI() {
       const items = sliderList.querySelectorAll(".item");
       const thumbs = thumbList.querySelectorAll(".thumb");
+
       items.forEach((el,i)=>el.classList.toggle("is-active",i===0));
       thumbs.forEach((el,i)=>el.classList.toggle("is-front",i===0));
     }
@@ -395,6 +397,57 @@
       return rect.width + gap;
     }
 
+    // Função para animar a imagem do slide de entrada
+    async function animateSlideInImage(itemElement, fromRect, toRect, duration) {
+        const imgElement = itemElement.querySelector(".media img");
+
+        // Aplica estilos iniciais para a transição
+        itemElement.style.zIndex = '15'; // Temporariamente acima do item anterior, mas abaixo do UI
+        imgElement.style.position = 'fixed';
+        imgElement.style.left = fromRect.left + 'px';
+        imgElement.style.top = fromRect.top + 'px';
+        imgElement.style.width = fromRect.width + 'px';
+        imgElement.style.height = fromRect.height + 'px';
+        imgElement.style.filter = 'none'; // Sem blur/zoom no início da transição
+        imgElement.style.transform = 'scale(1)';
+        imgElement.style.opacity = '1'; // Visível
+
+        // Força o reflow para garantir que os estilos iniciais sejam aplicados antes da transição
+        imgElement.getBoundingClientRect();
+
+        // Aplica os estilos finais para a transição
+        imgElement.style.left = toRect.left + 'px';
+        imgElement.style.top = toRect.top + 'px';
+        imgElement.style.width = toRect.width + 'px';
+        imgElement.style.height = toRect.height + 'px';
+        imgElement.style.filter = 'blur(18px) brightness(.65)'; // Aplica o filtro final
+        imgElement.style.transform = 'scale(1.08)'; // Aplica o zoom final
+
+        // Adiciona a classe is-transitioning para as transições CSS
+        itemElement.classList.add('is-transitioning');
+
+        return new Promise(resolve => {
+            const handleTransitionEnd = () => {
+                imgElement.removeEventListener('transitionend', handleTransitionEnd);
+                resolve();
+            };
+            imgElement.addEventListener('transitionend', handleTransitionEnd);
+            // Timeout de segurança caso o transitionend não dispare
+            setTimeout(handleTransitionEnd, duration + 100);
+        });
+    }
+
+    function resetSlideInImage(itemElement) {
+        const imgElement = itemElement.querySelector(".media img");
+        // Remove os estilos inline aplicados durante a transição
+        imgElement.style.cssText = '';
+        itemElement.style.zIndex = ''; // Reseta o z-index temporário
+        itemElement.classList.remove('is-transitioning');
+        // Força reflow para aplicar os estilos CSS padrão da classe
+        imgElement.getBoundingClientRect();
+    }
+
+
     async function next() {
       if (isAnimating) return;
       isAnimating = true;
@@ -402,13 +455,12 @@
       const duration = 800; // Tempo de transição ajustado
 
       const currentActiveItem = sliderList.querySelector(".item.is-active");
-      const nextItemElement = sliderList.firstElementChild.nextElementSibling || sliderList.firstElementChild; // Próximo item real
-      const nextImg = nextItemElement.querySelector(".media img");
+      const nextItemElement = sliderList.firstElementChild.nextElementSibling || sliderList.firstElementChild;
 
       const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
       const originThumbWrapper = thumbWrappers[1]; // O segundo thumb, que se tornará o primeiro
 
-      if (!originThumbWrapper || !nextImg) {
+      if (!originThumbWrapper || !nextItemElement) {
         isAnimating = false;
         return;
       }
@@ -416,51 +468,31 @@
       const fromRect = originThumbWrapper.getBoundingClientRect();
       const toRect = slider.getBoundingClientRect();
 
-      // Preparar a imagem do próximo slide para a transição
-      nextItemElement.classList.add("is-transitioning");
-      nextImg.style.left = fromRect.left + "px";
-      nextImg.style.top = fromRect.top + "px";
-      nextImg.style.width = fromRect.width + "px";
-      nextImg.style.height = fromRect.height + "px";
+      // Esconde o slide atual para que a transição do próximo slide seja visível por baixo
+      if (currentActiveItem) {
+        currentActiveItem.style.opacity = '0';
+        currentActiveItem.style.zIndex = '0';
+      }
 
-      // Forçar reflow para que as propriedades iniciais sejam aplicadas antes da transição
-      nextImg.getBoundingClientRect();
+      // Reordena o sliderList ANTES de iniciar a animação visual da imagem
+      sliderList.appendChild(sliderList.firstElementChild);
+      syncUI(); // Isso fará com que o nextItemElement seja agora o primeiro item e tenha is-active
 
-      // Iniciar a transição
-      nextImg.style.left = toRect.left + "px";
-      nextImg.style.top = toRect.top + "px";
-      nextImg.style.width = toRect.width + "px";
-      nextImg.style.height = toRect.height + "px";
-      nextImg.style.borderRadius = "0px";
-      nextImg.style.filter = "blur(18px) brightness(.65)"; // Aplica o filtro de blur e brilho
-      nextImg.style.transform = "scale(1.08)"; // Aplica o zoom
+      // Agora, anima a imagem do slide que ACABOU DE SE TORNAR ATIVO (o antigo nextItemElement)
+      await animateSlideInImage(nextItemElement, fromRect, toRect, duration);
+
+      // Resetar os estilos inline da imagem após a transição
+      resetSlideInImage(nextItemElement);
 
       const step = getThumbStepPx();
       animateThumbStripToLeft(step, duration);
-
-      // Esperar a transição da imagem principal
-      await new Promise(resolve => {
-        const handleTransitionEnd = () => {
-          nextImg.removeEventListener("transitionend", handleTransitionEnd);
-          resolve();
-        };
-        nextImg.addEventListener("transitionend", handleTransitionEnd);
-        setTimeout(handleTransitionEnd, duration + 100); // Timeout de segurança
-      });
-
-      // Mover o item no sliderList para o final
-      sliderList.appendChild(sliderList.firstElementChild);
-      syncUI(); // Atualiza as classes is-active
-
-      // Resetar o estilo da imagem que acabou de transicionar
-      nextItemElement.classList.remove("is-transitioning");
-      nextImg.style.cssText = ''; // Limpa os estilos inline aplicados durante a transição
-      nextImg.getBoundingClientRect(); // Força reflow para aplicar os estilos CSS da classe
+      // Aguarda a animação da faixa de miniaturas, se necessário
+      await new Promise(resolve => setTimeout(resolve, duration));
 
       resetThumbStrip();
-      thumbList.appendChild(thumbList.firstElementChild); // Move o thumbnail para o final
+      thumbList.appendChild(thumbList.firstElementChild);
 
-      syncUI();
+      syncUI(); // Sincroniza a UI novamente para garantir estados corretos
       isAnimating = false;
     }
 
@@ -472,12 +504,11 @@
 
       const currentActiveItem = sliderList.querySelector(".item.is-active");
       const prevItemElement = sliderList.lastElementChild; // O último item, que se tornará o primeiro
-      const prevImg = prevItemElement.querySelector(".media img");
 
       const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
       const lastThumbWrapper = thumbWrappers[thumbWrappers.length - 1];
 
-      if (!lastThumbWrapper || !prevImg) {
+      if (!lastThumbWrapper || !prevItemElement) {
         isAnimating = false;
         return;
       }
@@ -485,32 +516,23 @@
       const fromRect = lastThumbWrapper.getBoundingClientRect();
       const toRect = slider.getBoundingClientRect();
 
-      // Preparar a imagem do slide anterior para a transição
-      prevItemElement.classList.add("is-transitioning");
-      prevImg.style.left = fromRect.left + "px";
-      prevImg.style.top = fromRect.top + "px";
-      prevImg.style.width = fromRect.width + "px";
-      prevImg.style.height = fromRect.height + "px";
-      prevImg.style.borderRadius = "0px"; // Inicia sem border-radius
-      prevImg.style.filter = "none"; // Inicia sem filtro
-      prevImg.style.transform = "scale(1)"; // Inicia sem zoom
-      prevImg.style.opacity = "1"; // Garante visibilidade
+      // Esconde o slide atual
+      if (currentActiveItem) {
+        currentActiveItem.style.opacity = '0';
+        currentActiveItem.style.zIndex = '0';
+      }
 
-      // Mover o item no sliderList para o começo antes de iniciar a transição
+      // Reordena o sliderList ANTES de iniciar a animação visual da imagem
       sliderList.prepend(sliderList.lastElementChild);
-      syncUI(); // Atualiza as classes is-active antes de animar
+      syncUI(); // Isso fará com que o prevItemElement seja agora o primeiro item e tenha is-active
 
-      // Forçar reflow para que as propriedades iniciais sejam aplicadas antes da transição
-      prevImg.getBoundingClientRect();
+      // Agora, anima a imagem do slide que ACABOU DE SE TORNAR ATIVO (o antigo prevItemElement)
+      await animateSlideInImage(prevItemElement, fromRect, toRect, duration);
 
-      // Iniciar a transição
-      prevImg.style.left = toRect.left + "px";
-      prevImg.style.top = toRect.top + "px";
-      prevImg.style.width = toRect.width + "px";
-      prevImg.style.height = toRect.height + "px";
-      prevImg.style.filter = "blur(18px) brightness(.65)";
-      prevImg.style.transform = "scale(1.08)";
+      // Resetar os estilos inline da imagem após a transição
+      resetSlideInImage(prevItemElement);
 
+      const step = getThumbStepPx();
       // strip para direita (pré-posição e volta)
       thumbList.style.transition = "none";
       const allThumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
@@ -522,27 +544,33 @@
           wrapper.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
           wrapper.style.transform = `translateX(0px)`;
       });
+      await new Promise(resolve => setTimeout(resolve, duration)); // Espera a animação do thumbnail
 
-      // Esperar a transição da imagem principal
-      await new Promise(resolve => {
-        const handleTransitionEnd = () => {
-          prevImg.removeEventListener("transitionend", handleTransitionEnd);
-          resolve();
-        };
-        prevImg.addEventListener("transitionend", handleTransitionEnd);
-        setTimeout(handleTransitionEnd, duration + 100); // Timeout de segurança
-      });
-
-      // Resetar o estilo da imagem que acabou de transicionar
-      prevItemElement.classList.remove("is-transitioning");
-      prevImg.style.cssText = ''; // Limpa os estilos inline aplicados durante a transição
-      prevImg.getBoundingClientRect(); // Força reflow para aplicar os estilos CSS da classe
 
       thumbList.prepend(thumbList.lastElementChild); // Move o thumbnail para o começo
 
       syncUI();
       isAnimating = false;
     }
+
+    // Funções para animação do thumbnail strip
+    function animateThumbStripToLeft(delta, duration) {
+      const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
+      thumbWrappers.forEach((wrapper) => {
+        wrapper.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
+        wrapper.style.transform = `translateX(${-delta}px)`;
+      });
+    }
+
+    function resetThumbStrip() {
+        const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
+        thumbWrappers.forEach(wrapper => {
+            wrapper.style.transition = "none";
+            wrapper.style.transform = "translateX(0px)";
+            wrapper.getBoundingClientRect();
+        });
+    }
+
 
     btnNext.addEventListener("click", next);
     btnPrev.addEventListener("click", prev);
