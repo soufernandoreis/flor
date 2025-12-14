@@ -109,7 +109,7 @@
       top:50%;
       transform:translateY(-50%);
       width:min(520px, 85vw);
-      z-index:30;
+      z-index:30; /* Z-index para manter o conteúdo visível */
     }
     .tag{
       display:inline-block;
@@ -132,13 +132,14 @@
       background: rgba(0,0,0,.35);
       color: var(--text);
       cursor:pointer;
+      z-index: 30; /* Z-index para manter o botão visível */
     }
 
     .controls{
       position:absolute;
       left:70px;
       bottom:120px;
-      z-index:30;
+      z-index:30; /* Z-index para manter as setas visíveis */
       display:flex;
       gap:10px;
     }
@@ -156,30 +157,31 @@
 
     .thumbnail{
       position:absolute;
-      right:70px;
+      right:0px; /* Alterado para ficar no canto da tela */
       bottom:55px;
-      z-index:30;
+      z-index:30; /* Z-index para manter o carrossel visível */
       display:flex;
       gap:12px;
       align-items:flex-end;
-      padding:14px;
-      border-radius:18px;
-      background: rgba(0,0,0,.22);
-      border:1px solid var(--stroke);
-      backdrop-filter: blur(10px);
+      padding:0px; /* Removido o padding para eliminar a sobra escura */
+      border-radius:0px; /* Removido border-radius */
+      background: transparent; /* Removido background */
+      border:0px solid transparent; /* Removido border */
+      backdrop-filter: blur(0px); /* Removido blur */
       max-width: calc(100vw - 140px);
-      overflow:hidden; /* Alterado para esconder o overflow do carrossel */
+      overflow:hidden;
       transform: translateX(0);
     }
-    .thumb-wrapper { /* Novo wrapper para os thumbs individuais */
+    .thumb-wrapper {
         position: relative;
         flex: 0 0 auto;
         transform: translateX(0);
-        transition: transform .4s ease; /* Transição para o movimento individual */
+        transition: transform .4s ease;
+        overflow: hidden; /* Garante que a imagem do último quadrado não vaze */
     }
     .thumb{
-      width:110px;
-      height:70px;
+      width:150px; /* Aumentado o tamanho */
+      height:100px; /* Aumentado o tamanho */
       padding:0;
       border:0;
       background:transparent;
@@ -209,8 +211,8 @@
       .menu{ gap:12px; }
       .content{ left:18px; width:min(520px, calc(100vw - 36px)); }
       .controls{ left:18px; bottom:106px; }
-      .thumbnail{ left:18px; right:18px; max-width: calc(100vw - 36px); }
-      .thumb{ width:96px; height:62px; }
+      .thumbnail{ left:18px; right:0px; max-width: calc(100vw - 36px); }
+      .thumb{ width:120px; height:80px; } /* Aumentado o tamanho para tablets */
       .content h2{ font-size:24px; }
       .content h1{ font-size:38px; }
     }
@@ -239,22 +241,22 @@
 
       .thumbnail{
         left:14px;
-        right:14px;
+        right:0px;
         bottom:14px;
-        padding:10px;
-        border-radius:16px;
+        padding:0px;
+        border-radius:0px;
         gap:8px;
         max-width: calc(100vw - 28px);
       }
       .thumb{
-        width:76px;
-        height:50px;
+        width:100px; /* Aumentado o tamanho para mobile */
+        height:66px;
         border-radius:0px; /* Quadrados perfeitos para mobile */
       }
     }
     @media (max-width: 420px){
       .content h1{ font-size:28px; }
-      .thumb{ width:70px; height:46px; }
+      .thumb{ width:90px; height:60px; } /* Aumentado o tamanho para mobile menor */
       .controls{ bottom:80px; }
     }
 
@@ -263,7 +265,7 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      z-index: 15; /* Alterado para ficar abaixo do conteúdo principal (z-index 30) */
+      z-index: 1; /* Alterado para ficar abaixo do conteúdo principal e carrossel (z-index 30) */
     }
     .transition-shot{
       position: fixed;
@@ -436,10 +438,8 @@
     function animateThumbStripToLeft(delta, duration) {
       const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
       thumbWrappers.forEach((wrapper, index) => {
-        if (index > 0) { // Move apenas os thumbs que não são o primeiro
-          wrapper.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
-          wrapper.style.transform = `translateX(${-delta}px)`;
-        }
+        wrapper.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
+        wrapper.style.transform = `translateX(${-delta}px)`;
       });
     }
 
@@ -456,10 +456,10 @@
       if (isAnimating) return;
       isAnimating = true;
 
-      const duration = 400; // Tempo de transição reduzido
+      const duration = 800; // Tempo de transição ajustado para ficar mais lento
 
       const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
-      const originThumbWrapper = thumbWrappers[1];
+      const originThumbWrapper = thumbWrappers[1]; // O segundo thumb, que se tornará o primeiro
       const originImg = originThumbWrapper ? originThumbWrapper.querySelector("img") : null;
       const nextSrc = originImg ? originImg.getAttribute("src") : null;
 
@@ -490,7 +490,7 @@
       if (isAnimating) return;
       isAnimating = true;
 
-      const duration = 400; // Tempo de transição reduzido
+      const duration = 800; // Tempo de transição ajustado para ficar mais lento
 
       const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
       const lastThumbWrapper = thumbWrappers[thumbWrappers.length - 1];
@@ -515,12 +515,11 @@
       allThumbWrappers.forEach(wrapper => {
           wrapper.style.transform = `translateX(${-step}px)`;
       });
-      thumbList.getBoundingClientRect();
+      thumbList.getBoundingClientRect(); // Força o reflow para aplicar a posição inicial
       allThumbWrappers.forEach(wrapper => {
           wrapper.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
           wrapper.style.transform = `translateX(0px)`;
       });
-
 
       await playTransitionShot(fromRect, toRect, prevSrc, duration);
 
