@@ -58,39 +58,40 @@
       overflow:hidden;
     }
 
-    .list{ position:absolute; inset:0; }
+    .list{
+      position:absolute;
+      inset:0;
+      display: flex; /* Para centralizar o item ativo */
+      justify-content: center;
+      align-items: center;
+    }
     .item{
       position:absolute;
       inset:0;
       opacity:0;
       transform: scale(1.02);
       transition: opacity .45s ease, transform .6s ease;
+      z-index: 0; /* Z-index padrão, a imagem ativa terá um z-index maior */
     }
 
-    /* fundo + imagem inteira */
+    /* Imagem principal do slide, sempre cobrindo */
     .media{
       position:absolute;
       inset:0;
-      z-index:0;
+      z-index:0; /* Fica atrás do conteúdo */
     }
-    .media .bg,
-    .media .fg{
+    .media img{ /* Alterado para usar apenas uma imagem */
       position:absolute;
       inset:0;
       width:100%;
       height:100%;
       display:block;
-    }
-    .media .bg{
-      object-fit:cover; /* Alterado para cover para preencher 100% mesmo que corte */
-      filter: blur(18px) brightness(.65);
-      transform: scale(1.08);
-    }
-    .media .fg{
-      object-fit:cover; /* Alterado para cover para preencher 100% mesmo que corte */
+      object-fit:cover; /* Para preencher 100% mesmo que corte */
+      filter: blur(0px) brightness(1); /* Sem blur ou brilho aqui, isso será feito no item ativo */
+      transform: scale(1);
     }
 
-    .item::after{
+    .item::after{ /* Camada de escurecimento sobre o fundo */
       content:"";
       position:absolute;
       inset:0;
@@ -100,6 +101,11 @@
     .item.is-active{
       opacity:1;
       transform: scale(1);
+      z-index: 10; /* Z-index maior para o slide ativo */
+    }
+    .item.is-active .media img {
+        filter: blur(18px) brightness(.65); /* Adiciona blur e brilho apenas à imagem ativa */
+        transform: scale(1.08); /* E o zoom */
     }
 
     /* UI sempre acima */
@@ -157,17 +163,16 @@
 
     .thumbnail{
       position:absolute;
-      right:0px; /* Alterado para ficar no canto da tela */
+      right:0px; /* Alinhado à direita */
       bottom:55px;
       z-index:30; /* Z-index para manter o carrossel visível */
       display:flex;
       gap:12px;
       align-items:flex-end;
-      padding:0px; /* Removido o padding para eliminar a sobra escura */
-      border-radius:0px; /* Removido border-radius */
-      background: transparent; /* Removido background */
-      border:0px solid transparent; /* Removido border */
-      backdrop-filter: blur(0px); /* Removido blur */
+      padding:0px; /* Sem padding para remover a "sobra escura" */
+      background: transparent; /* Fundo transparente */
+      border:0; /* Sem borda */
+      backdrop-filter: none; /* Sem blur de fundo */
       max-width: calc(100vw - 140px);
       overflow:hidden;
       transform: translateX(0);
@@ -261,31 +266,22 @@
     }
 
     /* ====== CAMADA DE TRANSIÇÃO (abaixo do UI) ====== */
-    .transition-layer{
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 1; /* Alterado para ficar abaixo do conteúdo principal e carrossel (z-index 30) */
-    }
-    .transition-shot{
-      position: fixed;
-      left: 0; top: 0;
-      width: 10px; height: 10px;
-      border-radius: 14px;
-      overflow: hidden;
-      will-change: transform, border-radius;
-      box-shadow: 0 20px 60px rgba(0,0,0,.35);
-      transform-origin: top left;
-      z-index: 1; /* Para ficar acima do background borrado, mas abaixo do conteúdo principal */
-    }
-    .transition-shot::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background-image: var(--img);
-      background-size: cover;
-      background-position: center;
-      transform: scale(1.02);
+    /* Removida, pois a imagem principal agora fará a transição */
+
+    /* Novo estilo para a imagem que está em transição */
+    .item.is-transitioning .media img {
+        position: fixed; /* Fixa a imagem na tela para a transição */
+        transform-origin: top left;
+        z-index: 5; /* Coloca a imagem em transição atrás do conteúdo mas à frente do slide anterior */
+        transition: transform 800ms cubic-bezier(.22,.61,.36,1),
+                    width 800ms cubic-bezier(.22,.61,.36,1),
+                    height 800ms cubic-bezier(.22,.61,.36,1),
+                    left 800ms cubic-bezier(.22,.61,.36,1),
+                    top 800ms cubic-bezier(.22,.61,.36,1),
+                    border-radius 800ms cubic-bezier(.22,.61,.36,1),
+                    filter 800ms cubic-bezier(.22,.61,.36,1),
+                    opacity 800ms cubic-bezier(.22,.61,.36,1); /* Transições para todas as propriedades */
+        border-radius: 0px; /* Para remover o arredondamento durante a transição */
     }
   </style>
 </head>
@@ -307,8 +303,7 @@
 
       <article class="item">
         <div class="media">
-          <img class="bg" src="conjuntoescuro.png" alt="">
-          <img class="fg" src="conjuntoescuro.png" alt="slide 1">
+          <img src="conjuntoescuro.png" alt="slide 1">
         </div>
         <div class="content">
           <p class="tag">DESIGN</p>
@@ -321,8 +316,7 @@
 
       <article class="item">
         <div class="media">
-          <img class="bg" src="jaquetaverde.png" alt="">
-          <img class="fg" src="jaquetaverde.png" alt="slide 2">
+          <img src="jaquetaverde.png" alt="slide 2">
         </div>
         <div class="content">
           <p class="tag">NATURE</p>
@@ -335,8 +329,7 @@
 
       <article class="item">
         <div class="media">
-          <img class="bg" src="conjuntoescuro.png" alt="">
-          <img class="fg" src="conjuntoescuro.png" alt="slide 3">
+          <img src="conjuntoescuro.png" alt="slide 3">
         </div>
         <div class="content">
           <p class="tag">TRAVEL</p>
@@ -349,8 +342,7 @@
 
       <article class="item">
         <div class="media">
-          <img class="bg" src="conjunto.png" alt="">
-          <img class="fg" src="conjunto.png" alt="slide 4">
+          <img src="conjunto.png" alt="slide 4">
         </div>
         <div class="content">
           <p class="tag">MOUNTAIN</p>
@@ -376,7 +368,7 @@
     </div>
   </main>
 
-  <div class="transition-layer" id="transitionLayer"></div>
+  <!-- Removida a transition-layer pois não será mais necessário um elemento temporário -->
 
   <script>
     const slider = document.getElementById("slider");
@@ -384,7 +376,6 @@
     const thumbList  = document.getElementById("thumbList");
     const btnNext    = document.getElementById("next");
     const btnPrev    = document.getElementById("prev");
-    const transitionLayer = document.getElementById("transitionLayer");
 
     let isAnimating = false;
 
@@ -404,66 +395,20 @@
       return rect.width + gap;
     }
 
-    function playTransitionShot(fromRect, toRect, imgSrc, duration) {
-      const shot = document.createElement("div");
-      shot.className = "transition-shot";
-      shot.style.left = fromRect.left + "px";
-      shot.style.top = fromRect.top + "px";
-      shot.style.width = fromRect.width + "px";
-      shot.style.height = fromRect.height + "px";
-      shot.style.setProperty("--img", `url("${imgSrc}")`);
-      transitionLayer.appendChild(shot);
-
-      const dx = toRect.left - fromRect.left;
-      const dy = toRect.top - fromRect.top;
-      const sx = toRect.width / fromRect.width;
-      const sy = toRect.height / fromRect.height;
-
-      shot.style.transform = "translate(0px,0px) scale(1,1)";
-      shot.style.borderRadius = "14px";
-      shot.getBoundingClientRect();
-
-      shot.style.transition =
-        `transform ${duration}ms cubic-bezier(.22,.61,.36,1), border-radius ${duration}ms cubic-bezier(.22,.61,.36,1)`;
-      shot.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
-      shot.style.borderRadius = "0px";
-
-      return new Promise((resolve) => {
-        const done = () => { shot.remove(); resolve(); };
-        shot.addEventListener("transitionend", done, { once: true });
-        setTimeout(done, duration + 60);
-      });
-    }
-
-    function animateThumbStripToLeft(delta, duration) {
-      const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
-      thumbWrappers.forEach((wrapper, index) => {
-        wrapper.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
-        wrapper.style.transform = `translateX(${-delta}px)`;
-      });
-    }
-
-    function resetThumbStrip() {
-        const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
-        thumbWrappers.forEach(wrapper => {
-            wrapper.style.transition = "none";
-            wrapper.style.transform = "translateX(0px)";
-            wrapper.getBoundingClientRect();
-        });
-    }
-
     async function next() {
       if (isAnimating) return;
       isAnimating = true;
 
-      const duration = 800; // Tempo de transição ajustado para ficar mais lento
+      const duration = 800; // Tempo de transição ajustado
+
+      const currentActiveItem = sliderList.querySelector(".item.is-active");
+      const nextItemElement = sliderList.firstElementChild.nextElementSibling || sliderList.firstElementChild; // Próximo item real
+      const nextImg = nextItemElement.querySelector(".media img");
 
       const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
       const originThumbWrapper = thumbWrappers[1]; // O segundo thumb, que se tornará o primeiro
-      const originImg = originThumbWrapper ? originThumbWrapper.querySelector("img") : null;
-      const nextSrc = originImg ? originImg.getAttribute("src") : null;
 
-      if (!originThumbWrapper || !nextSrc) {
+      if (!originThumbWrapper || !nextImg) {
         isAnimating = false;
         return;
       }
@@ -471,16 +416,49 @@
       const fromRect = originThumbWrapper.getBoundingClientRect();
       const toRect = slider.getBoundingClientRect();
 
-      sliderList.appendChild(sliderList.firstElementChild);
-      syncUI();
+      // Preparar a imagem do próximo slide para a transição
+      nextItemElement.classList.add("is-transitioning");
+      nextImg.style.left = fromRect.left + "px";
+      nextImg.style.top = fromRect.top + "px";
+      nextImg.style.width = fromRect.width + "px";
+      nextImg.style.height = fromRect.height + "px";
+
+      // Forçar reflow para que as propriedades iniciais sejam aplicadas antes da transição
+      nextImg.getBoundingClientRect();
+
+      // Iniciar a transição
+      nextImg.style.left = toRect.left + "px";
+      nextImg.style.top = toRect.top + "px";
+      nextImg.style.width = toRect.width + "px";
+      nextImg.style.height = toRect.height + "px";
+      nextImg.style.borderRadius = "0px";
+      nextImg.style.filter = "blur(18px) brightness(.65)"; // Aplica o filtro de blur e brilho
+      nextImg.style.transform = "scale(1.08)"; // Aplica o zoom
 
       const step = getThumbStepPx();
       animateThumbStripToLeft(step, duration);
 
-      await playTransitionShot(fromRect, toRect, nextSrc, duration);
+      // Esperar a transição da imagem principal
+      await new Promise(resolve => {
+        const handleTransitionEnd = () => {
+          nextImg.removeEventListener("transitionend", handleTransitionEnd);
+          resolve();
+        };
+        nextImg.addEventListener("transitionend", handleTransitionEnd);
+        setTimeout(handleTransitionEnd, duration + 100); // Timeout de segurança
+      });
+
+      // Mover o item no sliderList para o final
+      sliderList.appendChild(sliderList.firstElementChild);
+      syncUI(); // Atualiza as classes is-active
+
+      // Resetar o estilo da imagem que acabou de transicionar
+      nextItemElement.classList.remove("is-transitioning");
+      nextImg.style.cssText = ''; // Limpa os estilos inline aplicados durante a transição
+      nextImg.getBoundingClientRect(); // Força reflow para aplicar os estilos CSS da classe
 
       resetThumbStrip();
-      thumbList.appendChild(thumbList.firstElementChild);
+      thumbList.appendChild(thumbList.firstElementChild); // Move o thumbnail para o final
 
       syncUI();
       isAnimating = false;
@@ -490,24 +468,48 @@
       if (isAnimating) return;
       isAnimating = true;
 
-      const duration = 800; // Tempo de transição ajustado para ficar mais lento
+      const duration = 800; // Tempo de transição ajustado
+
+      const currentActiveItem = sliderList.querySelector(".item.is-active");
+      const prevItemElement = sliderList.lastElementChild; // O último item, que se tornará o primeiro
+      const prevImg = prevItemElement.querySelector(".media img");
 
       const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
       const lastThumbWrapper = thumbWrappers[thumbWrappers.length - 1];
-      const lastImg = lastThumbWrapper ? lastThumbWrapper.querySelector("img") : null;
-      const prevSrc = lastImg ? lastImg.getAttribute("src") : null;
 
-      if (!lastThumbWrapper || !prevSrc) {
+      if (!lastThumbWrapper || !prevImg) {
         isAnimating = false;
         return;
       }
 
       const fromRect = lastThumbWrapper.getBoundingClientRect();
       const toRect = slider.getBoundingClientRect();
-      const step = getThumbStepPx();
 
+      // Preparar a imagem do slide anterior para a transição
+      prevItemElement.classList.add("is-transitioning");
+      prevImg.style.left = fromRect.left + "px";
+      prevImg.style.top = fromRect.top + "px";
+      prevImg.style.width = fromRect.width + "px";
+      prevImg.style.height = fromRect.height + "px";
+      prevImg.style.borderRadius = "0px"; // Inicia sem border-radius
+      prevImg.style.filter = "none"; // Inicia sem filtro
+      prevImg.style.transform = "scale(1)"; // Inicia sem zoom
+      prevImg.style.opacity = "1"; // Garante visibilidade
+
+      // Mover o item no sliderList para o começo antes de iniciar a transição
       sliderList.prepend(sliderList.lastElementChild);
-      syncUI();
+      syncUI(); // Atualiza as classes is-active antes de animar
+
+      // Forçar reflow para que as propriedades iniciais sejam aplicadas antes da transição
+      prevImg.getBoundingClientRect();
+
+      // Iniciar a transição
+      prevImg.style.left = toRect.left + "px";
+      prevImg.style.top = toRect.top + "px";
+      prevImg.style.width = toRect.width + "px";
+      prevImg.style.height = toRect.height + "px";
+      prevImg.style.filter = "blur(18px) brightness(.65)";
+      prevImg.style.transform = "scale(1.08)";
 
       // strip para direita (pré-posição e volta)
       thumbList.style.transition = "none";
@@ -515,15 +517,28 @@
       allThumbWrappers.forEach(wrapper => {
           wrapper.style.transform = `translateX(${-step}px)`;
       });
-      thumbList.getBoundingClientRect(); // Força o reflow para aplicar a posição inicial
+      thumbList.getBoundingClientRect();
       allThumbWrappers.forEach(wrapper => {
           wrapper.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
           wrapper.style.transform = `translateX(0px)`;
       });
 
-      await playTransitionShot(fromRect, toRect, prevSrc, duration);
+      // Esperar a transição da imagem principal
+      await new Promise(resolve => {
+        const handleTransitionEnd = () => {
+          prevImg.removeEventListener("transitionend", handleTransitionEnd);
+          resolve();
+        };
+        prevImg.addEventListener("transitionend", handleTransitionEnd);
+        setTimeout(handleTransitionEnd, duration + 100); // Timeout de segurança
+      });
 
-      thumbList.prepend(thumbList.lastElementChild);
+      // Resetar o estilo da imagem que acabou de transicionar
+      prevItemElement.classList.remove("is-transitioning");
+      prevImg.style.cssText = ''; // Limpa os estilos inline aplicados durante a transição
+      prevImg.getBoundingClientRect(); // Força reflow para aplicar os estilos CSS da classe
+
+      thumbList.prepend(thumbList.lastElementChild); // Move o thumbnail para o começo
 
       syncUI();
       isAnimating = false;
