@@ -82,12 +82,12 @@
       display:block;
     }
     .media .bg{
-      object-fit:cover;
+      object-fit:cover; /* Para preencher a tela sem cortar e se ajustar ao mobile */
       filter: blur(18px) brightness(.65);
       transform: scale(1.08);
     }
     .media .fg{
-      object-fit:contain;
+      object-fit:contain; /* Para a imagem se encaixar sem cortar */
     }
 
     .item::after{
@@ -168,8 +168,14 @@
       border:1px solid var(--stroke);
       backdrop-filter: blur(10px);
       max-width: calc(100vw - 140px);
-      overflow:auto;
+      overflow:hidden; /* Alterado para esconder o overflow do carrossel */
       transform: translateX(0);
+    }
+    .thumb-wrapper { /* Novo wrapper para os thumbs individuais */
+        position: relative;
+        flex: 0 0 auto;
+        transform: translateX(0);
+        transition: transform .4s ease; /* Transição para o movimento individual */
     }
     .thumb{
       width:110px;
@@ -178,7 +184,7 @@
       border:0;
       background:transparent;
       cursor:pointer;
-      border-radius:12px;
+      border-radius:0px; /* Quadrados perfeitos */
       overflow:hidden;
       outline:2px solid transparent;
       opacity:.85;
@@ -243,7 +249,7 @@
       .thumb{
         width:76px;
         height:50px;
-        border-radius:12px;
+        border-radius:0px; /* Quadrados perfeitos para mobile */
       }
     }
     @media (max-width: 420px){
@@ -257,7 +263,7 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      z-index: 15;
+      z-index: 15; /* Alterado para ficar abaixo do conteúdo principal (z-index 30) */
     }
     .transition-shot{
       position: fixed;
@@ -268,6 +274,7 @@
       will-change: transform, border-radius;
       box-shadow: 0 20px 60px rgba(0,0,0,.35);
       transform-origin: top left;
+      z-index: 1; /* Para ficar acima do background borrado, mas abaixo do conteúdo principal */
     }
     .transition-shot::before{
       content:"";
@@ -360,10 +367,10 @@
     </div>
 
     <div class="thumbnail" id="thumbList" aria-label="Miniaturas">
-      <button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button>
-      <button class="thumb" type="button"><img src="jaquetaverde.png" alt=""></button>
-      <button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button>
-      <button class="thumb" type="button"><img src="conjunto.png" alt=""></button>
+      <div class="thumb-wrapper"><button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button></div>
+      <div class="thumb-wrapper"><button class="thumb" type="button"><img src="jaquetaverde.png" alt=""></button></div>
+      <div class="thumb-wrapper"><button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button></div>
+      <div class="thumb-wrapper"><button class="thumb" type="button"><img src="conjunto.png" alt=""></button></div>
     </div>
   </main>
 
@@ -387,7 +394,7 @@
     }
 
     function getThumbStepPx() {
-      const first = thumbList.querySelector(".thumb:first-child");
+      const first = thumbList.querySelector(".thumb-wrapper:first-child");
       if (!first) return 0;
       const rect = first.getBoundingClientRect();
       const cs = getComputedStyle(thumbList);
@@ -427,39 +434,43 @@
     }
 
     function animateThumbStripToLeft(delta, duration) {
-      thumbList.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
-      thumbList.style.transform = `translateX(${-delta}px)`;
+      const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
+      thumbWrappers.forEach((wrapper, index) => {
+        if (index > 0) { // Move apenas os thumbs que não são o primeiro
+          wrapper.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
+          wrapper.style.transform = `translateX(${-delta}px)`;
+        }
+      });
     }
 
     function resetThumbStrip() {
-      thumbList.style.transition = "none";
-      thumbList.style.transform = "translateX(0px)";
-      thumbList.getBoundingClientRect();
+        const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
+        thumbWrappers.forEach(wrapper => {
+            wrapper.style.transition = "none";
+            wrapper.style.transform = "translateX(0px)";
+            wrapper.getBoundingClientRect();
+        });
     }
 
-    // ======= ALTERAÇÃO NOVA (para não “voltar”):
-    // 1) ativa o próximo fundo ANTES da animação (reordena sliderList já no começo)
-    // 2) só depois anima e no final reordena thumbList
     async function next() {
       if (isAnimating) return;
       isAnimating = true;
 
-      const duration = 650;
+      const duration = 400; // Tempo de transição reduzido
 
-      const thumbs = thumbList.querySelectorAll(".thumb");
-      const originThumb = thumbs[1];
-      const originImg = originThumb ? originThumb.querySelector("img") : null;
+      const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
+      const originThumbWrapper = thumbWrappers[1];
+      const originImg = originThumbWrapper ? originThumbWrapper.querySelector("img") : null;
       const nextSrc = originImg ? originImg.getAttribute("src") : null;
 
-      if (!originThumb || !nextSrc) {
+      if (!originThumbWrapper || !nextSrc) {
         isAnimating = false;
         return;
       }
 
-      const fromRect = originThumb.getBoundingClientRect();
+      const fromRect = originThumbWrapper.getBoundingClientRect();
       const toRect = slider.getBoundingClientRect();
 
-      // >>> TROCA O FUNDO REAL ANTES (elimina “recua/volta”)
       sliderList.appendChild(sliderList.firstElementChild);
       syncUI();
 
@@ -479,31 +490,37 @@
       if (isAnimating) return;
       isAnimating = true;
 
-      const duration = 650;
+      const duration = 400; // Tempo de transição reduzido
 
-      const lastThumb = thumbList.querySelector(".thumb:last-child");
-      const lastImg = lastThumb ? lastThumb.querySelector("img") : null;
+      const thumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
+      const lastThumbWrapper = thumbWrappers[thumbWrappers.length - 1];
+      const lastImg = lastThumbWrapper ? lastThumbWrapper.querySelector("img") : null;
       const prevSrc = lastImg ? lastImg.getAttribute("src") : null;
 
-      if (!lastThumb || !prevSrc) {
+      if (!lastThumbWrapper || !prevSrc) {
         isAnimating = false;
         return;
       }
 
-      const fromRect = lastThumb.getBoundingClientRect();
+      const fromRect = lastThumbWrapper.getBoundingClientRect();
       const toRect = slider.getBoundingClientRect();
       const step = getThumbStepPx();
 
-      // >>> TROCA O FUNDO REAL ANTES (para prev também)
       sliderList.prepend(sliderList.lastElementChild);
       syncUI();
 
       // strip para direita (pré-posição e volta)
       thumbList.style.transition = "none";
-      thumbList.style.transform = `translateX(${-step}px)`;
+      const allThumbWrappers = thumbList.querySelectorAll(".thumb-wrapper");
+      allThumbWrappers.forEach(wrapper => {
+          wrapper.style.transform = `translateX(${-step}px)`;
+      });
       thumbList.getBoundingClientRect();
-      thumbList.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
-      thumbList.style.transform = `translateX(0px)`;
+      allThumbWrappers.forEach(wrapper => {
+          wrapper.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
+          wrapper.style.transform = `translateX(0px)`;
+      });
+
 
       await playTransitionShot(fromRect, toRect, prevSrc, duration);
 
