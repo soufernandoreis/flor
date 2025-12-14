@@ -58,7 +58,6 @@
       overflow:hidden;
     }
 
-    /* LISTA PRINCIPAL (hero) */
     .list{ position:absolute; inset:0; }
     .item{
       position:absolute;
@@ -71,7 +70,6 @@
       width:100%;
       height:100%;
       object-fit:cover;
-      filter:saturate(1.05) contrast(1.05);
     }
     .item::after{
       content:"";
@@ -84,7 +82,6 @@
       transform: scale(1);
     }
 
-    /* TEXTO DO SLIDE */
     .content{
       position:absolute;
       left:70px;
@@ -115,9 +112,7 @@
       color: var(--text);
       cursor:pointer;
     }
-    .btn:hover{ background: rgba(0,0,0,.5); }
 
-    /* SETAS */
     .controls{
       position:absolute;
       left:70px;
@@ -134,13 +129,9 @@
       background: rgba(0,0,0,.35);
       color: var(--text);
       font-size:26px;
-      line-height:1;
       cursor:pointer;
-      user-select:none;
     }
-    .arrow:hover{ background: rgba(0,0,0,.55); }
 
-    /* THUMBNAILS (bloco menor) */
     .thumbnail{
       position:absolute;
       right:70px;
@@ -166,32 +157,17 @@
       overflow:hidden;
       outline:2px solid transparent;
       opacity:.85;
-      transform: translateY(0);
-      transition: opacity .2s ease, transform .2s ease, outline-color .2s ease;
+      transition:.2s;
     }
     .thumb img{
       width:100%;
       height:100%;
       object-fit:cover;
-      display:block;
     }
     .thumb.is-front{
       opacity:1;
       outline-color: rgba(255,255,255,.35);
       transform: translateY(-6px);
-    }
-
-    @media (max-width: 900px){
-      .content{ left:22px; }
-      .controls{ left:22px; }
-      .thumbnail{
-        left:22px;
-        right:22px;
-        overflow:auto;
-      }
-      .thumb{ flex:0 0 auto; }
-      header.topbar{ padding:14px 16px; }
-      .menu{ gap:12px; }
     }
   </style>
 </head>
@@ -208,11 +184,11 @@
     </nav>
   </header>
 
-  <main class="slider" id="slider">
+  <main class="slider">
     <div class="list" id="sliderList">
-      <!-- DICA: o item ativo é sempre o PRIMEIRO elemento -->
+
       <article class="item">
-        <img src="homem.png" alt="homem.png" />
+        <img src="conjuntoescuro.png" alt="slide 1">
         <div class="content">
           <p class="tag">DESIGN</p>
           <h2>Magic Slider</h2>
@@ -223,7 +199,7 @@
       </article>
 
       <article class="item">
-        <img src="images/2.jpg" alt="slide 2" />
+        <img src="jaquetaverde.png" alt="slide 2">
         <div class="content">
           <p class="tag">NATURE</p>
           <h2>Magic Slider</h2>
@@ -234,7 +210,7 @@
       </article>
 
       <article class="item">
-        <img src="images/3.jpg" alt="slide 3" />
+        <img src="conjuntoescuro.png" alt="slide 3">
         <div class="content">
           <p class="tag">TRAVEL</p>
           <h2>Magic Slider</h2>
@@ -245,7 +221,7 @@
       </article>
 
       <article class="item">
-        <img src="images/4.jpg" alt="slide 4" />
+        <img src="conjunto.png" alt="slide 4">
         <div class="content">
           <p class="tag">MOUNTAIN</p>
           <h2>Magic Slider</h2>
@@ -254,19 +230,19 @@
           <button class="btn">SEE MORE</button>
         </div>
       </article>
+
     </div>
 
     <div class="controls">
-      <button class="arrow" id="prev" aria-label="Anterior">‹</button>
-      <button class="arrow" id="next" aria-label="Próximo">›</button>
+      <button class="arrow" id="prev">‹</button>
+      <button class="arrow" id="next">›</button>
     </div>
 
-    <div class="thumbnail" id="thumbList" aria-label="Miniaturas">
-      <!-- thumbs na mesma ordem da lista -->
-      <button class="thumb" type="button"><img src="images/1.jpg" alt="thumb 1" /></button>
-      <button class="thumb" type="button"><img src="images/2.jpg" alt="thumb 2" /></button>
-      <button class="thumb" type="button"><img src="images/3.jpg" alt="thumb 3" /></button>
-      <button class="thumb" type="button"><img src="images/4.jpg" alt="thumb 4" /></button>
+    <div class="thumbnail" id="thumbList">
+      <button class="thumb"><img src="conjuntoescuro.png" alt=""></button>
+      <button class="thumb"><img src="jaquetaverde.png" alt=""></button>
+      <button class="thumb"><img src="conjuntoescuro.png" alt=""></button>
+      <button class="thumb"><img src="conjunto.png" alt=""></button>
     </div>
   </main>
 
@@ -279,56 +255,32 @@
     let isAnimating = false;
 
     function syncUI() {
-      // item ativo = primeiro da lista
       const items = sliderList.querySelectorAll(".item");
       const thumbs = thumbList.querySelectorAll(".thumb");
-
-      items.forEach((el, i) => el.classList.toggle("is-active", i === 0));
-      thumbs.forEach((el, i) => el.classList.toggle("is-front", i === 0));
+      items.forEach((el,i)=>el.classList.toggle("is-active",i===0));
+      thumbs.forEach((el,i)=>el.classList.toggle("is-front",i===0));
     }
 
-    function next() {
-      if (isAnimating) return;
-      isAnimating = true;
-
-      // HERO: o primeiro vai pro final (o segundo vira o grande)
+    function next(){
+      if(isAnimating) return;
+      isAnimating=true;
       sliderList.appendChild(sliderList.firstElementChild);
-
-      // THUMBS: a primeira thumb vai pro final
       thumbList.appendChild(thumbList.firstElementChild);
-
       syncUI();
-      setTimeout(() => (isAnimating = false), 380);
+      setTimeout(()=>isAnimating=false,350);
     }
 
-    function prev() {
-      if (isAnimating) return;
-      isAnimating = true;
-
-      // HERO: o último vem pro começo
+    function prev(){
+      if(isAnimating) return;
+      isAnimating=true;
       sliderList.prepend(sliderList.lastElementChild);
-
-      // THUMBS: a última thumb vem pro começo
       thumbList.prepend(thumbList.lastElementChild);
-
       syncUI();
-      setTimeout(() => (isAnimating = false), 380);
+      setTimeout(()=>isAnimating=false,350);
     }
 
-    btnNext.addEventListener("click", next);
-    btnPrev.addEventListener("click", prev);
-
-    // opcional: clicar numa thumb traz ela pro front (girando a fila)
-    thumbList.addEventListener("click", (e) => {
-      const btn = e.target.closest(".thumb");
-      if (!btn) return;
-
-      const thumbs = Array.from(thumbList.querySelectorAll(".thumb"));
-      const idx = thumbs.indexOf(btn);
-      if (idx <= 0) return;
-
-      for (let i = 0; i < idx; i++) next();
-    });
+    btnNext.onclick = next;
+    btnPrev.onclick = prev;
 
     syncUI();
   </script>
