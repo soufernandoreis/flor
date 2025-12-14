@@ -66,18 +66,39 @@
       transform: scale(1.02);
       transition: opacity .5s ease, transform .6s ease;
     }
-    .item img{
+
+    /* ======= NOVO: garante que a imagem "encaixe" (apareça inteira) sem faixa preta =======
+       - bg: preenche tela (cover) e pode cortar, mas fica borrado/escuro
+       - fg: imagem principal (contain) aparece inteira
+    */
+    .media{
+      position:absolute;
+      inset:0;
+      z-index:0;
+    }
+    .media .bg,
+    .media .fg{
+      position:absolute;
+      inset:0;
       width:100%;
       height:100%;
-      object-fit:cover;
-      /* Ajuste de enquadramento (desktop padrão) */
-      object-position: center 30%;
+      display:block;
     }
+    .media .bg{
+      object-fit:cover;
+      filter: blur(18px) brightness(.65);
+      transform: scale(1.08);
+    }
+    .media .fg{
+      object-fit:contain;  /* <-- aqui a foto aparece completa */
+    }
+
     .item::after{
       content:"";
       position:absolute;
       inset:0;
       background: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
+      z-index:1;
     }
     .item.is-active{
       opacity:1;
@@ -132,6 +153,7 @@
       color: var(--text);
       font-size:26px;
       cursor:pointer;
+      user-select:none;
     }
 
     .thumbnail{
@@ -162,12 +184,13 @@
       outline:2px solid transparent;
       opacity:.85;
       transition:.2s;
-      flex: 0 0 auto;
+      flex:0 0 auto;
     }
     .thumb img{
       width:100%;
       height:100%;
       object-fit:cover;
+      display:block;
     }
     .thumb.is-front{
       opacity:1;
@@ -175,66 +198,66 @@
       transform: translateY(-6px);
     }
 
-    /* ====== RESPONSIVO (sem mudar o restante do layout/funcionalidade) ====== */
+    /* ====== RESPONSIVO (reduz tudo mais) ====== */
 
     /* Notebook/tablet */
     @media (max-width: 1024px){
       header.topbar{ padding:14px 16px; }
       .menu{ gap:12px; }
-      .content{ left:22px; }
-      .controls{ left:22px; bottom:110px; }
-      .thumbnail{ left:22px; right:22px; max-width: calc(100vw - 44px); }
-      .item img{ object-position: center 22%; }
+      .content{ left:18px; width:min(520px, calc(100vw - 36px)); }
+      .controls{ left:18px; bottom:106px; }
+      .thumbnail{ left:18px; right:18px; max-width: calc(100vw - 36px); }
+
+      /* diminui thumbs no notebook */
+      .thumb{ width:96px; height:62px; }
+      .content h2{ font-size:24px; }
+      .content h1{ font-size:38px; }
     }
 
     /* Mobile */
     @media (max-width: 768px){
       .content{
-        left:16px;
+        left:14px;
         top:auto;
-        bottom:150px;
+        bottom:128px;
         transform:none;
-        width: calc(100vw - 32px);
+        width: calc(100vw - 28px);
       }
-      .content h2{ font-size:22px; }
-      .content h1{ font-size:34px; }
+      .content h2{ font-size:20px; }
+      .content h1{ font-size:30px; }
       .desc{ font-size:13px; }
 
       .controls{
-        left:16px;
-        bottom:92px;
+        left:14px;
+        bottom:84px;
       }
       .arrow{
-        width:42px;
-        height:42px;
+        width:40px;
+        height:40px;
         border-radius:14px;
-        font-size:24px;
+        font-size:22px;
       }
 
       .thumbnail{
-        left:16px;
-        right:16px;
-        bottom:18px;
+        left:14px;
+        right:14px;
+        bottom:14px;
         padding:10px;
         border-radius:16px;
-        gap:10px;
+        gap:8px;
       }
       .thumb{
-        width:88px;
-        height:58px;
+        width:76px;
+        height:50px;
         border-radius:12px;
       }
-
-      /* Enquadramento mobile (mantém cover, só muda o “ponto” do corte) */
-      .item img{ object-position: center 18%; }
     }
 
     /* Mobile pequeno */
     @media (max-width: 420px){
-      .content h1{ font-size:30px; }
-      .thumbnail{ gap:8px; }
-      .thumb{ width:78px; height:52px; }
-      .item img{ object-position: center 15%; }
+      .content h1{ font-size:28px; }
+      .thumb{ width:70px; height:46px; }
+      .controls{ bottom:80px; }
     }
   </style>
 </head>
@@ -255,7 +278,10 @@
     <div class="list" id="sliderList">
 
       <article class="item">
-        <img src="conjuntoescuro.png" alt="slide 1">
+        <div class="media">
+          <img class="bg" src="conjuntoescuro.png" alt="">
+          <img class="fg" src="conjuntoescuro.png" alt="slide 1">
+        </div>
         <div class="content">
           <p class="tag">DESIGN</p>
           <h2>Magic Slider</h2>
@@ -266,7 +292,10 @@
       </article>
 
       <article class="item">
-        <img src="jaquetaverde.png" alt="slide 2">
+        <div class="media">
+          <img class="bg" src="jaquetaverde.png" alt="">
+          <img class="fg" src="jaquetaverde.png" alt="slide 2">
+        </div>
         <div class="content">
           <p class="tag">NATURE</p>
           <h2>Magic Slider</h2>
@@ -277,7 +306,10 @@
       </article>
 
       <article class="item">
-        <img src="conjuntoescuro.png" alt="slide 3">
+        <div class="media">
+          <img class="bg" src="conjuntoescuro.png" alt="">
+          <img class="fg" src="conjuntoescuro.png" alt="slide 3">
+        </div>
         <div class="content">
           <p class="tag">TRAVEL</p>
           <h2>Magic Slider</h2>
@@ -288,7 +320,10 @@
       </article>
 
       <article class="item">
-        <img src="conjunto.png" alt="slide 4">
+        <div class="media">
+          <img class="bg" src="conjunto.png" alt="">
+          <img class="fg" src="conjunto.png" alt="slide 4">
+        </div>
         <div class="content">
           <p class="tag">MOUNTAIN</p>
           <h2>Magic Slider</h2>
