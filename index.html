@@ -102,14 +102,14 @@
       transform: scale(1);
     }
 
-    /* ===== UI sempre acima da transição ===== */
+    /* UI sempre acima */
     .content{
       position:absolute;
       left:70px;
       top:50%;
       transform:translateY(-50%);
       width:min(520px, 85vw);
-      z-index:30; /* ↑ era 2 */
+      z-index:30;
     }
     .tag{
       display:inline-block;
@@ -138,7 +138,7 @@
       position:absolute;
       left:70px;
       bottom:120px;
-      z-index:30; /* ↑ era 5 */
+      z-index:30;
       display:flex;
       gap:10px;
     }
@@ -158,7 +158,7 @@
       position:absolute;
       right:70px;
       bottom:55px;
-      z-index:30; /* ↑ era 6 */
+      z-index:30;
       display:flex;
       gap:12px;
       align-items:flex-end;
@@ -197,7 +197,7 @@
       transform: translateY(-6px);
     }
 
-    /* ====== RESPONSIVO (igual ao seu último) ====== */
+    /* ====== RESPONSIVO ====== */
     @media (max-width: 1024px){
       header.topbar{ padding:14px 16px; }
       .menu{ gap:12px; }
@@ -252,14 +252,12 @@
       .controls{ bottom:80px; }
     }
 
-    /* ====== CAMADA DE TRANSIÇÃO ======
-       Agora fica ACIMA do fundo e ABAIXO do UI (texto/controles/thumbs)
-    */
+    /* ====== CAMADA DE TRANSIÇÃO (abaixo do UI) ====== */
     .transition-layer{
       position: fixed;
       inset: 0;
       pointer-events: none;
-      z-index: 15; /* ↓ era 9999 */
+      z-index: 15;
     }
     .transition-shot{
       position: fixed;
@@ -439,6 +437,9 @@
       thumbList.getBoundingClientRect();
     }
 
+    // ======= ALTERAÇÃO NOVA (para não “voltar”):
+    // 1) ativa o próximo fundo ANTES da animação (reordena sliderList já no começo)
+    // 2) só depois anima e no final reordena thumbList
     async function next() {
       if (isAnimating) return;
       isAnimating = true;
@@ -458,13 +459,16 @@
       const fromRect = originThumb.getBoundingClientRect();
       const toRect = slider.getBoundingClientRect();
 
+      // >>> TROCA O FUNDO REAL ANTES (elimina “recua/volta”)
+      sliderList.appendChild(sliderList.firstElementChild);
+      syncUI();
+
       const step = getThumbStepPx();
       animateThumbStripToLeft(step, duration);
 
       await playTransitionShot(fromRect, toRect, nextSrc, duration);
 
       resetThumbStrip();
-      sliderList.appendChild(sliderList.firstElementChild);
       thumbList.appendChild(thumbList.firstElementChild);
 
       syncUI();
@@ -490,6 +494,11 @@
       const toRect = slider.getBoundingClientRect();
       const step = getThumbStepPx();
 
+      // >>> TROCA O FUNDO REAL ANTES (para prev também)
+      sliderList.prepend(sliderList.lastElementChild);
+      syncUI();
+
+      // strip para direita (pré-posição e volta)
       thumbList.style.transition = "none";
       thumbList.style.transform = `translateX(${-step}px)`;
       thumbList.getBoundingClientRect();
@@ -498,7 +507,6 @@
 
       await playTransitionShot(fromRect, toRect, prevSrc, duration);
 
-      sliderList.prepend(sliderList.lastElementChild);
       thumbList.prepend(thumbList.lastElementChild);
 
       syncUI();
