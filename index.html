@@ -82,12 +82,12 @@
       display:block;
     }
     .media .bg{
-      object-fit:cover; /* Para preencher a tela sem cortar e se ajustar ao mobile */
+      object-fit:cover; /* Alterado para cover para preencher 100% mesmo que corte */
       filter: blur(18px) brightness(.65);
       transform: scale(1.08);
     }
     .media .fg{
-      object-fit:contain; /* Para a imagem se encaixar sem cortar */
+      object-fit:cover; /* Alterado para cover para preencher 100% mesmo que corte */
     }
 
     .item::after{
