@@ -87,7 +87,7 @@
       transform: scale(1.08);
     }
     .media .fg{
-      object-fit:contain; /* imagem inteira */
+      object-fit:contain;
     }
 
     .item::after{
@@ -102,13 +102,14 @@
       transform: scale(1);
     }
 
+    /* ===== UI sempre acima da transição ===== */
     .content{
       position:absolute;
       left:70px;
       top:50%;
       transform:translateY(-50%);
       width:min(520px, 85vw);
-      z-index:2;
+      z-index:30; /* ↑ era 2 */
     }
     .tag{
       display:inline-block;
@@ -137,7 +138,7 @@
       position:absolute;
       left:70px;
       bottom:120px;
-      z-index:5;
+      z-index:30; /* ↑ era 5 */
       display:flex;
       gap:10px;
     }
@@ -157,7 +158,7 @@
       position:absolute;
       right:70px;
       bottom:55px;
-      z-index:6;
+      z-index:30; /* ↑ era 6 */
       display:flex;
       gap:12px;
       align-items:flex-end;
@@ -251,12 +252,14 @@
       .controls{ bottom:80px; }
     }
 
-    /* ====== CAMADA DE TRANSIÇÃO (sai da thumb e cresce pro fundo) ====== */
+    /* ====== CAMADA DE TRANSIÇÃO ======
+       Agora fica ACIMA do fundo e ABAIXO do UI (texto/controles/thumbs)
+    */
     .transition-layer{
       position: fixed;
       inset: 0;
       pointer-events: none;
-      z-index: 9999;
+      z-index: 15; /* ↓ era 9999 */
     }
     .transition-shot{
       position: fixed;
@@ -273,7 +276,7 @@
       position:absolute;
       inset:0;
       background-image: var(--img);
-      background-size: cover;         /* preenche durante o crescimento */
+      background-size: cover;
       background-position: center;
       transform: scale(1.02);
     }
@@ -411,7 +414,7 @@
 
       shot.style.transform = "translate(0px,0px) scale(1,1)";
       shot.style.borderRadius = "14px";
-      shot.getBoundingClientRect(); // reflow
+      shot.getBoundingClientRect();
 
       shot.style.transition =
         `transform ${duration}ms cubic-bezier(.22,.61,.36,1), border-radius ${duration}ms cubic-bezier(.22,.61,.36,1)`;
@@ -419,12 +422,9 @@
       shot.style.borderRadius = "0px";
 
       return new Promise((resolve) => {
-        const done = () => {
-          shot.remove();
-          resolve();
-        };
+        const done = () => { shot.remove(); resolve(); };
         shot.addEventListener("transitionend", done, { once: true });
-        setTimeout(done, duration + 60); // fallback
+        setTimeout(done, duration + 60);
       });
     }
 
@@ -436,11 +436,9 @@
     function resetThumbStrip() {
       thumbList.style.transition = "none";
       thumbList.style.transform = "translateX(0px)";
-      thumbList.getBoundingClientRect(); // reflow
+      thumbList.getBoundingClientRect();
     }
 
-    // ======= CORREÇÃO PRINCIPAL:
-    // NEXT deve animar a imagem do PRÓXIMO slide (thumb #2), não a thumb #1 (atual)
     async function next() {
       if (isAnimating) return;
       isAnimating = true;
@@ -448,7 +446,7 @@
       const duration = 650;
 
       const thumbs = thumbList.querySelectorAll(".thumb");
-      const originThumb = thumbs[1]; // <- A THUMB DO PRÓXIMO SLIDE (jaqueta verde no seu exemplo)
+      const originThumb = thumbs[1];
       const originImg = originThumb ? originThumb.querySelector("img") : null;
       const nextSrc = originImg ? originImg.getAttribute("src") : null;
 
@@ -457,15 +455,14 @@
         return;
       }
 
-      const fromRect = originThumb.getBoundingClientRect(); // nasce da thumb do próximo
-      const toRect = slider.getBoundingClientRect();        // termina preenchendo o fundo (hero)
+      const fromRect = originThumb.getBoundingClientRect();
+      const toRect = slider.getBoundingClientRect();
 
       const step = getThumbStepPx();
-      animateThumbStripToLeft(step, duration);              // carrossel se move no mesmo tempo
+      animateThumbStripToLeft(step, duration);
 
       await playTransitionShot(fromRect, toRect, nextSrc, duration);
 
-      // Final: reordena fila (infinito)
       resetThumbStrip();
       sliderList.appendChild(sliderList.firstElementChild);
       thumbList.appendChild(thumbList.firstElementChild);
@@ -474,7 +471,6 @@
       isAnimating = false;
     }
 
-    // PREV: o slide anterior é a ÚLTIMA thumb indo para a frente.
     async function prev() {
       if (isAnimating) return;
       isAnimating = true;
@@ -494,7 +490,6 @@
       const toRect = slider.getBoundingClientRect();
       const step = getThumbStepPx();
 
-      // anima strip para direita (pré-posição e volta)
       thumbList.style.transition = "none";
       thumbList.style.transform = `translateX(${-step}px)`;
       thumbList.getBoundingClientRect();
