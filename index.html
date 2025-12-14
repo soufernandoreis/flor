@@ -64,13 +64,10 @@
       inset:0;
       opacity:0;
       transform: scale(1.02);
-      transition: opacity .5s ease, transform .6s ease;
+      transition: opacity .45s ease, transform .6s ease;
     }
 
-    /* ======= NOVO: garante que a imagem "encaixe" (apareça inteira) sem faixa preta =======
-       - bg: preenche tela (cover) e pode cortar, mas fica borrado/escuro
-       - fg: imagem principal (contain) aparece inteira
-    */
+    /* fundo + imagem inteira */
     .media{
       position:absolute;
       inset:0;
@@ -90,7 +87,7 @@
       transform: scale(1.08);
     }
     .media .fg{
-      object-fit:contain;  /* <-- aqui a foto aparece completa */
+      object-fit:contain; /* imagem inteira */
     }
 
     .item::after{
@@ -171,6 +168,7 @@
       backdrop-filter: blur(10px);
       max-width: calc(100vw - 140px);
       overflow:auto;
+      transform: translateX(0);
     }
     .thumb{
       width:110px;
@@ -183,7 +181,7 @@
       overflow:hidden;
       outline:2px solid transparent;
       opacity:.85;
-      transition:.2s;
+      transition: opacity .2s ease, transform .2s ease, outline-color .2s ease;
       flex:0 0 auto;
     }
     .thumb img{
@@ -198,23 +196,17 @@
       transform: translateY(-6px);
     }
 
-    /* ====== RESPONSIVO (reduz tudo mais) ====== */
-
-    /* Notebook/tablet */
+    /* ====== RESPONSIVO (do seu último) ====== */
     @media (max-width: 1024px){
       header.topbar{ padding:14px 16px; }
       .menu{ gap:12px; }
       .content{ left:18px; width:min(520px, calc(100vw - 36px)); }
       .controls{ left:18px; bottom:106px; }
       .thumbnail{ left:18px; right:18px; max-width: calc(100vw - 36px); }
-
-      /* diminui thumbs no notebook */
       .thumb{ width:96px; height:62px; }
       .content h2{ font-size:24px; }
       .content h1{ font-size:38px; }
     }
-
-    /* Mobile */
     @media (max-width: 768px){
       .content{
         left:14px;
@@ -245,6 +237,7 @@
         padding:10px;
         border-radius:16px;
         gap:8px;
+        max-width: calc(100vw - 28px);
       }
       .thumb{
         width:76px;
@@ -252,12 +245,36 @@
         border-radius:12px;
       }
     }
-
-    /* Mobile pequeno */
     @media (max-width: 420px){
       .content h1{ font-size:28px; }
       .thumb{ width:70px; height:46px; }
       .controls{ bottom:80px; }
+    }
+
+    /* ====== CAMADA DE TRANSIÇÃO (efeito “sai da thumb e cresce pro fundo”) ====== */
+    .transition-layer{
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .transition-shot{
+      position: fixed;
+      left: 0; top: 0;
+      width: 10px; height: 10px;
+      border-radius: 14px;
+      overflow: hidden;
+      will-change: transform, border-radius;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    .transition-shot::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image: var(--img);
+      background-size: cover;
+      background-position: center;
+      transform: scale(1.02);
     }
   </style>
 </head>
@@ -274,7 +291,7 @@
     </nav>
   </header>
 
-  <main class="slider">
+  <main class="slider" id="slider">
     <div class="list" id="sliderList">
 
       <article class="item">
@@ -336,23 +353,28 @@
     </div>
 
     <div class="controls">
-      <button class="arrow" id="prev">‹</button>
-      <button class="arrow" id="next">›</button>
+      <button class="arrow" id="prev" aria-label="Anterior">‹</button>
+      <button class="arrow" id="next" aria-label="Próximo">›</button>
     </div>
 
-    <div class="thumbnail" id="thumbList">
-      <button class="thumb"><img src="conjuntoescuro.png" alt=""></button>
-      <button class="thumb"><img src="jaquetaverde.png" alt=""></button>
-      <button class="thumb"><img src="conjuntoescuro.png" alt=""></button>
-      <button class="thumb"><img src="conjunto.png" alt=""></button>
+    <div class="thumbnail" id="thumbList" aria-label="Miniaturas">
+      <button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button>
+      <button class="thumb" type="button"><img src="jaquetaverde.png" alt=""></button>
+      <button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button>
+      <button class="thumb" type="button"><img src="conjunto.png" alt=""></button>
     </div>
   </main>
 
+  <!-- camada para animação -->
+  <div class="transition-layer" id="transitionLayer"></div>
+
   <script>
+    const slider = document.getElementById("slider");
     const sliderList = document.getElementById("sliderList");
     const thumbList  = document.getElementById("thumbList");
     const btnNext    = document.getElementById("next");
     const btnPrev    = document.getElementById("prev");
+    const transitionLayer = document.getElementById("transitionLayer");
 
     let isAnimating = false;
 
@@ -363,26 +385,160 @@
       thumbs.forEach((el,i)=>el.classList.toggle("is-front",i===0));
     }
 
-    function next(){
-      if(isAnimating) return;
-      isAnimating=true;
+    function getFrontThumb() {
+      return thumbList.querySelector(".thumb:first-child");
+    }
+
+    function getActiveItem() {
+      return sliderList.querySelector(".item:first-child");
+    }
+
+    function getNextImageSrc() {
+      const t = getFrontThumb();
+      const img = t ? t.querySelector("img") : null;
+      return img ? img.getAttribute("src") : null;
+    }
+
+    function getThumbStepPx() {
+      const first = getFrontThumb();
+      if (!first) return 0;
+
+      const rect = first.getBoundingClientRect();
+      const cs = getComputedStyle(thumbList);
+      const gap = parseFloat(cs.gap || "0") || 0;
+
+      return rect.width + gap;
+    }
+
+    function playTransitionShot(fromRect, toRect, imgSrc, duration) {
+      const shot = document.createElement("div");
+      shot.className = "transition-shot";
+      shot.style.left = fromRect.left + "px";
+      shot.style.top = fromRect.top + "px";
+      shot.style.width = fromRect.width + "px";
+      shot.style.height = fromRect.height + "px";
+      shot.style.setProperty("--img", `url("${imgSrc}")`);
+
+      transitionLayer.appendChild(shot);
+
+      const dx = toRect.left - fromRect.left;
+      const dy = toRect.top - fromRect.top;
+      const sx = toRect.width / fromRect.width;
+      const sy = toRect.height / fromRect.height;
+
+      // start
+      shot.style.transform = "translate(0px,0px) scale(1,1)";
+      shot.style.borderRadius = "14px";
+
+      // force reflow
+      shot.getBoundingClientRect();
+
+      // animate
+      shot.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1), border-radius ${duration}ms cubic-bezier(.22,.61,.36,1)`;
+      shot.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+      shot.style.borderRadius = "0px";
+
+      return new Promise((resolve) => {
+        const done = () => {
+          shot.removeEventListener("transitionend", done);
+          shot.remove();
+          resolve();
+        };
+        shot.addEventListener("transitionend", done, { once: true });
+        // fallback
+        setTimeout(done, duration + 60);
+      });
+    }
+
+    function animateThumbStrip(delta, duration) {
+      thumbList.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
+      thumbList.style.transform = `translateX(${-delta}px)`;
+    }
+
+    function resetThumbStrip() {
+      thumbList.style.transition = "none";
+      thumbList.style.transform = "translateX(0px)";
+      // reflow to apply instantly
+      thumbList.getBoundingClientRect();
+    }
+
+    async function next() {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      const duration = 650;
+
+      const nextSrc = getNextImageSrc();
+      const frontThumb = getFrontThumb();
+      const activeItem = getActiveItem();
+
+      if (!nextSrc || !frontThumb || !activeItem) {
+        isAnimating = false;
+        return;
+      }
+
+      // Retângulo inicial (thumb da frente)
+      const fromRect = frontThumb.getBoundingClientRect();
+
+      // Retângulo final (hero / slider)
+      const toRect = slider.getBoundingClientRect();
+
+      // Move o strip de thumbs junto
+      const step = getThumbStepPx();
+      animateThumbStrip(step, duration);
+
+      // Dispara transição da imagem (sai da thumb e vira fundo)
+      await playTransitionShot(fromRect, toRect, nextSrc, duration);
+
+      // FINAL: reordena DOM (loop infinito)
+      resetThumbStrip();
       sliderList.appendChild(sliderList.firstElementChild);
       thumbList.appendChild(thumbList.firstElementChild);
+
       syncUI();
-      setTimeout(()=>isAnimating=false,350);
+      isAnimating = false;
     }
 
-    function prev(){
-      if(isAnimating) return;
-      isAnimating=true;
+    async function prev() {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      const duration = 650;
+
+      // Para "prev", a nova imagem será a ÚLTIMA thumb indo para frente.
+      // Então pegamos a última thumb como origem.
+      const lastThumb = thumbList.querySelector(".thumb:last-child");
+      const lastImg = lastThumb ? lastThumb.querySelector("img") : null;
+      const prevSrc = lastImg ? lastImg.getAttribute("src") : null;
+
+      if (!prevSrc || !lastThumb) {
+        isAnimating = false;
+        return;
+      }
+
+      const fromRect = lastThumb.getBoundingClientRect();
+      const toRect = slider.getBoundingClientRect();
+
+      // Anima strip de thumbs para a direita
+      const step = getThumbStepPx();
+      thumbList.style.transition = "none";
+      thumbList.style.transform = `translateX(${-step}px)`;
+      thumbList.getBoundingClientRect();
+      thumbList.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
+      thumbList.style.transform = `translateX(0px)`;
+
+      await playTransitionShot(fromRect, toRect, prevSrc, duration);
+
+      // FINAL: reordena DOM
       sliderList.prepend(sliderList.lastElementChild);
       thumbList.prepend(thumbList.lastElementChild);
+
       syncUI();
-      setTimeout(()=>isAnimating=false,350);
+      isAnimating = false;
     }
 
-    btnNext.onclick = next;
-    btnPrev.onclick = prev;
+    btnNext.addEventListener("click", next);
+    btnPrev.addEventListener("click", prev);
 
     syncUI();
   </script>
