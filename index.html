@@ -1,160 +1,522 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carrossel - Efeito Zoom Suave</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Magic Slider</title>
 
-        body {
-            font-family: 'Helvetica Neue', sans-serif;
-            background-color: #1a1a1a;
-            height: 100vh;
-            overflow: hidden;
-        }
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-        .carousel-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
+  <style>
+    :root{
+      --bg: #0b0f14;
+      --text: #eaf0ff;
+      --muted: rgba(234,240,255,.75);
+      --stroke: rgba(255,255,255,.12);
+    }
 
-        .background-carousel {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow:hidden;
+    }
 
-        /* ALTERAÇÃO PRINCIPAL PARA O EFEITO ZOOM SUAVE */
-        .background-slide {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            
-            /* Estado inicial (invisível e com zoom) */
-            opacity: 0;
-            transform: scale(1.1);
-            transition: opacity 1.2s ease-out, transform 1.2s ease-out; /* Controla a velocidade da animação */
-        }
+    header.topbar{
+      position:fixed;
+      inset:0 0 auto 0;
+      z-index:50;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:18px 28px;
+      background: linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,0));
+    }
+    .brand{
+      font-weight:700;
+      letter-spacing:.5px;
+      text-transform:lowercase;
+      opacity:.9;
+    }
+    .menu{ display:flex; gap:18px; }
+    .menu a{
+      color: var(--text);
+      text-decoration:none;
+      font-size:14px;
+      opacity:.85;
+    }
+    .menu a:hover{ opacity:1; }
 
-        .background-slide.active {
-            z-index: 2; /* Fica na frente durante a transição */
-            
-            /* Estado final (visível e no tamanho normal) */
-            opacity: 1;
-            transform: scale(1);
-        }
+    main.slider{
+      position:relative;
+      height:100vh;
+      overflow:hidden;
+    }
 
-        .background-slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            filter: brightness(0.6);
-        }
-        
-        /* O resto do CSS para as miniaturas e texto continua o mesmo */
-        .overlay-content{position:absolute;top:50%;left:5%;transform:translateY(-50%);color:white;z-index:5;text-shadow:2px 2px 8px rgba(0,0,0,.7)}.overlay-content h1{font-size:3.5rem;font-weight:700;margin-bottom:10px}.overlay-content p{font-size:1.2rem;max-width:400px}.thumbnail-carousel{position:absolute;bottom:30px;right:30px;width:450px;height:120px;display:flex;align-items:center;z-index:5}.thumbnail-track{display:flex;transition:transform .7s ease-in-out}.thumbnail-slide{width:150px;height:100px;margin:0 10px;cursor:pointer;border-radius:8px;overflow:hidden;transition:transform .3s,border-color .3s;border:2px solid transparent}.thumbnail-slide.active{border-color:#fff;transform:scale(1.1)}.thumbnail-slide img{width:100%;height:100%;object-fit:cover}.arrow{position:absolute;top:50%;transform:translateY(-50%);background-color:rgba(0,0,0,.5);color:#fff;border:none;padding:10px 15px;font-size:20px;cursor:pointer;border-radius:5px;z-index:6;transition:background-color .3s}.arrow:hover{background-color:rgba(0,0,0,.8)}.prev{left:-60px}.next{right:-60px}
-    </style>
+    .list{ position:absolute; inset:0; }
+    .item{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      transform: scale(1.02);
+      transition: opacity .45s ease, transform .6s ease;
+    }
+
+    /* fundo + imagem inteira */
+    .media{
+      position:absolute;
+      inset:0;
+      z-index:0;
+    }
+    .media .bg,
+    .media .fg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      display:block;
+    }
+    .media .bg{
+      object-fit:cover;
+      filter: blur(18px) brightness(.65);
+      transform: scale(1.08);
+    }
+    .media .fg{
+      object-fit:contain;
+    }
+
+    .item::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
+      z-index:1;
+    }
+    .item.is-active{
+      opacity:1;
+      transform: scale(1);
+    }
+
+    /* UI sempre acima */
+    .content{
+      position:absolute;
+      left:70px;
+      top:50%;
+      transform:translateY(-50%);
+      width:min(520px, 85vw);
+      z-index:30;
+    }
+    .tag{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:10px;
+      background: rgba(0,0,0,.35);
+      border:1px solid var(--stroke);
+      font-size:12px;
+      letter-spacing:.08em;
+      margin:0 0 14px;
+      color:var(--muted);
+    }
+    .content h2{ margin:0; font-size:28px; font-weight:600; }
+    .content h1{ margin:6px 0 12px; font-size:44px; line-height:1.05; }
+    .desc{ margin:0 0 16px; color:var(--muted); font-size:14px; }
+    .btn{
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.35);
+      color: var(--text);
+      cursor:pointer;
+    }
+
+    .controls{
+      position:absolute;
+      left:70px;
+      bottom:120px;
+      z-index:30;
+      display:flex;
+      gap:10px;
+    }
+    .arrow{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.35);
+      color: var(--text);
+      font-size:26px;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .thumbnail{
+      position:absolute;
+      right:70px;
+      bottom:55px;
+      z-index:30;
+      display:flex;
+      gap:12px;
+      align-items:flex-end;
+      padding:14px;
+      border-radius:18px;
+      background: rgba(0,0,0,.22);
+      border:1px solid var(--stroke);
+      backdrop-filter: blur(10px);
+      max-width: calc(100vw - 140px);
+      overflow:auto;
+      transform: translateX(0);
+    }
+    .thumb{
+      width:110px;
+      height:70px;
+      padding:0;
+      border:0;
+      background:transparent;
+      cursor:pointer;
+      border-radius:12px;
+      overflow:hidden;
+      outline:2px solid transparent;
+      opacity:.85;
+      transition: opacity .2s ease, transform .2s ease, outline-color .2s ease;
+      flex:0 0 auto;
+    }
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .thumb.is-front{
+      opacity:1;
+      outline-color: rgba(255,255,255,.35);
+      transform: translateY(-6px);
+    }
+
+    /* ====== RESPONSIVO ====== */
+    @media (max-width: 1024px){
+      header.topbar{ padding:14px 16px; }
+      .menu{ gap:12px; }
+      .content{ left:18px; width:min(520px, calc(100vw - 36px)); }
+      .controls{ left:18px; bottom:106px; }
+      .thumbnail{ left:18px; right:18px; max-width: calc(100vw - 36px); }
+      .thumb{ width:96px; height:62px; }
+      .content h2{ font-size:24px; }
+      .content h1{ font-size:38px; }
+    }
+    @media (max-width: 768px){
+      .content{
+        left:14px;
+        top:auto;
+        bottom:128px;
+        transform:none;
+        width: calc(100vw - 28px);
+      }
+      .content h2{ font-size:20px; }
+      .content h1{ font-size:30px; }
+      .desc{ font-size:13px; }
+
+      .controls{
+        left:14px;
+        bottom:84px;
+      }
+      .arrow{
+        width:40px;
+        height:40px;
+        border-radius:14px;
+        font-size:22px;
+      }
+
+      .thumbnail{
+        left:14px;
+        right:14px;
+        bottom:14px;
+        padding:10px;
+        border-radius:16px;
+        gap:8px;
+        max-width: calc(100vw - 28px);
+      }
+      .thumb{
+        width:76px;
+        height:50px;
+        border-radius:12px;
+      }
+    }
+    @media (max-width: 420px){
+      .content h1{ font-size:28px; }
+      .thumb{ width:70px; height:46px; }
+      .controls{ bottom:80px; }
+    }
+
+    /* ====== CAMADA DE TRANSIÇÃO (abaixo do UI) ====== */
+    .transition-layer{
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 15;
+    }
+    .transition-shot{
+      position: fixed;
+      left: 0; top: 0;
+      width: 10px; height: 10px;
+      border-radius: 14px;
+      overflow: hidden;
+      will-change: transform, border-radius;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      transform-origin: top left;
+    }
+    .transition-shot::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image: var(--img);
+      background-size: cover;
+      background-position: center;
+      transform: scale(1.02);
+    }
+  </style>
 </head>
-<body>
 
-    <div class="carousel-container">
-        <div class="background-carousel">
-            <div class="background-slide"><img src="homem.png" alt="Homem"></div>
-            <div class="background-slide"><img src="conjunto.png" alt="Conjunto"></div>
-            <div class="background-slide"><img src="conjuntoescuro.png" alt="Conjunto Escuro"></div>
-            <div class="background-slide"><img src="duas.png" alt="Duas"></div>
-            <div class="background-slide"><img src="branco.png" alt="Branco"></div>
+<body>
+  <header class="topbar">
+    <div class="brand">der fuel</div>
+    <nav class="menu">
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">Portfolio</a>
+      <a href="#">Services</a>
+      <a href="#">Contact</a>
+    </nav>
+  </header>
+
+  <main class="slider" id="slider">
+    <div class="list" id="sliderList">
+
+      <article class="item">
+        <div class="media">
+          <img class="bg" src="conjuntoescuro.png" alt="">
+          <img class="fg" src="conjuntoescuro.png" alt="slide 1">
         </div>
-        <div class="overlay-content">
-            <h1>SAINT ANTONIEN</h1>
-            <p>Descubra a beleza e a aventura que esperam por você.</p>
+        <div class="content">
+          <p class="tag">DESIGN</p>
+          <h2>Magic Slider</h2>
+          <h1>Flower</h1>
+          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          <button class="btn">SEE MORE</button>
         </div>
-        <div class="thumbnail-carousel">
-             <button class="arrow prev">&#10094;</button>
-            <div class="thumbnail-track-container" style="overflow: hidden; width: 100%;">
-                <div class="thumbnail-track">
-                    <div class="thumbnail-slide"><img src="homem.png" alt="Miniatura Homem"></div>
-                    <div class="thumbnail-slide"><img src="conjunto.png" alt="Miniatura Conjunto"></div>
-                    <div class="thumbnail-slide"><img src="conjuntoescuro.png" alt="Miniatura Conjunto Escuro"></div>
-                    <div class="thumbnail-slide"><img src="duas.png" alt="Miniatura Duas"></div>
-                    <div class="thumbnail-slide"><img src="branco.png" alt="Miniatura Branco"></div>
-                </div>
-            </div>
-            <button class="arrow next">&#10095;</button>
+      </article>
+
+      <article class="item">
+        <div class="media">
+          <img class="bg" src="jaquetaverde.png" alt="">
+          <img class="fg" src="jaquetaverde.png" alt="slide 2">
         </div>
+        <div class="content">
+          <p class="tag">NATURE</p>
+          <h2>Magic Slider</h2>
+          <h1>Lake</h1>
+          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          <button class="btn">SEE MORE</button>
+        </div>
+      </article>
+
+      <article class="item">
+        <div class="media">
+          <img class="bg" src="conjuntoescuro.png" alt="">
+          <img class="fg" src="conjuntoescuro.png" alt="slide 3">
+        </div>
+        <div class="content">
+          <p class="tag">TRAVEL</p>
+          <h2>Magic Slider</h2>
+          <h1>Valley</h1>
+          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          <button class="btn">SEE MORE</button>
+        </div>
+      </article>
+
+      <article class="item">
+        <div class="media">
+          <img class="bg" src="conjunto.png" alt="">
+          <img class="fg" src="conjunto.png" alt="slide 4">
+        </div>
+        <div class="content">
+          <p class="tag">MOUNTAIN</p>
+          <h2>Magic Slider</h2>
+          <h1>Snow</h1>
+          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          <button class="btn">SEE MORE</button>
+        </div>
+      </article>
+
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const backgroundSlides = document.querySelectorAll('.background-slide');
-            const thumbnailTrack = document.querySelector('.thumbnail-track');
-            const thumbnailSlides = document.querySelectorAll('.thumbnail-slide');
-            const prevButton = document.querySelector('.arrow.prev');
-            const nextButton = document.querySelector('.arrow.next');
-            let currentIndex = 0;
-            const totalSlides = thumbnailSlides.length;
-            const slideWidth = 150 + 20; // Largura miniatura (150) + margens (20)
-            let isTransitioning = false; // Flag para evitar cliques múltiplos durante a animação
+    <div class="controls">
+      <button class="arrow" id="prev" aria-label="Anterior">‹</button>
+      <button class="arrow" id="next" aria-label="Próximo">›</button>
+    </div>
 
-            const updateCarousels = (newIndex) => {
-                // Se uma transição já estiver acontecendo, não faz nada
-                if (isTransitioning || newIndex === currentIndex) return;
-                isTransitioning = true;
+    <div class="thumbnail" id="thumbList" aria-label="Miniaturas">
+      <button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button>
+      <button class="thumb" type="button"><img src="jaquetaverde.png" alt=""></button>
+      <button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button>
+      <button class="thumb" type="button"><img src="conjunto.png" alt=""></button>
+    </div>
+  </main>
 
-                const oldIndex = currentIndex;
-                const oldSlide = backgroundSlides[oldIndex];
-                const newSlide = backgroundSlides[newIndex];
+  <div class="transition-layer" id="transitionLayer"></div>
 
-                // Ativa o novo slide para iniciar a animação de entrada (fade-in e zoom-out)
-                newSlide.classList.add('active');
+  <script>
+    const slider = document.getElementById("slider");
+    const sliderList = document.getElementById("sliderList");
+    const thumbList  = document.getElementById("thumbList");
+    const btnNext    = document.getElementById("next");
+    const btnPrev    = document.getElementById("prev");
+    const transitionLayer = document.getElementById("transitionLayer");
 
-                // Movimenta as miniaturas para a nova posição
-                const offset = (newIndex * slideWidth) + (slideWidth / 2) - (thumbnailTrack.parentElement.offsetWidth / 2);
-                thumbnailTrack.style.transform = `translateX(-${offset}px)`;
-                thumbnailSlides.forEach((s, i) => s.classList.toggle('active', i === newIndex));
-                
-                // Define um tempo para resetar o slide antigo após a transição terminar
-                setTimeout(() => {
-                    // Remove a classe 'active' do slide antigo, fazendo ele voltar ao estado inicial (invisível e com zoom)
-                    oldSlide.classList.remove('active');
-                    isTransitioning = false; // Libera para o próximo clique
-                }, 1200); // Este tempo DEVE ser o mesmo da transição do CSS
+    let isAnimating = false;
 
-                currentIndex = newIndex; // Atualiza o índice atual
-            };
-            
-            // Event Listeners
-            nextButton.addEventListener('click', () => {
-                updateCarousels((currentIndex + 1) % totalSlides);
-            });
-            prevButton.addEventListener('click', () => {
-                updateCarousels((currentIndex - 1 + totalSlides) % totalSlides);
-            });
-            thumbnailSlides.forEach((slide, index) => {
-                slide.addEventListener('click', () => {
-                    updateCarousels(index);
-                });
-            });
-            
-            // Inicia o carrossel no primeiro slide ao carregar a página
-            backgroundSlides[0].classList.add('active');
-            thumbnailSlides[0].classList.add('active');
-            // Centraliza a primeira miniatura
-             const initialOffset = (0 * slideWidth) + (slideWidth / 2) - (thumbnailTrack.parentElement.offsetWidth / 2);
-            thumbnailTrack.style.transform = `translateX(-${initialOffset}px)`;
-        });
-    </script>
+    function syncUI() {
+      const items = sliderList.querySelectorAll(".item");
+      const thumbs = thumbList.querySelectorAll(".thumb");
+      items.forEach((el,i)=>el.classList.toggle("is-active",i===0));
+      thumbs.forEach((el,i)=>el.classList.toggle("is-front",i===0));
+    }
+
+    function getThumbStepPx() {
+      const first = thumbList.querySelector(".thumb:first-child");
+      if (!first) return 0;
+      const rect = first.getBoundingClientRect();
+      const cs = getComputedStyle(thumbList);
+      const gap = parseFloat(cs.gap || "0") || 0;
+      return rect.width + gap;
+    }
+
+    function playTransitionShot(fromRect, toRect, imgSrc, duration) {
+      const shot = document.createElement("div");
+      shot.className = "transition-shot";
+      shot.style.left = fromRect.left + "px";
+      shot.style.top = fromRect.top + "px";
+      shot.style.width = fromRect.width + "px";
+      shot.style.height = fromRect.height + "px";
+      shot.style.setProperty("--img", `url("${imgSrc}")`);
+      transitionLayer.appendChild(shot);
+
+      const dx = toRect.left - fromRect.left;
+      const dy = toRect.top - fromRect.top;
+      const sx = toRect.width / fromRect.width;
+      const sy = toRect.height / fromRect.height;
+
+      shot.style.transform = "translate(0px,0px) scale(1,1)";
+      shot.style.borderRadius = "14px";
+      shot.getBoundingClientRect();
+
+      shot.style.transition =
+        `transform ${duration}ms cubic-bezier(.22,.61,.36,1), border-radius ${duration}ms cubic-bezier(.22,.61,.36,1)`;
+      shot.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+      shot.style.borderRadius = "0px";
+
+      return new Promise((resolve) => {
+        const done = () => { shot.remove(); resolve(); };
+        shot.addEventListener("transitionend", done, { once: true });
+        setTimeout(done, duration + 60);
+      });
+    }
+
+    function animateThumbStripToLeft(delta, duration) {
+      thumbList.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
+      thumbList.style.transform = `translateX(${-delta}px)`;
+    }
+
+    function resetThumbStrip() {
+      thumbList.style.transition = "none";
+      thumbList.style.transform = "translateX(0px)";
+      thumbList.getBoundingClientRect();
+    }
+
+    // ======= ALTERAÇÃO NOVA (para não “voltar”):
+    // 1) ativa o próximo fundo ANTES da animação (reordena sliderList já no começo)
+    // 2) só depois anima e no final reordena thumbList
+    async function next() {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      const duration = 650;
+
+      const thumbs = thumbList.querySelectorAll(".thumb");
+      const originThumb = thumbs[1];
+      const originImg = originThumb ? originThumb.querySelector("img") : null;
+      const nextSrc = originImg ? originImg.getAttribute("src") : null;
+
+      if (!originThumb || !nextSrc) {
+        isAnimating = false;
+        return;
+      }
+
+      const fromRect = originThumb.getBoundingClientRect();
+      const toRect = slider.getBoundingClientRect();
+
+      // >>> TROCA O FUNDO REAL ANTES (elimina “recua/volta”)
+      sliderList.appendChild(sliderList.firstElementChild);
+      syncUI();
+
+      const step = getThumbStepPx();
+      animateThumbStripToLeft(step, duration);
+
+      await playTransitionShot(fromRect, toRect, nextSrc, duration);
+
+      resetThumbStrip();
+      thumbList.appendChild(thumbList.firstElementChild);
+
+      syncUI();
+      isAnimating = false;
+    }
+
+    async function prev() {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      const duration = 650;
+
+      const lastThumb = thumbList.querySelector(".thumb:last-child");
+      const lastImg = lastThumb ? lastThumb.querySelector("img") : null;
+      const prevSrc = lastImg ? lastImg.getAttribute("src") : null;
+
+      if (!lastThumb || !prevSrc) {
+        isAnimating = false;
+        return;
+      }
+
+      const fromRect = lastThumb.getBoundingClientRect();
+      const toRect = slider.getBoundingClientRect();
+      const step = getThumbStepPx();
+
+      // >>> TROCA O FUNDO REAL ANTES (para prev também)
+      sliderList.prepend(sliderList.lastElementChild);
+      syncUI();
+
+      // strip para direita (pré-posição e volta)
+      thumbList.style.transition = "none";
+      thumbList.style.transform = `translateX(${-step}px)`;
+      thumbList.getBoundingClientRect();
+      thumbList.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
+      thumbList.style.transform = `translateX(0px)`;
+
+      await playTransitionShot(fromRect, toRect, prevSrc, duration);
+
+      thumbList.prepend(thumbList.lastElementChild);
+
+      syncUI();
+      isAnimating = false;
+    }
+
+    btnNext.addEventListener("click", next);
+    btnPrev.addEventListener("click", prev);
+
+    syncUI();
+  </script>
 </body>
 </html>
