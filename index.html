@@ -1,274 +1,255 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Integrated Carousel Slider</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrossel Sincronizado</title>
+    <style>
+        /* CSS EMBUTIDO */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-  <style>
-    :root {
-      --bg: #0b0f14;
-      --text: #eaf0ff;
-      --muted: rgba(234,240,255,.75);
-      --stroke: rgba(255,255,255,.12);
-    }
+        .carousel-container {
+            position: relative;
+            width: 90vw;
+            max-width: 1200px;
+            height: 80vh;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
 
-    * { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; }
-    body {
-      font-family: Poppins, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      overflow: hidden;
-    }
+        /* Carrossel de Fundo */
+        .background-carousel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            transition: transform 0.7s ease-in-out;
+        }
 
-    main.slider {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
+        .background-slide {
+            min-width: 100%;
+            height: 100%;
+            position: relative;
+        }
 
-    /* CAMADA 1: FUNDO (Efeito "Aparecer") */
-    .background-slider {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-    }
-    .bg-item {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      transition: opacity 0.6s ease-in-out; /* Efeito "Aparecer" - Rápido e Limpo */
-      z-index: 1;
-    }
-    .bg-item.is-active {
-      opacity: 1;
-      z-index: 2;
-    }
-    .bg-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .bg-item::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent 50%),
-                  linear-gradient(to right, rgba(0,0,0,0.8), transparent 50%);
-      z-index: 2;
-    }
+        .background-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.6);
+        }
 
-    /* CAMADA 2: INTERFACE (Header, Texto e Setas) */
-    header.topbar, .content-wrapper, .controls {
-        position: absolute;
-        z-index: 100;
-    }
-    header.topbar {
-      inset: 0 0 auto 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 28px;
-    }
-    .brand { font-weight: 700; text-transform: lowercase; }
-    .menu { display: flex; gap: 18px; }
-    .menu a { color: var(--text); text-decoration: none; font-size: 14px; opacity: .8; }
+        /* Conteúdo Sobreposto */
+        .overlay-content {
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            transform: translateY(-50%);
+            color: white;
+            z-index: 2;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+        }
 
-    .content-wrapper {
-      left: 70px;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-    }
-    .content-item {
-      display: none;
-      width: min(500px, 85vw);
-      pointer-events: auto;
-    }
-    .content-item.is-active { display: block; animation: fadeInContent 0.8s forwards; }
-    @keyframes fadeInContent { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .overlay-content h1 {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
 
-    .content-item h1 { font-size: 54px; margin: 10px 0; line-height: 1; }
-    .desc { margin-bottom: 20px; }
-    .btn { padding: 12px 25px; background: transparent; border: 1px solid var(--text); color: var(--text); cursor: pointer; }
+        .overlay-content p {
+            font-size: 1.2rem;
+            max-width: 400px;
+        }
 
-    .controls {
-      left: 70px;
-      bottom: 80px;
-      display: flex;
-      gap: 15px;
-    }
-    .arrow { width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--stroke); background: rgba(255,255,255,0.1); color: var(--text); font-size: 24px; cursor: pointer; }
+        /* Carrossel de Miniaturas */
+        .thumbnail-carousel {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 450px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            z-index: 3;
+        }
 
-    /* CAMADA 3: CARROSSEL 2D INTEGRADO */
-    .thumbnail-carousel {
-      position: absolute;
-      bottom: 80px;
-      right: 0; /* Alinhado à direita */
-      width: 60%; /* Ocupa uma parte da tela */
-      max-width: 800px;
-      height: 150px;
-      z-index: 100;
-      overflow: hidden; /* Esconde as miniaturas que saem da área */
-    }
+        .thumbnail-track {
+            display: flex;
+            transition: transform 0.7s ease-in-out;
+        }
 
-    .thumb-list {
-      position: absolute;
-      right: 50px; /* Ponto de ancoragem para o item ativo */
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      height: 100%;
-      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .thumb-item {
-      width: 200px;
-      height: 120px;
-      flex-shrink: 0; /* Impede que os itens encolham */
-      cursor: pointer;
-      border: 1px solid var(--stroke);
-      overflow: hidden;
-      /* Estado Padrão (Inativo) */
-      opacity: 0.5;
-      transform: scale(0.9);
-      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .thumb-item.is-active {
-      opacity: 1;
-      transform: scale(1.1); /* Um pouco maior para destaque */
-      border: 2px solid white;
-    }
+        .thumbnail-slide {
+            width: 150px;
+            height: 100px;
+            margin: 0 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s, filter 0.3s, border-color 0.3s;
+            border: 2px solid transparent;
+        }
 
-    .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
-  </style>
+        .thumbnail-slide.active {
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        .thumbnail-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Setas de Navegação */
+        .arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 4;
+            transition: background-color 0.3s;
+        }
+        
+        .arrow:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .prev {
+            left: -60px; /* Ajustado para melhor visualização */
+        }
+
+        .next {
+            right: -60px; /* Ajustado para melhor visualização */
+        }
+    </style>
 </head>
-
 <body>
-  <header class="topbar">
-    <div class="brand">der fuel</div>
-    <nav class="menu">
-      <a href="#">Home</a>
-      <a href="#">About</a>
-      <a href="#">Portfolio</a>
-    </nav>
-  </header>
 
-  <main class="slider">
-    <!-- Fundo Sincronizado -->
-    <div class="background-slider" id="bgSlider">
-      <div class="bg-item is-active"><img src="conjuntoescuro.png"></div>
-      <div class="bg-item"><img src="jaquetaverde.png"></div>
-      <div class="bg-item"><img src="conjunto.png"></div>
-      <div class="bg-item"><img src="conjuntoescuro.png"></div>
+    <div class="carousel-container">
+        <!-- Carrossel de Fundo -->
+        <div class="background-carousel">
+            <div class="background-slide">
+                <img src="homem.png" alt="Homem">
+            </div>
+            <div class="background-slide">
+                <img src="conjunto.png" alt="Conjunto">
+            </div>
+            <div class="background-slide">
+                <img src="conjuntoescuro.png" alt="Conjunto Escuro">
+            </div>
+            <div class="background-slide">
+                <img src="duas.png" alt="Duas">
+            </div>
+            <div class="background-slide">
+                <img src="branco.png" alt="Branco">
+            </div>
+        </div>
+
+        <!-- Conteúdo Sobreposto -->
+        <div class="overlay-content">
+            <h1>SAINT ANTONIEN</h1>
+            <p>Descubra a beleza e a aventura que esperam por você.</p>
+        </div>
+
+        <!-- Carrossel de Miniaturas -->
+        <div class="thumbnail-carousel">
+             <button class="arrow prev">&#10094;</button>
+            <div class="thumbnail-track-container" style="overflow: hidden; width: 100%;">
+                <div class="thumbnail-track">
+                    <div class="thumbnail-slide">
+                        <img src="homem.png" alt="Miniatura Homem">
+                    </div>
+                    <div class="thumbnail-slide">
+                        <img src="conjunto.png" alt="Miniatura Conjunto">
+                    </div>
+                    <div class="thumbnail-slide">
+                        <img src="conjuntoescuro.png" alt="Miniatura Conjunto Escuro">
+                    </div>
+                    <div class="thumbnail-slide">
+                        <img src="duas.png" alt="Miniatura Duas">
+                    </div>
+                    <div class="thumbnail-slide">
+                        <img src="branco.png" alt="Miniatura Branco">
+                    </div>
+                </div>
+            </div>
+            <button class="arrow next">&#10095;</button>
+        </div>
     </div>
 
-    <!-- Conteúdo Sincronizado -->
-    <div class="content-wrapper" id="contentSlider">
-      <div class="content-item is-active">
-        <h1 class="title">Valley</h1>
-        <p class="desc">Carrossel 2D integrado com efeito "aparecer".</p>
-        <button class="btn">SEE MORE</button>
-      </div>
-      <div class="content-item">
-        <h1 class="title">Forest</h1>
-        <p class="desc">A natureza em alta definição no fundo da tela.</p>
-        <button class="btn">SEE MORE</button>
-      </div>
-      <div class="content-item">
-        <h1 class="title">Style</h1>
-        <p class="desc">O melhor do design moderno em cada detalhe.</p>
-        <button class="btn">SEE MORE</button>
-      </div>
-      <div class="content-item">
-        <h1 class="title">Concept</h1>
-        <p class="desc">Inovação e estética unidas em um único lugar.</p>
-        <button class="btn">SEE MORE</button>
-      </div>
-    </div>
+    <script>
+        // JAVASCRIPT EMBUTIDO
+        document.addEventListener('DOMContentLoaded', () => {
+            const backgroundCarousel = document.querySelector('.background-carousel');
+            const thumbnailTrack = document.querySelector('.thumbnail-track');
+            const thumbnailSlides = document.querySelectorAll('.thumbnail-slide');
+            const prevButton = document.querySelector('.arrow.prev');
+            const nextButton = document.querySelector('.arrow.next');
 
-    <!-- Miniaturas 2D Sincronizadas -->
-    <div class="thumbnail-carousel">
-      <div class="thumb-list" id="thumbList">
-        <div class="thumb-item"><img src="conjuntoescuro.png"></div>
-        <div class="thumb-item"><img src="jaquetaverde.png"></div>
-        <div class="thumb-item"><img src="conjunto.png"></div>
-        <div class="thumb-item"><img src="conjuntoescuro.png"></div>
-      </div>
-    </div>
+            let currentIndex = 0;
+            const totalSlides = thumbnailSlides.length;
+            const slideWidth = thumbnailSlides[0].offsetWidth + (parseInt(getComputedStyle(thumbnailSlides[0]).marginRight) * 2);
 
-    <div class="controls">
-      <button class="arrow" id="prev">‹</button>
-      <button class="arrow" id="next">›</button>
-    </div>
-  </main>
+            // Função para atualizar os carrosséis
+            const updateCarousels = (index) => {
+                // Movimenta o carrossel de fundo
+                backgroundCarousel.style.transform = `translateX(-${index * 100}%)`;
 
-  <script>
-    const bgItems = document.querySelectorAll(".bg-item");
-    const contentItems = document.querySelectorAll(".content-item");
-    const thumbItems = document.querySelectorAll(".thumb-item");
-    const thumbList = document.getElementById("thumbList");
-    const btnNext = document.getElementById("next");
-    const btnPrev = document.getElementById("prev");
+                // Centraliza a miniatura ativa
+                const offset = (index * slideWidth) + (slideWidth / 2) - (thumbnailTrack.parentElement.offsetWidth / 2);
+                thumbnailTrack.style.transform = `translateX(-${offset}px)`;
 
-    let currentIndex = 0;
-    let isAnimating = false;
+                // Atualiza a classe 'active' nas miniaturas
+                thumbnailSlides.forEach((slide, i) => {
+                    slide.classList.toggle('active', i === index);
+                });
+            };
+            
+             // Event Listeners para os botões de seta
+            nextButton.addEventListener('click', () => {
+                currentIndex = (currentIndex + 1) % totalSlides;
+                updateCarousels(currentIndex);
+            });
 
-    // A função principal que sincroniza tudo
-    function updateGallery(index) {
-      if (isAnimating) return;
-      isAnimating = true;
+            prevButton.addEventListener('click', () => {
+                currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+                updateCarousels(currentIndex);
+            });
 
-      // 1. ATUALIZA FUNDO E TEXTO (com efeito "aparecer" do CSS)
-      bgItems.forEach(item => item.classList.remove("is-active"));
-      contentItems.forEach(item => item.classList.remove("is-active"));
-      bgItems[index].classList.add("is-active");
-      contentItems[index].classList.add("is-active");
-
-      // 2. ATUALIZA O CARROSSEL DE MINIATURAS
-      thumbItems.forEach(thumb => thumb.classList.remove("is-active"));
-      thumbItems[index].classList.add("is-active");
-
-      // Calcula o deslocamento para mover a "esteira"
-      // A lógica é mover a lista para a direita para que o item ativo se alinhe
-      const thumbWidth = thumbItems[0].offsetWidth;
-      const gap = 20; // O 'gap' definido no CSS
-      const offset = index * (thumbWidth + gap);
-      
-      thumbList.style.transform = `translateX(${offset}px)`;
-
-      // Previne cliques múltiplos durante a animação do carrossel
-      setTimeout(() => { isAnimating = false; }, 800); 
-    }
-
-    btnNext.onclick = () => {
-      currentIndex = (currentIndex + 1) % bgItems.length;
-      updateGallery(currentIndex);
-    };
-
-    btnPrev.onclick = () => {
-      currentIndex = (currentIndex - 1 + bgItems.length) % bgItems.length;
-      updateGallery(currentIndex);
-    };
-
-    // Permite clicar direto na miniatura para navegar
-    thumbItems.forEach((thumb, i) => {
-      thumb.onclick = () => {
-        currentIndex = i;
-        updateGallery(currentIndex);
-      }
-    });
-
-    // Inicialização da página
-    updateGallery(0);
-  </script>
+            // Adiciona evento de clique nas miniaturas
+            thumbnailSlides.forEach((slide, index) => {
+                slide.addEventListener('click', () => {
+                    currentIndex = index;
+                    updateCarousels(currentIndex);
+                });
+            });
+            
+            // Inicia o carrossel na primeira imagem
+            updateCarousels(0);
+        });
+    </script>
 </body>
 </html>
