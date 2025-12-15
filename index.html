@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Magic Slider</title>
+  <title>3D Carousel</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,282 +24,215 @@
       background: var(--bg);
       color: var(--text);
       overflow:hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    /* CAMADA DE INTERFACE (Sempre no topo) */
-    header.topbar, .content, .controls, .thumbnail {
-      z-index: 100;
-      position: relative; /* Garante que o z-index funcione */
+    /* O CONTAINER PRINCIPAL QUE CRIA A PERSPECTIVA 3D */
+    .carousel{
+      width: 100%;
+      height: 600px; /* Altura do carrossel */
+      position: relative;
+      perspective: 1200px; /* A "profundidade" da cena 3D */
+      overflow: hidden;
+      display: flex;
+      align-items: center;
     }
 
-    header.topbar{
-      position:fixed;
-      inset:0 0 auto 0;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:18px 28px;
-      background: linear-gradient(to bottom, rgba(0,0,0,.7), rgba(0,0,0,0));
+    /* A "ESTEIRA" QUE SEGURA E MOVE TODOS OS SLIDES */
+    .list{
+      display: flex;
+      position: absolute;
+      left: 10%; /* Espaçamento inicial à esquerda */
+      width: max-content; /* Largura se ajusta ao conteúdo */
+      height: 100%;
+      transform-style: preserve-3d; /* Essencial para o 3D funcionar nos filhos */
+      transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .brand{ font-weight:700; text-transform:lowercase; }
-    .menu{ display:flex; gap:18px; }
-    .menu a{ color: var(--text); text-decoration:none; font-size:14px; opacity:.85; }
 
-    main.slider{
-      position:absolute;
-      inset: 0;
+    /* ESTILO DE CADA SLIDE INDIVIDUAL */
+    .item{
+      width: 200px; /* Largura padrão dos slides inativos */
+      height: 300px;
+      position: relative;
+      margin: auto 15px; /* Espaçamento entre os slides */
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+
+      /* Efeito 3D inicial para slides inativos */
+      transform: rotateY(-25deg) scale(0.8);
+      opacity: 0.6;
+    }
+    
+    .item img{
       width: 100%;
       height: 100%;
-      overflow:hidden;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
     }
-
-    .list{ position:absolute; inset:0; }
-
-    /* LÓGICA DO FADE (ESMAECER) */
-    .item{
-      position:absolute;
-      inset:0;
-      opacity:0;
-      z-index: 1; /* Slides inativos ficam por baixo */
-      transition: opacity 1.5s ease; /* Animação suave de 1.5 segundos */
-    }
+    
+    /* ESTADO ATIVO DO SLIDE */
     .item.is-active{
-      opacity:1;
-      z-index: 2; /* Slide ativo fica sobre os outros */
+      width: 800px; /* Largura do slide principal */
+      height: 500px; /* Altura do slide principal */
+      transform: rotateY(0deg) scale(1); /* Fica reto e em tamanho normal */
+      opacity: 1;
     }
-
-    /* Imagem de Fundo */
-    .media{ position:absolute; inset:0; }
-    .media img{
-      width:100%;
-      height:100%;
-      object-fit:cover; /* Ocupa 100% da tela mesmo cortando */
-      display:block;
-    }
-
-    /* Overlay sutil para leitura do texto */
-    .item::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background: linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 60%);
-      z-index:1;
-    }
-
-    /* Conteúdo */
+    
+    /* CONTEÚDO DENTRO DO SLIDE */
     .content{
-      position:absolute;
-      left:70px;
-      top:50%;
-      transform:translateY(-50%);
-      width:min(520px, 85vw);
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      padding: 40px;
+      width: 100%;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0));
+      opacity: 0; /* Escondido por padrão */
+      transition: opacity 0.8s ease 0.4s; /* Aparece com um pequeno delay */
     }
-    .tag{
-      display:inline-block;
-      padding:6px 12px;
-      background: rgba(0,0,0,0.5);
-      border:1px solid var(--stroke);
-      font-size:12px;
-      margin-bottom: 15px;
-    }
-    .content h1{ margin:10px 0; font-size:54px; line-height:1; }
-    .desc{ margin-bottom:20px; color:var(--muted); font-size:15px; }
-    .btn{
-      padding:12px 24px;
-      background: transparent;
-      border:1px solid var(--text);
-      color: var(--text);
-      cursor:pointer;
-      font-weight: 600;
+    
+    .item.is-active .content {
+      opacity: 1; /* Visível apenas no slide ativo */
     }
 
+    .content h1{ margin: 0; font-size: 54px; line-height: 1; }
+    .desc{ margin: 10px 0; color:var(--muted); font-size:15px; }
+
+    /* CONTROLES (SETAS) */
     .controls{
-      position:absolute;
-      left:70px;
-      bottom:80px;
-      display:flex;
-      gap:15px;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 15px;
+      z-index: 100;
     }
     .arrow{
-      width:50px;
-      height:50px;
-      border-radius:50%;
-      border:1px solid var(--stroke);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 1px solid var(--stroke);
       background: rgba(255,255,255,0.1);
       color: var(--text);
-      font-size:24px;
-      cursor:pointer;
-      transition: background 0.3s;
-    }
-    .arrow:hover{ background: rgba(255,255,255,0.2); }
-
-    /* CARROSSEL NO CANTO DIREITO */
-    .thumbnail{
-      position:absolute;
-      right:0; /* Encostado no limite da tela */
-      bottom:50px;
-      display:flex;
-      gap:10px;
-      padding: 10px;
-    }
-    .thumb-wrapper{ flex: 0 0 auto; }
-    .thumb{
-      width:160px; /* Miniaturas maiores */
-      height:110px;
-      padding:0;
-      border:0;
-      cursor:pointer;
-      border-radius:0; /* Quadrados perfeitos */
-      overflow:hidden;
-      opacity: 0.6;
-      transition: all 0.4s ease;
-    }
-    .thumb.is-front{
-      opacity: 1;
-      transform: translateY(-10px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-    }
-    .thumb img{ width:100%; height:100%; object-fit:cover; }
-
-
-    @media (max-width: 768px){
-      .content{ left:20px; bottom:200px; top:auto; transform:none; }
-      .content h1{ font-size:36px; }
-      .controls{ left:20px; bottom:140px; }
-      .thumbnail{ bottom:20px; left:20px; right:auto; }
-      .thumb{ width:100px; height:70px; }
+      font-size: 24px;
+      cursor: pointer;
     }
   </style>
 </head>
 
 <body>
-  <header class="topbar">
-    <div class="brand">der fuel</div>
-    <nav class="menu">
-      <a href="#">Home</a>
-      <a href="#">About</a>
-      <a href="#">Portfolio</a>
-      <a href="#">Services</a>
-      <a href="#">Contact</a>
-    </nav>
-  </header>
 
-  <main class="slider" id="slider">
-    <div class="list" id="sliderList">
-      <article class="item is-active">
-        <div class="media"><img src="conjuntoescuro.png" alt=""></div>
+  <main class="carousel" id="carousel">
+    <div class="list" id="list">
+
+      <article class="item">
+        <img src="conjuntoescuro.png" alt="">
         <div class="content">
-          <p class="tag">TRAVEL</p>
           <h1>Valley</h1>
           <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-          <button class="btn">SEE MORE</button>
         </div>
       </article>
 
       <article class="item">
-        <div class="media"><img src="jaquetaverde.png" alt=""></div>
+        <img src="jaquetaverde.png" alt="">
         <div class="content">
-          <p class="tag">NATURE</p>
           <h1>Forest</h1>
           <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-          <button class="btn">SEE MORE</button>
         </div>
       </article>
 
       <article class="item">
-        <div class="media"><img src="conjunto.png" alt=""></div>
+        <img src="conjunto.png" alt="">
         <div class="content">
-          <p class="tag">FASHION</p>
           <h1>Style</h1>
           <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-          <button class="btn">SEE MORE</button>
         </div>
       </article>
       
       <article class="item">
-        <div class="media"><img src="conjuntoescuro.png" alt=""></div>
+        <img src="conjuntoescuro.png" alt="">
         <div class="content">
-          <p class="tag">DESIGN</p>
           <h1>Modern</h1>
           <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-          <button class="btn">SEE MORE</button>
         </div>
       </article>
+
+      <article class="item">
+        <img src="jaquetaverde.png" alt="">
+        <div class="content">
+          <h1>Green</h1>
+          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+        </div>
+      </article>
+
     </div>
 
     <div class="controls">
       <button class="arrow" id="prev">‹</button>
       <button class="arrow" id="next">›</button>
     </div>
-
-    <div class="thumbnail" id="thumbList">
-      <div class="thumb-wrapper"><button class="thumb is-front"><img src="conjuntoescuro.png"></button></div>
-      <div class="thumb-wrapper"><button class="thumb"><img src="jaquetaverde.png"></button></div>
-      <div class="thumb-wrapper"><button class="thumb"><img src="conjunto.png"></button></div>
-      <div class="thumb-wrapper"><button class="thumb"><img src="conjuntoescuro.png"></button></div>
-    </div>
   </main>
 
   <script>
-    const sliderList = document.getElementById("sliderList");
-    const thumbList = document.getElementById("thumbList");
+    const list = document.getElementById("list");
+    const items = document.querySelectorAll(".item");
     const btnNext = document.getElementById("next");
     const btnPrev = document.getElementById("prev");
 
-    let isAnimating = false;
+    let activeIndex = 0;
 
-    function updateThumbClasses() {
-      const thumbs = thumbList.querySelectorAll(".thumb");
-      thumbs.forEach((thumb, i) => thumb.classList.toggle("is-front", i === 0));
-    }
-
-    async function moveSlide(direction) {
-      if (isAnimating) return;
-      isAnimating = true;
-
-      const duration = 1500; // Duração do fade em milissegundos
-      const items = sliderList.querySelectorAll(".item");
-      const activeItem = sliderList.querySelector(".item.is-active");
-
-      if (direction === 'next') {
-        // 1. Pega o próximo item e move ele para o final do DOM (visualmente, ele fica sobre os outros)
-        const nextItem = items[1] || items[0];
-        sliderList.appendChild(activeItem);
-        
-        // 2. Adiciona a classe 'is-active' no novo item, que o CSS tornará visível com fade
-        nextItem.classList.add('is-active');
-        
-        // 3. Remove a classe do item antigo, que o CSS esconderá
-        activeItem.classList.remove('is-active');
-
-        // 4. Anima as miniaturas
-        thumbList.appendChild(thumbList.firstElementChild);
-
-      } else { // direction === 'prev'
-        // 1. Pega o último item e move ele para o começo do DOM
-        const prevItem = items[items.length - 1];
-        sliderList.prepend(prevItem);
-        
-        // 2. Adiciona a classe 'is-active' no novo item. O CSS cuida do fade in.
-        prevItem.classList.add('is-active');
-        
-        // 3. Remove a classe do item antigo.
-        activeItem.classList.remove('is-active');
-
-        // 4. Anima as miniaturas
-        thumbList.prepend(thumbList.lastElementChild);
+    function showSlide(index) {
+      // 1. Remove a classe ativa de todos
+      items.forEach(item => item.classList.remove('is-active'));
+      
+      // 2. Adiciona a classe ativa ao item do índice desejado
+      items[index].classList.add('is-active');
+      
+      // 3. Calcula o deslocamento para centralizar o slide ativo
+      // A lógica aqui é mover a "esteira" para a esquerda
+      // A quantidade movida é a soma das larguras dos itens ANTES do ativo
+      let totalOffset = 0;
+      for (let i = 0; i < index; i++) {
+        // Usamos a largura do item e a margem (15px de cada lado = 30px)
+        totalOffset += items[i].offsetWidth + 30;
       }
       
-      updateThumbClasses();
+      // Para centralizar um pouco melhor, podemos ajustar o offset
+      // Subtraindo a diferença de tamanho entre o slide ativo e inativo
+      const activeItemWidth = items[index].offsetWidth;
+      const inactiveItemWidth = 200; // Largura do item inativo definida no CSS
+      const adjustment = (activeItemWidth - inactiveItemWidth) / 2;
       
-      // 5. Espera a animação do fade terminar antes de permitir o próximo clique
-      await new Promise(resolve => setTimeout(resolve, duration));
-      
-      isAnimating = false;
+      list.style.transform = `translateX(-${totalOffset - adjustment}px)`;
     }
 
-    btnNext.onclick = () => moveSlide('next');
-    btnPrev.onclick = () => moveSlide('prev');
+    btnNext.onclick = () => {
+      activeIndex = (activeIndex + 1) % items.length; // Garante que o índice volte a 0 no final
+      showSlide(activeIndex);
+    };
+
+    btnPrev.onclick = () => {
+      // Garante que o índice volte para o final se estiver em 0
+      activeIndex = (activeIndex - 1 + items.length) % items.length;
+      showSlide(activeIndex);
+    };
+
+    // Permite clicar em um slide inativo para ativá-lo
+    items.forEach((item, index) => {
+      item.addEventListener('click', () => {
+        activeIndex = index;
+        showSlide(activeIndex);
+      });
+    });
+
+    // Inicia o carrossel no primeiro slide
+    showSlide(activeIndex);
   </script>
+
 </body>
 </html>
