@@ -53,18 +53,19 @@
       overflow:hidden;
     }
 
-    .list{ position:absolute; inset:0; z-index: 10; }
+    .list{ position:absolute; inset:0; }
+
+    /* LÓGICA DO FADE (ESMAECER) */
     .item{
       position:absolute;
       inset:0;
       opacity:0;
-      visibility: hidden;
-      transition: opacity 0.5s ease, visibility 0.5s;
+      z-index: 1; /* Slides inativos ficam por baixo */
+      transition: opacity 1.5s ease; /* Animação suave de 1.5 segundos */
     }
     .item.is-active{
       opacity:1;
-      visibility: visible;
-      z-index: 20; /* Slide ativo fica acima dos outros */
+      z-index: 2; /* Slide ativo fica sobre os outros */
     }
 
     /* Imagem de Fundo */
@@ -160,14 +161,6 @@
     }
     .thumb img{ width:100%; height:100%; object-fit:cover; }
 
-    /* IMAGEM TEMPORÁRIA QUE CRESCE */
-    .growing-img {
-      position: fixed;
-      z-index: 50; /* Fica atrás da UI (100) mas na frente do fundo antigo (20) */
-      object-fit: cover;
-      transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1); /* Velocidade da animação */
-      pointer-events: none; /* Não interfere com cliques */
-    }
 
     @media (max-width: 768px){
       .content{ left:20px; bottom:200px; top:auto; transform:none; }
@@ -240,7 +233,7 @@
     </div>
 
     <div class="thumbnail" id="thumbList">
-      <div class="thumb-wrapper"><button class="thumb"><img src="conjuntoescuro.png"></button></div>
+      <div class="thumb-wrapper"><button class="thumb is-front"><img src="conjuntoescuro.png"></button></div>
       <div class="thumb-wrapper"><button class="thumb"><img src="jaquetaverde.png"></button></div>
       <div class="thumb-wrapper"><button class="thumb"><img src="conjunto.png"></button></div>
       <div class="thumb-wrapper"><button class="thumb"><img src="conjuntoescuro.png"></button></div>
@@ -255,10 +248,8 @@
 
     let isAnimating = false;
 
-    function updateClasses() {
-      const items = sliderList.querySelectorAll(".item");
+    function updateThumbClasses() {
       const thumbs = thumbList.querySelectorAll(".thumb");
-      items.forEach((item, i) => item.classList.toggle("is-active", i === 0));
       thumbs.forEach((thumb, i) => thumb.classList.toggle("is-front", i === 0));
     }
 
@@ -266,55 +257,49 @@
       if (isAnimating) return;
       isAnimating = true;
 
-      const duration = 1200; // Duração da animação em milissegundos
-      const thumbs = thumbList.querySelectorAll(".thumb");
-      
-      const targetThumb = direction === 'next' ? thumbs[1] : thumbs[thumbs.length - 1];
-      const imgRect = targetThumb.getBoundingClientRect();
-      const imgSrc = targetThumb.querySelector("img").src;
+      const duration = 1500; // Duração do fade em milissegundos
+      const items = sliderList.querySelectorAll(".item");
+      const activeItem = sliderList.querySelector(".item.is-active");
 
-      // 1. Criar a imagem temporária que vai crescer. O slide antigo continua visível por baixo.
-      const growImg = document.createElement("img");
-      growImg.src = imgSrc;
-      growImg.className = "growing-img";
-      growImg.style.top = `${imgRect.top}px`;
-      growImg.style.left = `${imgRect.left}px`;
-      growImg.style.width = `${imgRect.width}px`;
-      growImg.style.height = `${imgRect.height}px`;
-      document.body.appendChild(growImg);
-
-      // 2. Animar para preencher a tela.
-      // Usamos um pequeno timeout para garantir que o navegador aplique os estilos iniciais antes de animar.
-      await new Promise(r => setTimeout(r, 10)); 
-      growImg.style.top = "0";
-      growImg.style.left = "0";
-      growImg.style.width = "100vw";
-      growImg.style.height = "100vh";
-      
-      // 3. Esperar a animação terminar.
-      await new Promise(resolve => setTimeout(resolve, duration));
-
-      // 4. A "TROCA MÁGICA": acontece instantaneamente enquanto a tela está coberta.
       if (direction === 'next') {
-        sliderList.appendChild(sliderList.firstElementChild);
+        // 1. Pega o próximo item e move ele para o final do DOM (visualmente, ele fica sobre os outros)
+        const nextItem = items[1] || items[0];
+        sliderList.appendChild(activeItem);
+        
+        // 2. Adiciona a classe 'is-active' no novo item, que o CSS tornará visível com fade
+        nextItem.classList.add('is-active');
+        
+        // 3. Remove a classe do item antigo, que o CSS esconderá
+        activeItem.classList.remove('is-active');
+
+        // 4. Anima as miniaturas
         thumbList.appendChild(thumbList.firstElementChild);
-      } else {
-        sliderList.prepend(sliderList.lastElementChild);
+
+      } else { // direction === 'prev'
+        // 1. Pega o último item e move ele para o começo do DOM
+        const prevItem = items[items.length - 1];
+        sliderList.prepend(prevItem);
+        
+        // 2. Adiciona a classe 'is-active' no novo item. O CSS cuida do fade in.
+        prevItem.classList.add('is-active');
+        
+        // 3. Remove a classe do item antigo.
+        activeItem.classList.remove('is-active');
+
+        // 4. Anima as miniaturas
         thumbList.prepend(thumbList.lastElementChild);
       }
       
-      updateClasses(); // O novo slide agora é o .is-active, posicionado perfeitamente.
-
-      // 5. Remover a imagem temporária, revelando o novo slide que já está no lugar.
-      growImg.remove();
+      updateThumbClasses();
+      
+      // 5. Espera a animação do fade terminar antes de permitir o próximo clique
+      await new Promise(resolve => setTimeout(resolve, duration));
       
       isAnimating = false;
     }
 
     btnNext.onclick = () => moveSlide('next');
     btnPrev.onclick = () => moveSlide('prev');
-
-    updateClasses(); // Configuração inicial da página
   </script>
 </body>
 </html>
