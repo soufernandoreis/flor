@@ -29,6 +29,7 @@
     /* CAMADA DE INTERFACE (Sempre no topo) */
     header.topbar, .content, .controls, .thumbnail {
       z-index: 100;
+      position: relative;
     }
 
     header.topbar{
@@ -45,27 +46,33 @@
     .menu a{ color: var(--text); text-decoration:none; font-size:14px; opacity:.85; }
 
     main.slider{
-      position:relative;
-      height:100vh;
-      width: 100vw;
+      position:absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       overflow:hidden;
     }
 
-    .list{ position:absolute; inset:0; z-index: 10; }
+    .list{ position:absolute; inset:0; z-index: 1; }
     .item{
       position:absolute;
       inset:0;
       opacity:0;
       visibility: hidden;
-      transition: opacity .8s ease;
+      transition: opacity 0.5s ease, visibility 0.5s;
     }
     .item.is-active{
       opacity:1;
       visibility: visible;
+      z-index: 2;
     }
 
     /* Imagem de Fundo */
-    .media{ position:absolute; inset:0; }
+    .media{
+      position:absolute;
+      inset:0;
+      overflow: hidden;
+    }
     .media img{
       width:100%;
       height:100%;
@@ -157,14 +164,13 @@
     }
     .thumb img{ width:100%; height:100%; object-fit:cover; }
 
-    /* IMAGEM QUE CRESCE (Efeito Especial) */
-    .growing-img {
-      position: fixed;
-      z-index: 20; /* Fica atrás da UI (100) mas na frente do fundo antigo (10) */
-      object-fit: cover;
-      transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1); /* Velocidade diminuída */
-      pointer-events: none;
+    /* Estilos para a animação da própria imagem do slide */
+    .item.is-transitioning .media img {
+        position: fixed;
+        z-index: 5; /* Fica sobre o slide antigo (2) mas abaixo da UI (100) */
+        transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
 
     @media (max-width: 768px){
       .content{ left:20px; bottom:200px; top:auto; transform:none; }
@@ -263,50 +269,60 @@
       if (isAnimating) return;
       isAnimating = true;
 
-      const duration = 1200; // Velocidade da imagem crescendo
+      const duration = 1200; // Velocidade da animação
+
+      const items = sliderList.querySelectorAll(".item");
       const thumbs = thumbList.querySelectorAll(".thumb");
+      const activeItem = items[0];
+
+      let nextItem, targetThumb;
+
+      if (direction === 'next') {
+        nextItem = items[1] || items[0];
+        targetThumb = thumbs[1];
+      } else {
+        nextItem = items[items.length - 1];
+        targetThumb = thumbs[thumbs.length - 1];
+      }
       
-      // Qual miniatura vai virar o fundo?
-      // Se for NEXT, é a segunda miniatura (índice 1)
-      // Se for PREV, é a última miniatura
-      const targetThumb = direction === 'next' ? thumbs[1] : thumbs[thumbs.length - 1];
-      const imgRect = targetThumb.getBoundingClientRect();
-      const imgSource = targetThumb.querySelector("img").src;
+      const nextImg = nextItem.querySelector('img');
+      const thumbRect = targetThumb.getBoundingClientRect();
 
-      // 1. Criar a imagem temporária que vai crescer
-      const growImg = document.createElement("img");
-      growImg.src = imgSource;
-      growImg.className = "growing-img";
-      growImg.style.top = imgRect.top + "px";
-      growImg.style.left = imgRect.left + "px";
-      growImg.style.width = imgRect.width + "px";
-      growImg.style.height = imgRect.height + "px";
-      document.body.appendChild(growImg);
+      // 1. Prepara o próximo slide para a animação
+      nextItem.classList.add('is-transitioning');
+      nextImg.style.top = `${thumbRect.top}px`;
+      nextImg.style.left = `${thumbRect.left}px`;
+      nextImg.style.width = `${thumbRect.width}px`;
+      nextImg.style.height = `${thumbRect.height}px`;
+      
+      // Força o navegador a aplicar os estilos iniciais
+      await new Promise(r => setTimeout(r, 0));
 
-      // 2. Animar para preencher a tela (atrás da UI)
-      requestAnimationFrame(() => {
-        growImg.style.top = "0";
-        growImg.style.left = "0";
-        growImg.style.width = "100vw";
-        growImg.style.height = "100vh";
-      });
+      // 2. Anima a imagem para preencher a tela
+      nextImg.style.top = '0';
+      nextImg.style.left = '0';
+      nextImg.style.width = '100vw';
+      nextImg.style.height = '100vh';
 
-      // 3. Esperar a animação completar
+      // 3. Ao mesmo tempo, o slide antigo some
+      activeItem.classList.remove('is-active');
+
+      // 4. Espera a animação da imagem terminar
       await new Promise(resolve => setTimeout(resolve, duration));
 
-      // 4. Trocar os slides reais no fundo
+      // 5. Limpeza e reordenação
+      nextItem.classList.remove('is-transitioning');
+      nextImg.style.cssText = ''; // Remove todos os estilos inline
+      
       if (direction === 'next') {
-        sliderList.appendChild(sliderList.firstElementChild);
+        sliderList.appendChild(activeItem);
         thumbList.appendChild(thumbList.firstElementChild);
       } else {
-        sliderList.prepend(sliderList.lastElementChild);
+        sliderList.prepend(nextItem);
         thumbList.prepend(thumbList.lastElementChild);
       }
       
       updateClasses();
-
-      // 5. Remover a imagem temporária (agora o slide real já está por baixo)
-      growImg.remove();
       
       isAnimating = false;
     }
