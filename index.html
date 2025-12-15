@@ -15,6 +15,8 @@
       --text: #eaf0ff;
       --muted: rgba(234,240,255,.75);
       --stroke: rgba(255,255,255,.12);
+      --ease: cubic-bezier(.22,.61,.36,1);
+      --overlay: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
     }
 
     *{ box-sizing:border-box; }
@@ -79,7 +81,7 @@
       inset:0;
       width:100%;
       height:100%;
-      background-size: cover;         /* <- igual ao transition-shot */
+      background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
     }
@@ -87,18 +89,17 @@
       filter: blur(18px) brightness(.65);
       transform: scale(1.08);
     }
-    .media .fg{
-      filter: none;
-      transform: none;
-    }
 
+    /* Overlay do slide (fundo final sempre tem isso) */
     .item::after{
       content:"";
       position:absolute;
       inset:0;
-      background: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
+      background: var(--overlay);
       z-index:1;
+      pointer-events:none;
     }
+
     .item.is-active{
       opacity:1;
       transform: scale(1);
@@ -261,25 +262,33 @@
       pointer-events:none;
       z-index:15;
     }
+
+    /* A imagem solta: também é "cover" + tem o MESMO overlay (anti-piscada) */
     .transition-shot{
       position: fixed;
       left: 0; top: 0;
       width: 10px; height: 10px;
       border-radius: 14px;
       overflow: hidden;
-      will-change: transform, border-radius;
-      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      will-change: transform, border-radius, opacity;
       transform-origin: top left;
+      opacity: 1;
     }
     .transition-shot::before{
       content:"";
       position:absolute;
       inset:0;
       background-image: var(--img);
-      background-size: cover;       /* <- IGUAL ao fundo fixo (cover) */
+      background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       transform: scale(1.02);
+    }
+    .transition-shot::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: var(--overlay); /* <- igual ao slide final */
     }
   </style>
 </head>
@@ -398,7 +407,6 @@
       items.forEach((el,i)=>el.classList.toggle("is-active",i===0));
       thumbs.forEach((el,i)=>el.classList.toggle("is-front",i===0));
 
-      // garante que todos têm background aplicado (principalmente após reorder)
       items.forEach(applyItemBackground);
     }
 
@@ -423,7 +431,7 @@
       }
     }
 
-    function playTransitionShot(fromRect, toRect, imgSrc, duration) {
+    function createShot(fromRect, toRect, imgSrc, duration) {
       const shot = document.createElement("div");
       shot.className = "transition-shot";
       shot.style.left = fromRect.left + "px";
@@ -438,12 +446,13 @@
       const sx = toRect.width / fromRect.width;
       const sy = toRect.height / fromRect.height;
 
+      // start
       shot.style.transform = "translate(0px,0px) scale(1,1)";
       shot.style.borderRadius = "14px";
       shot.getBoundingClientRect();
 
-      shot.style.transition =
-        `transform ${duration}ms cubic-bezier(.22,.61,.36,1), border-radius ${duration}ms cubic-bezier(.22,.61,.36,1)`;
+      // animate
+      shot.style.transition = `transform ${duration}ms var(--ease), border-radius ${duration}ms var(--ease)`;
       shot.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
       shot.style.borderRadius = "0px";
 
@@ -454,12 +463,12 @@
       return new Promise((resolve) => {
         const done = () => resolve();
         el.addEventListener("transitionend", done, { once:true });
-        setTimeout(done, duration + 80);
+        setTimeout(done, duration + 90);
       });
     }
 
     function animateThumbStripToLeft(delta, duration) {
-      thumbList.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
+      thumbList.style.transition = `transform ${duration}ms var(--ease)`;
       thumbList.style.transform = `translateX(${-delta}px)`;
     }
     function resetThumbStrip() {
@@ -468,7 +477,12 @@
       thumbList.getBoundingClientRect();
     }
 
-    // ======= NEXT: a imagem solta termina e o fundo fixo (cover) já é idêntico (cover)
+    function fadeOutAndRemove(el, ms = 120) {
+      el.style.transition = `opacity ${ms}ms linear`;
+      el.style.opacity = "0";
+      setTimeout(() => el.remove(), ms + 30);
+    }
+
     async function next() {
       if (isAnimating) return;
       isAnimating = true;
@@ -476,7 +490,7 @@
       const duration = 650;
 
       const thumbs = thumbList.querySelectorAll(".thumb");
-      const originThumb = thumbs[1]; // próxima thumb
+      const originThumb = thumbs[1]; // próxima thumb (a que vira fundo)
       const originImg = originThumb ? originThumb.querySelector("img") : null;
       const nextSrc = originImg ? originImg.getAttribute("src") : null;
 
@@ -487,36 +501,32 @@
       const fromRect = originThumb.getBoundingClientRect();
       const toRect = slider.getBoundingClientRect();
 
+      // movimento do carrossel no mesmo tempo
       const step = getThumbStepPx();
       animateThumbStripToLeft(step, duration);
 
-      const shot = playTransitionShot(fromRect, toRect, nextSrc, duration);
+      // shot cresce (com overlay igual ao do fundo final)
+      const shot = createShot(fromRect, toRect, nextSrc, duration);
       await waitTransitionEnd(shot, duration);
 
-      // Reordena (loop infinito)
+      // commit do estado final (fundo real já fica idêntico: cover + overlay do slide)
       sliderList.appendChild(sliderList.firstElementChild);
       thumbList.appendChild(thumbList.firstElementChild);
       resetThumbStrip();
 
-      // Garante que o item ativo agora usa o MESMO src do shot (e no MESMO modo: cover)
       const active = sliderList.querySelector(".item:first-child");
       if (active) {
         active.dataset.src = nextSrc;
         applyItemBackground(active);
       }
-
       syncUI();
 
-      // Remove só depois de 2 frames (fundo já renderizado e idêntico)
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          shot.remove();
-          isAnimating = false;
-        });
-      });
+      // chave anti-piscada: não some "de uma vez" — dissolve sobre um fundo idêntico
+      fadeOutAndRemove(shot, 120);
+
+      isAnimating = false;
     }
 
-    // ======= PREV: mesma ideia
     async function prev() {
       if (isAnimating) return;
       isAnimating = true;
@@ -539,10 +549,10 @@
       thumbList.style.transition = "none";
       thumbList.style.transform = `translateX(${-step}px)`;
       thumbList.getBoundingClientRect();
-      thumbList.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
+      thumbList.style.transition = `transform ${duration}ms var(--ease)`;
       thumbList.style.transform = `translateX(0px)`;
 
-      const shot = playTransitionShot(fromRect, toRect, prevSrc, duration);
+      const shot = createShot(fromRect, toRect, prevSrc, duration);
       await waitTransitionEnd(shot, duration);
 
       sliderList.prepend(sliderList.lastElementChild);
@@ -554,21 +564,16 @@
         active.dataset.src = prevSrc;
         applyItemBackground(active);
       }
-
       syncUI();
 
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          shot.remove();
-          isAnimating = false;
-        });
-      });
+      fadeOutAndRemove(shot, 120);
+
+      isAnimating = false;
     }
 
     btnNext.addEventListener("click", next);
     btnPrev.addEventListener("click", prev);
 
-    // inicializa backgrounds e estado
     syncUI();
   </script>
 </body>
