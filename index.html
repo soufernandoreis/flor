@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carrossel Sincronizado - Efeito Fade</title>
+    <title>Carrossel - Efeito Zoom Suave</title>
     <style>
-        /* CSS ATUALIZADO */
         * {
             margin: 0;
             padding: 0;
@@ -21,13 +20,11 @@
 
         .carousel-container {
             position: relative;
-            /* ALTERAÇÃO: Ocupa a tela inteira */
             width: 100vw;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* Carrossel de Fundo */
         .background-carousel {
             position: absolute;
             top: 0;
@@ -36,22 +33,27 @@
             height: 100%;
         }
 
+        /* ALTERAÇÃO PRINCIPAL PARA O EFEITO ZOOM SUAVE */
         .background-slide {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            /* ALTERAÇÃO: Prepara os slides para o efeito fade */
-            opacity: 0;
-            transition: opacity 1s ease-in-out; /* Controla a velocidade do fade */
             z-index: 1;
+            
+            /* Estado inicial (invisível e com zoom) */
+            opacity: 0;
+            transform: scale(1.1);
+            transition: opacity 1.2s ease-out, transform 1.2s ease-out; /* Controla a velocidade da animação */
         }
-        
-        /* A classe 'active' torna a imagem de fundo visível */
+
         .background-slide.active {
+            z-index: 2; /* Fica na frente durante a transição */
+            
+            /* Estado final (visível e no tamanho normal) */
             opacity: 1;
-            z-index: 2; /* Garante que o slide ativo fique na frente durante a transição */
+            transform: scale(1);
         }
 
         .background-slide img {
@@ -60,145 +62,34 @@
             object-fit: cover;
             filter: brightness(0.6);
         }
-
-        /* Conteúdo Sobreposto */
-        .overlay-content {
-            position: absolute;
-            top: 50%;
-            left: 5%;
-            transform: translateY(-50%);
-            color: white;
-            z-index: 5; /* Z-index alto para ficar sempre na frente */
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
-        }
-
-        .overlay-content h1 {
-            font-size: 3.5rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .overlay-content p {
-            font-size: 1.2rem;
-            max-width: 400px;
-        }
-
-        /* Carrossel de Miniaturas */
-        .thumbnail-carousel {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            width: 450px;
-            height: 120px;
-            display: flex;
-            align-items: center;
-            z-index: 5;
-        }
-
-        .thumbnail-track {
-            display: flex;
-            transition: transform 0.7s ease-in-out;
-        }
-
-        .thumbnail-slide {
-            width: 150px;
-            height: 100px;
-            margin: 0 10px;
-            cursor: pointer;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform 0.3s, border-color 0.3s;
-            border: 2px solid transparent;
-        }
-
-        .thumbnail-slide.active {
-            border-color: white;
-            transform: scale(1.1);
-        }
-
-        .thumbnail-slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Setas de Navegação */
-        .arrow {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            font-size: 20px;
-            cursor: pointer;
-            border-radius: 5px;
-            z-index: 6;
-            transition: background-color 0.3s;
-        }
         
-        .arrow:hover {
-            background-color: rgba(0, 0, 0, 0.8);
-        }
-
-        .prev {
-            left: -60px;
-        }
-
-        .next {
-            right: -60px;
-        }
+        /* O resto do CSS para as miniaturas e texto continua o mesmo */
+        .overlay-content{position:absolute;top:50%;left:5%;transform:translateY(-50%);color:white;z-index:5;text-shadow:2px 2px 8px rgba(0,0,0,.7)}.overlay-content h1{font-size:3.5rem;font-weight:700;margin-bottom:10px}.overlay-content p{font-size:1.2rem;max-width:400px}.thumbnail-carousel{position:absolute;bottom:30px;right:30px;width:450px;height:120px;display:flex;align-items:center;z-index:5}.thumbnail-track{display:flex;transition:transform .7s ease-in-out}.thumbnail-slide{width:150px;height:100px;margin:0 10px;cursor:pointer;border-radius:8px;overflow:hidden;transition:transform .3s,border-color .3s;border:2px solid transparent}.thumbnail-slide.active{border-color:#fff;transform:scale(1.1)}.thumbnail-slide img{width:100%;height:100%;object-fit:cover}.arrow{position:absolute;top:50%;transform:translateY(-50%);background-color:rgba(0,0,0,.5);color:#fff;border:none;padding:10px 15px;font-size:20px;cursor:pointer;border-radius:5px;z-index:6;transition:background-color .3s}.arrow:hover{background-color:rgba(0,0,0,.8)}.prev{left:-60px}.next{right:-60px}
     </style>
 </head>
 <body>
 
     <div class="carousel-container">
-        <!-- Carrossel de Fundo -->
         <div class="background-carousel">
-            <div class="background-slide">
-                <img src="homem.png" alt="Homem">
-            </div>
-            <div class="background-slide">
-                <img src="conjunto.png" alt="Conjunto">
-            </div>
-            <div class="background-slide">
-                <img src="conjuntoescuro.png" alt="Conjunto Escuro">
-            </div>
-            <div class="background-slide">
-                <img src="duas.png" alt="Duas">
-            </div>
-            <div class="background-slide">
-                <img src="branco.png" alt="Branco">
-            </div>
+            <div class="background-slide"><img src="homem.png" alt="Homem"></div>
+            <div class="background-slide"><img src="conjunto.png" alt="Conjunto"></div>
+            <div class="background-slide"><img src="conjuntoescuro.png" alt="Conjunto Escuro"></div>
+            <div class="background-slide"><img src="duas.png" alt="Duas"></div>
+            <div class="background-slide"><img src="branco.png" alt="Branco"></div>
         </div>
-
-        <!-- Conteúdo Sobreposto -->
         <div class="overlay-content">
             <h1>SAINT ANTONIEN</h1>
             <p>Descubra a beleza e a aventura que esperam por você.</p>
         </div>
-
-        <!-- Carrossel de Miniaturas -->
         <div class="thumbnail-carousel">
              <button class="arrow prev">&#10094;</button>
             <div class="thumbnail-track-container" style="overflow: hidden; width: 100%;">
                 <div class="thumbnail-track">
-                    <div class="thumbnail-slide">
-                        <img src="homem.png" alt="Miniatura Homem">
-                    </div>
-                    <div class="thumbnail-slide">
-                        <img src="conjunto.png" alt="Miniatura Conjunto">
-                    </div>
-                    <div class="thumbnail-slide">
-                        <img src="conjuntoescuro.png" alt="Miniatura Conjunto Escuro">
-                    </div>
-                    <div class="thumbnail-slide">
-                        <img src="duas.png" alt="Miniatura Duas">
-                    </div>
-                    <div class="thumbnail-slide">
-                        <img src="branco.png" alt="Miniatura Branco">
-                    </div>
+                    <div class="thumbnail-slide"><img src="homem.png" alt="Miniatura Homem"></div>
+                    <div class="thumbnail-slide"><img src="conjunto.png" alt="Miniatura Conjunto"></div>
+                    <div class="thumbnail-slide"><img src="conjuntoescuro.png" alt="Miniatura Conjunto Escuro"></div>
+                    <div class="thumbnail-slide"><img src="duas.png" alt="Miniatura Duas"></div>
+                    <div class="thumbnail-slide"><img src="branco.png" alt="Miniatura Branco"></div>
                 </div>
             </div>
             <button class="arrow next">&#10095;</button>
@@ -206,60 +97,63 @@
     </div>
 
     <script>
-        // JAVASCRIPT ATUALIZADO
         document.addEventListener('DOMContentLoaded', () => {
-            const backgroundSlides = document.querySelectorAll('.background-slide'); // Seleciona os slides de fundo individualmente
+            const backgroundSlides = document.querySelectorAll('.background-slide');
             const thumbnailTrack = document.querySelector('.thumbnail-track');
             const thumbnailSlides = document.querySelectorAll('.thumbnail-slide');
             const prevButton = document.querySelector('.arrow.prev');
             const nextButton = document.querySelector('.arrow.next');
-
             let currentIndex = 0;
             const totalSlides = thumbnailSlides.length;
-            const slideWidth = 150 + 20; // Largura da miniatura (150px) + margens (10px de cada lado)
+            const slideWidth = 150 + 20; // Largura miniatura (150) + margens (20)
+            let isTransitioning = false; // Flag para evitar cliques múltiplos durante a animação
 
-            // Função para atualizar os carrosséis
-            const updateCarousels = (index) => {
-                
-                // ALTERAÇÃO: Lógica para o efeito fade no fundo
-                backgroundSlides.forEach((slide, i) => {
-                    // Adiciona a classe 'active' apenas ao slide atual para torná-lo visível
-                    slide.classList.toggle('active', i === index);
-                });
+            const updateCarousels = (newIndex) => {
+                // Se uma transição já estiver acontecendo, não faz nada
+                if (isTransitioning || newIndex === currentIndex) return;
+                isTransitioning = true;
 
-                // Movimenta o carrossel de miniaturas para centralizar o item ativo
-                const offset = (index * slideWidth) + (slideWidth / 2) - (thumbnailTrack.parentElement.offsetWidth / 2);
+                const oldIndex = currentIndex;
+                const oldSlide = backgroundSlides[oldIndex];
+                const newSlide = backgroundSlides[newIndex];
+
+                // Ativa o novo slide para iniciar a animação de entrada (fade-in e zoom-out)
+                newSlide.classList.add('active');
+
+                // Movimenta as miniaturas para a nova posição
+                const offset = (newIndex * slideWidth) + (slideWidth / 2) - (thumbnailTrack.parentElement.offsetWidth / 2);
                 thumbnailTrack.style.transform = `translateX(-${offset}px)`;
+                thumbnailSlides.forEach((s, i) => s.classList.toggle('active', i === newIndex));
+                
+                // Define um tempo para resetar o slide antigo após a transição terminar
+                setTimeout(() => {
+                    // Remove a classe 'active' do slide antigo, fazendo ele voltar ao estado inicial (invisível e com zoom)
+                    oldSlide.classList.remove('active');
+                    isTransitioning = false; // Libera para o próximo clique
+                }, 1200); // Este tempo DEVE ser o mesmo da transição do CSS
 
-                // Atualiza a classe 'active' nas miniaturas
-                thumbnailSlides.forEach((slide, i) => {
-                    slide.classList.toggle('active', i === index);
-                });
+                currentIndex = newIndex; // Atualiza o índice atual
             };
             
-             // Event Listeners para os botões de seta
+            // Event Listeners
             nextButton.addEventListener('click', () => {
-                currentIndex = (currentIndex + 1) % totalSlides;
-                updateCarousels(currentIndex);
+                updateCarousels((currentIndex + 1) % totalSlides);
             });
-
             prevButton.addEventListener('click', () => {
-                currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-                updateCarousels(currentIndex);
+                updateCarousels((currentIndex - 1 + totalSlides) % totalSlides);
             });
-
-            // Adiciona evento de clique nas miniaturas
             thumbnailSlides.forEach((slide, index) => {
                 slide.addEventListener('click', () => {
-                    if (currentIndex !== index) {
-                        currentIndex = index;
-                        updateCarousels(currentIndex);
-                    }
+                    updateCarousels(index);
                 });
             });
             
-            // Inicia o carrossel na primeira imagem
-            updateCarousels(0);
+            // Inicia o carrossel no primeiro slide ao carregar a página
+            backgroundSlides[0].classList.add('active');
+            thumbnailSlides[0].classList.add('active');
+            // Centraliza a primeira miniatura
+             const initialOffset = (0 * slideWidth) + (slideWidth / 2) - (thumbnailTrack.parentElement.offsetWidth / 2);
+            thumbnailTrack.style.transform = `translateX(-${initialOffset}px)`;
         });
     </script>
 </body>
