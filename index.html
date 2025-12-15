@@ -67,7 +67,7 @@
       transition: opacity .45s ease, transform .6s ease;
     }
 
-    /* fundo + imagem inteira */
+    /* ===== FUNDO FIXO (OPÇÃO A): background-image cover, ocupa 100% ===== */
     .media{
       position:absolute;
       inset:0;
@@ -79,15 +79,17 @@
       inset:0;
       width:100%;
       height:100%;
-      display:block;
+      background-size: cover;         /* <- igual ao transition-shot */
+      background-position: center;
+      background-repeat: no-repeat;
     }
     .media .bg{
-      object-fit:cover;
       filter: blur(18px) brightness(.65);
       transform: scale(1.08);
     }
     .media .fg{
-      object-fit:contain;
+      filter: none;
+      transform: none;
     }
 
     .item::after{
@@ -274,8 +276,9 @@
       position:absolute;
       inset:0;
       background-image: var(--img);
-      background-size: cover;
+      background-size: cover;       /* <- IGUAL ao fundo fixo (cover) */
       background-position: center;
+      background-repeat: no-repeat;
       transform: scale(1.02);
     }
   </style>
@@ -296,10 +299,10 @@
   <main class="slider" id="slider">
     <div class="list" id="sliderList">
 
-      <article class="item">
+      <article class="item" data-src="conjuntoescuro.png">
         <div class="media">
-          <img class="bg" src="conjuntoescuro.png" alt="">
-          <img class="fg" src="conjuntoescuro.png" alt="slide 1">
+          <div class="bg"></div>
+          <div class="fg"></div>
         </div>
         <div class="content">
           <p class="tag">DESIGN</p>
@@ -310,10 +313,10 @@
         </div>
       </article>
 
-      <article class="item">
+      <article class="item" data-src="jaquetaverde.png">
         <div class="media">
-          <img class="bg" src="jaquetaverde.png" alt="">
-          <img class="fg" src="jaquetaverde.png" alt="slide 2">
+          <div class="bg"></div>
+          <div class="fg"></div>
         </div>
         <div class="content">
           <p class="tag">NATURE</p>
@@ -324,10 +327,10 @@
         </div>
       </article>
 
-      <article class="item">
+      <article class="item" data-src="conjuntoescuro.png">
         <div class="media">
-          <img class="bg" src="conjuntoescuro.png" alt="">
-          <img class="fg" src="conjuntoescuro.png" alt="slide 3">
+          <div class="bg"></div>
+          <div class="fg"></div>
         </div>
         <div class="content">
           <p class="tag">TRAVEL</p>
@@ -338,10 +341,10 @@
         </div>
       </article>
 
-      <article class="item">
+      <article class="item" data-src="conjunto.png">
         <div class="media">
-          <img class="bg" src="conjunto.png" alt="">
-          <img class="fg" src="conjunto.png" alt="slide 4">
+          <div class="bg"></div>
+          <div class="fg"></div>
         </div>
         <div class="content">
           <p class="tag">MOUNTAIN</p>
@@ -366,7 +369,6 @@
       <button class="thumb" type="button"><img src="conjunto.png" alt=""></button>
     </div>
 
-    <!-- agora a layer fica DENTRO do slider (stack previsível) -->
     <div class="transition-layer" id="transitionLayer"></div>
   </main>
 
@@ -380,11 +382,24 @@
 
     let isAnimating = false;
 
+    function applyItemBackground(item) {
+      const src = item?.dataset?.src;
+      if (!src) return;
+      const bg = item.querySelector(".media .bg");
+      const fg = item.querySelector(".media .fg");
+      if (bg) bg.style.backgroundImage = `url("${src}")`;
+      if (fg) fg.style.backgroundImage = `url("${src}")`;
+    }
+
     function syncUI() {
       const items = sliderList.querySelectorAll(".item");
       const thumbs = thumbList.querySelectorAll(".thumb");
+
       items.forEach((el,i)=>el.classList.toggle("is-active",i===0));
       thumbs.forEach((el,i)=>el.classList.toggle("is-front",i===0));
+
+      // garante que todos têm background aplicado (principalmente após reorder)
+      items.forEach(applyItemBackground);
     }
 
     function getThumbStepPx() {
@@ -432,7 +447,7 @@
       shot.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
       shot.style.borderRadius = "0px";
 
-      return { shot, duration };
+      return shot;
     }
 
     function waitTransitionEnd(el, duration) {
@@ -453,16 +468,7 @@
       thumbList.getBoundingClientRect();
     }
 
-    function setActiveMediaSrc(src) {
-      const active = sliderList.querySelector(".item:first-child");
-      if (!active) return;
-      const bg = active.querySelector(".media .bg");
-      const fg = active.querySelector(".media .fg");
-      if (bg) bg.src = src;
-      if (fg) fg.src = src;
-    }
-
-    // ======= NEXT (sem piscada): imagem solta "vira" o fundo real
+    // ======= NEXT: a imagem solta termina e o fundo fixo (cover) já é idêntico (cover)
     async function next() {
       if (isAnimating) return;
       isAnimating = true;
@@ -470,16 +476,12 @@
       const duration = 650;
 
       const thumbs = thumbList.querySelectorAll(".thumb");
-      const originThumb = thumbs[1];                 // próxima thumb (a que vai virar fundo)
+      const originThumb = thumbs[1]; // próxima thumb
       const originImg = originThumb ? originThumb.querySelector("img") : null;
       const nextSrc = originImg ? originImg.getAttribute("src") : null;
 
-      if (!originThumb || !nextSrc) {
-        isAnimating = false;
-        return;
-      }
+      if (!originThumb || !nextSrc) { isAnimating = false; return; }
 
-      // garante que a imagem já está decodada (reduz chance de flash)
       await preloadImage(nextSrc);
 
       const fromRect = originThumb.getBoundingClientRect();
@@ -488,23 +490,24 @@
       const step = getThumbStepPx();
       animateThumbStripToLeft(step, duration);
 
-      // cria e anima a “imagem solta”
-      const { shot } = playTransitionShot(fromRect, toRect, nextSrc, duration);
-
-      // enquanto anima, já prepara o estado final do carrossel (sem mostrar “volta”)
-      // (a troca real do fundo só importa no fim)
+      const shot = playTransitionShot(fromRect, toRect, nextSrc, duration);
       await waitTransitionEnd(shot, duration);
 
-      // 1) finaliza o loop infinito (fila de slides e thumbs)
+      // Reordena (loop infinito)
       sliderList.appendChild(sliderList.firstElementChild);
       thumbList.appendChild(thumbList.firstElementChild);
       resetThumbStrip();
+
+      // Garante que o item ativo agora usa o MESMO src do shot (e no MESMO modo: cover)
+      const active = sliderList.querySelector(".item:first-child");
+      if (active) {
+        active.dataset.src = nextSrc;
+        applyItemBackground(active);
+      }
+
       syncUI();
 
-      // 2) agora o slide ativo deve ter o mesmo src do shot (fundo real igual ao shot)
-      setActiveMediaSrc(nextSrc);
-
-      // 3) remove o shot só depois de 1-2 frames, quando o fundo real já está renderizado
+      // Remove só depois de 2 frames (fundo já renderizado e idêntico)
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           shot.remove();
@@ -513,7 +516,7 @@
       });
     }
 
-    // ======= PREV (mesma lógica)
+    // ======= PREV: mesma ideia
     async function prev() {
       if (isAnimating) return;
       isAnimating = true;
@@ -524,10 +527,7 @@
       const lastImg = lastThumb ? lastThumb.querySelector("img") : null;
       const prevSrc = lastImg ? lastImg.getAttribute("src") : null;
 
-      if (!lastThumb || !prevSrc) {
-        isAnimating = false;
-        return;
-      }
+      if (!lastThumb || !prevSrc) { isAnimating = false; return; }
 
       await preloadImage(prevSrc);
 
@@ -542,16 +542,20 @@
       thumbList.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
       thumbList.style.transform = `translateX(0px)`;
 
-      const { shot } = playTransitionShot(fromRect, toRect, prevSrc, duration);
-
+      const shot = playTransitionShot(fromRect, toRect, prevSrc, duration);
       await waitTransitionEnd(shot, duration);
 
       sliderList.prepend(sliderList.lastElementChild);
       thumbList.prepend(thumbList.lastElementChild);
       resetThumbStrip();
-      syncUI();
 
-      setActiveMediaSrc(prevSrc);
+      const active = sliderList.querySelector(".item:first-child");
+      if (active) {
+        active.dataset.src = prevSrc;
+        applyItemBackground(active);
+      }
+
+      syncUI();
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -564,6 +568,7 @@
     btnNext.addEventListener("click", next);
     btnPrev.addEventListener("click", prev);
 
+    // inicializa backgrounds e estado
     syncUI();
   </script>
 </body>
