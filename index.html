@@ -18,6 +18,9 @@
       --overlay: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
       --ease: cubic-bezier(.22,.61,.36,1);
       --dur: 650ms;
+
+      /* EFEITO NOVO: crescer para frente (zoom-in) */
+      --zoomStart: .965; /* < 1 => começa menor e cresce até 1 */
     }
 
     *{ box-sizing:border-box; }
@@ -61,51 +64,15 @@
       overflow:hidden;
     }
 
-    /* ===== FUNDO (sem imagem solta) ===== */
+    /* ===== FUNDO: 2 <img> fixas (sem background-image) =====
+       Isso reduz muito flicker em vários browsers/GPU.
+    */
     .bgstack{
       position:absolute;
       inset:0;
       z-index:0;
+      overflow:hidden;
     }
-    .bgstack .layer{
-      position:absolute;
-      inset:0;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      opacity:0;
-      transform: scale(1.02);
-      will-change: opacity, transform;
-      transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
-    }
-    .bgstack .layer.is-current{
-      opacity:1;
-      transform: scale(1);
-    }
-    .bgstack .layer.is-next{
-      opacity:0;
-      transform: scale(1.03);
-    }
-    .bgstack.is-animating .layer.is-next{
-      opacity:1;
-      transform: scale(1);
-    }
-    .bgstack.is-animating .layer.is-current{
-      opacity:0;
-      transform: scale(1.00);
-    }
-
-    .bgstack .blur{
-      filter: blur(18px) brightness(.65);
-      transform: scale(1.08);
-    }
-    .bgstack.is-animating .blur.is-next{
-      transform: scale(1.08);
-    }
-    .bgstack.is-animating .blur.is-current{
-      transform: scale(1.08);
-    }
-
     .bgstack::after{
       content:"";
       position:absolute;
@@ -113,6 +80,40 @@
       background: var(--overlay);
       z-index:5;
       pointer-events:none;
+    }
+
+    .bgimg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      opacity:0;
+      transform: translateZ(0) scale(1);
+      will-change: opacity, transform;
+      backface-visibility:hidden;
+    }
+
+    /* estados */
+    .bgimg.is-current{
+      opacity:1;
+      transform: translateZ(0) scale(1);
+    }
+    .bgimg.is-next{
+      opacity:0;
+      transform: translateZ(0) scale(var(--zoomStart)); /* começa menor */
+    }
+
+    /* animação */
+    .bgstack.is-animating .bgimg.is-next{
+      opacity:1;
+      transform: translateZ(0) scale(1); /* cresce para frente */
+      transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+    }
+    .bgstack.is-animating .bgimg.is-current{
+      opacity:0;
+      transform: translateZ(0) scale(1.01); /* leve “respiração” ao sair (opcional) */
+      transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
     }
 
     /* ===== SLIDES (conteúdo) ===== */
@@ -243,31 +244,15 @@
       .content h1{ font-size:30px; }
       .desc{ font-size:13px; }
 
-      .controls{
-        left:14px;
-        bottom:84px;
-      }
-      .arrow{
-        width:40px;
-        height:40px;
-        border-radius:14px;
-        font-size:22px;
-      }
+      .controls{ left:14px; bottom:84px; }
+      .arrow{ width:40px; height:40px; border-radius:14px; font-size:22px; }
 
       .thumbnail{
-        left:14px;
-        right:14px;
-        bottom:14px;
-        padding:10px;
-        border-radius:16px;
-        gap:8px;
+        left:14px; right:14px; bottom:14px;
+        padding:10px; border-radius:16px; gap:8px;
         max-width: calc(100vw - 28px);
       }
-      .thumb{
-        width:76px;
-        height:50px;
-        border-radius:12px;
-      }
+      .thumb{ width:76px; height:50px; border-radius:12px; }
     }
     @media (max-width: 420px){
       .content h1{ font-size:28px; }
@@ -290,12 +275,10 @@
   </header>
 
   <main class="slider" id="slider">
-    <!-- Fundo com 2 buffers (current/next), sem “imagem solta” -->
+    <!-- Fundo fixo com 2 IMG (current/next) -->
     <div class="bgstack" id="bgstack" aria-hidden="true">
-      <div class="layer blur is-current" id="bgBlurCur"></div>
-      <div class="layer blur is-next"    id="bgBlurNext"></div>
-      <div class="layer is-current"      id="bgCur"></div>
-      <div class="layer is-next"         id="bgNext"></div>
+      <img class="bgimg is-current" id="bgCurrent" alt="">
+      <img class="bgimg is-next" id="bgNext" alt="">
     </div>
 
     <div class="list" id="sliderList">
@@ -354,19 +337,17 @@
   </main>
 
   <script>
-    const slider = document.getElementById("slider");
     const sliderList = document.getElementById("sliderList");
     const thumbList  = document.getElementById("thumbList");
     const btnNext    = document.getElementById("next");
     const btnPrev    = document.getElementById("prev");
 
-    const bgstack = document.getElementById("bgstack");
-    const bgBlurCur  = document.getElementById("bgBlurCur");
-    const bgBlurNext = document.getElementById("bgBlurNext");
-    const bgCur      = document.getElementById("bgCur");
-    const bgNext     = document.getElementById("bgNext");
+    const bgstack   = document.getElementById("bgstack");
+    let bgCurrentEl = document.getElementById("bgCurrent");
+    let bgNextEl    = document.getElementById("bgNext");
 
     let isAnimating = false;
+    const DURATION = 650;
 
     function syncActiveContent() {
       const items = sliderList.querySelectorAll(".item");
@@ -375,24 +356,29 @@
       thumbs.forEach((el,i)=>el.classList.toggle("is-front", i===0));
     }
 
-    function setCurrentBackground(src) {
-      bgCur.style.backgroundImage = `url("${src}")`;
-      bgBlurCur.style.backgroundImage = `url("${src}")`;
-    }
-
-    function setNextBackground(src) {
-      bgNext.style.backgroundImage = `url("${src}")`;
-      bgBlurNext.style.backgroundImage = `url("${src}")`;
-    }
-
-    function clearNextBackground() {
-      bgNext.style.backgroundImage = "";
-      bgBlurNext.style.backgroundImage = "";
-    }
-
     function getSlideSrcAt(index) {
       const item = sliderList.querySelectorAll(".item")[index];
       return item ? item.dataset.src : "";
+    }
+
+    async function decodeImage(src) {
+      if (!src) return;
+      const img = new Image();
+      img.decoding = "async";
+      img.src = src;
+      if (img.decode) {
+        try { await img.decode(); } catch {}
+      } else {
+        await new Promise(r => { img.onload=r; img.onerror=r; });
+      }
+    }
+
+    async function preloadAll() {
+      const srcs = Array.from(sliderList.querySelectorAll(".item"))
+        .map(it => it.dataset.src)
+        .filter(Boolean);
+      // decode em série (menos chance de pico de CPU)
+      for (const s of srcs) await decodeImage(s);
     }
 
     function getThumbStepPx() {
@@ -414,48 +400,63 @@
       thumbList.getBoundingClientRect();
     }
 
-    async function preload(src) {
-      if (!src) return;
-      const img = new Image();
-      img.decoding = "async";
-      img.src = src;
-      if (img.decode) { try { await img.decode(); } catch {} }
-      else { await new Promise(r => { img.onload=r; img.onerror=r; }); }
+    function forceReflow(el){ el.getBoundingClientRect(); }
+
+    function beginBgTransition(nextSrc){
+      // carrega o next (já decodado), depois anima por classe
+      bgNextEl.src = nextSrc;
+
+      // garante que o browser “assentou” o novo src antes de animar
+      forceReflow(bgNextEl);
+      bgstack.classList.remove("is-animating");
+      forceReflow(bgstack);
+
+      requestAnimationFrame(() => bgstack.classList.add("is-animating"));
     }
 
-    function wait(ms){ return new Promise(r=>setTimeout(r, ms)); }
+    function commitBgTransition(){
+      // Sem trocar src no frame crítico:
+      // a próxima imagem (bgNextEl) vira a "current" trocando classes/roles (swap de elementos)
+      bgCurrentEl.classList.remove("is-current");
+      bgCurrentEl.classList.add("is-next");
+
+      bgNextEl.classList.remove("is-next");
+      bgNextEl.classList.add("is-current");
+
+      // swap das referências (agora o "current" aponta para o elemento que já estava renderizado)
+      const tmp = bgCurrentEl;
+      bgCurrentEl = bgNextEl;
+      bgNextEl = tmp;
+
+      // limpa estado
+      bgstack.classList.remove("is-animating");
+
+      // opcional: limpar src do buffer “next” para evitar reuso estranho
+      // (deixa um micro delay pra não mexer no frame do commit)
+      requestAnimationFrame(() => { bgNextEl.src = ""; });
+    }
 
     async function goNext() {
       if (isAnimating) return;
       isAnimating = true;
 
-      const duration = 650;
-
-      // próximo slide = item[1] (antes de reordenar)
       const nextSrc = getSlideSrcAt(1);
       if (!nextSrc) { isAnimating = false; return; }
 
-      await preload(nextSrc);
-      setNextBackground(nextSrc);
+      await decodeImage(nextSrc);
 
-      // thumbs movimentam no mesmo tempo
       const step = getThumbStepPx();
-      animateThumbStripToLeft(step, duration);
+      animateThumbStripToLeft(step, DURATION);
 
-      // anima o fundo (crossfade + leve zoom) SEM trocar elementos
-      // força frame antes de ligar a classe animating
-      bgstack.classList.remove("is-animating");
-      bgstack.getBoundingClientRect();
-      requestAnimationFrame(() => bgstack.classList.add("is-animating"));
+      beginBgTransition(nextSrc);
 
-      await wait(duration);
+      // espera fim
+      await new Promise(r => setTimeout(r, DURATION));
 
-      // commit: next vira current (sem flicker)
-      setCurrentBackground(nextSrc);
-      bgstack.classList.remove("is-animating");
-      clearNextBackground();
+      // commit fundo (swap de elementos, não troca src do current)
+      commitBgTransition();
 
-      // loop infinito real: rotaciona DOM (slides e thumbs)
+      // loop infinito real
       sliderList.appendChild(sliderList.firstElementChild);
       thumbList.appendChild(thumbList.firstElementChild);
       resetThumbStrip();
@@ -468,36 +469,26 @@
       if (isAnimating) return;
       isAnimating = true;
 
-      const duration = 650;
-
-      // anterior = último item
       const items = sliderList.querySelectorAll(".item");
       const prevSrc = items.length ? items[items.length - 1].dataset.src : "";
       if (!prevSrc) { isAnimating = false; return; }
 
-      await preload(prevSrc);
-      setNextBackground(prevSrc); // reutiliza o buffer "next" como destino
+      await decodeImage(prevSrc);
 
-      // thumbs: simula deslocamento para direita (pré-offset e volta)
       const step = getThumbStepPx();
+
+      // thumbs: simula deslocar para direita
       thumbList.style.transition = "none";
       thumbList.style.transform = `translateX(${-step}px)`;
-      thumbList.getBoundingClientRect();
-      thumbList.style.transition = `transform ${duration}ms var(--ease)`;
+      forceReflow(thumbList);
+      thumbList.style.transition = `transform ${DURATION}ms var(--ease)`;
       thumbList.style.transform = `translateX(0px)`;
 
-      bgstack.classList.remove("is-animating");
-      bgstack.getBoundingClientRect();
-      requestAnimationFrame(() => bgstack.classList.add("is-animating"));
+      beginBgTransition(prevSrc);
+      await new Promise(r => setTimeout(r, DURATION));
+      commitBgTransition();
 
-      await wait(duration);
-
-      // commit
-      setCurrentBackground(prevSrc);
-      bgstack.classList.remove("is-animating");
-      clearNextBackground();
-
-      // loop infinito real (ao contrário)
+      // loop infinito real ao contrário
       sliderList.prepend(sliderList.lastElementChild);
       thumbList.prepend(thumbList.lastElementChild);
       resetThumbStrip();
@@ -509,11 +500,14 @@
     btnNext.addEventListener("click", goNext);
     btnPrev.addEventListener("click", goPrev);
 
-    // init
-    (function init(){
+    (async function init(){
       syncActiveContent();
+      // preload total (reduz chance de flicker por decode)
+      await preloadAll();
+
       const cur = getSlideSrcAt(0);
-      setCurrentBackground(cur);
+      bgCurrentEl.src = cur;
+      bgNextEl.src = "";
     })();
   </script>
 </body>
