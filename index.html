@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carrossel Sincronizado</title>
+    <title>Carrossel Sincronizado - Efeito Fade</title>
     <style>
-        /* CSS EMBUTIDO */
+        /* CSS ATUALIZADO */
         * {
             margin: 0;
             padding: 0;
@@ -15,21 +15,16 @@
         body {
             font-family: 'Helvetica Neue', sans-serif;
             background-color: #1a1a1a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
             overflow: hidden;
         }
 
         .carousel-container {
             position: relative;
-            width: 90vw;
-            max-width: 1200px;
-            height: 80vh;
-            border-radius: 15px;
+            /* ALTERAÇÃO: Ocupa a tela inteira */
+            width: 100vw;
+            height: 100vh;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         /* Carrossel de Fundo */
@@ -39,14 +34,24 @@
             left: 0;
             width: 100%;
             height: 100%;
-            display: flex;
-            transition: transform 0.7s ease-in-out;
         }
 
         .background-slide {
-            min-width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100%;
-            position: relative;
+            /* ALTERAÇÃO: Prepara os slides para o efeito fade */
+            opacity: 0;
+            transition: opacity 1s ease-in-out; /* Controla a velocidade do fade */
+            z-index: 1;
+        }
+        
+        /* A classe 'active' torna a imagem de fundo visível */
+        .background-slide.active {
+            opacity: 1;
+            z-index: 2; /* Garante que o slide ativo fique na frente durante a transição */
         }
 
         .background-slide img {
@@ -63,7 +68,7 @@
             left: 5%;
             transform: translateY(-50%);
             color: white;
-            z-index: 2;
+            z-index: 5; /* Z-index alto para ficar sempre na frente */
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
         }
 
@@ -87,7 +92,7 @@
             height: 120px;
             display: flex;
             align-items: center;
-            z-index: 3;
+            z-index: 5;
         }
 
         .thumbnail-track {
@@ -102,7 +107,7 @@
             cursor: pointer;
             border-radius: 8px;
             overflow: hidden;
-            transition: transform 0.3s, filter 0.3s, border-color 0.3s;
+            transition: transform 0.3s, border-color 0.3s;
             border: 2px solid transparent;
         }
 
@@ -129,7 +134,7 @@
             font-size: 20px;
             cursor: pointer;
             border-radius: 5px;
-            z-index: 4;
+            z-index: 6;
             transition: background-color 0.3s;
         }
         
@@ -138,11 +143,11 @@
         }
 
         .prev {
-            left: -60px; /* Ajustado para melhor visualização */
+            left: -60px;
         }
 
         .next {
-            right: -60px; /* Ajustado para melhor visualização */
+            right: -60px;
         }
     </style>
 </head>
@@ -201,9 +206,9 @@
     </div>
 
     <script>
-        // JAVASCRIPT EMBUTIDO
+        // JAVASCRIPT ATUALIZADO
         document.addEventListener('DOMContentLoaded', () => {
-            const backgroundCarousel = document.querySelector('.background-carousel');
+            const backgroundSlides = document.querySelectorAll('.background-slide'); // Seleciona os slides de fundo individualmente
             const thumbnailTrack = document.querySelector('.thumbnail-track');
             const thumbnailSlides = document.querySelectorAll('.thumbnail-slide');
             const prevButton = document.querySelector('.arrow.prev');
@@ -211,14 +216,18 @@
 
             let currentIndex = 0;
             const totalSlides = thumbnailSlides.length;
-            const slideWidth = thumbnailSlides[0].offsetWidth + (parseInt(getComputedStyle(thumbnailSlides[0]).marginRight) * 2);
+            const slideWidth = 150 + 20; // Largura da miniatura (150px) + margens (10px de cada lado)
 
             // Função para atualizar os carrosséis
             const updateCarousels = (index) => {
-                // Movimenta o carrossel de fundo
-                backgroundCarousel.style.transform = `translateX(-${index * 100}%)`;
+                
+                // ALTERAÇÃO: Lógica para o efeito fade no fundo
+                backgroundSlides.forEach((slide, i) => {
+                    // Adiciona a classe 'active' apenas ao slide atual para torná-lo visível
+                    slide.classList.toggle('active', i === index);
+                });
 
-                // Centraliza a miniatura ativa
+                // Movimenta o carrossel de miniaturas para centralizar o item ativo
                 const offset = (index * slideWidth) + (slideWidth / 2) - (thumbnailTrack.parentElement.offsetWidth / 2);
                 thumbnailTrack.style.transform = `translateX(-${offset}px)`;
 
@@ -242,8 +251,10 @@
             // Adiciona evento de clique nas miniaturas
             thumbnailSlides.forEach((slide, index) => {
                 slide.addEventListener('click', () => {
-                    currentIndex = index;
-                    updateCarousels(currentIndex);
+                    if (currentIndex !== index) {
+                        currentIndex = index;
+                        updateCarousels(currentIndex);
+                    }
                 });
             });
             
