@@ -254,10 +254,10 @@
 
     /* ====== CAMADA DE TRANSIÇÃO (abaixo do UI) ====== */
     .transition-layer{
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 15;
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      z-index:15;
     }
     .transition-shot{
       position: fixed;
@@ -365,9 +365,10 @@
       <button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button>
       <button class="thumb" type="button"><img src="conjunto.png" alt=""></button>
     </div>
-  </main>
 
-  <div class="transition-layer" id="transitionLayer"></div>
+    <!-- agora a layer fica DENTRO do slider (stack previsível) -->
+    <div class="transition-layer" id="transitionLayer"></div>
+  </main>
 
   <script>
     const slider = document.getElementById("slider");
@@ -395,6 +396,18 @@
       return rect.width + gap;
     }
 
+    async function preloadImage(src) {
+      if (!src) return;
+      const img = new Image();
+      img.decoding = "async";
+      img.src = src;
+      if (img.decode) {
+        try { await img.decode(); } catch {}
+      } else {
+        await new Promise(r => { img.onload = r; img.onerror = r; });
+      }
+    }
+
     function playTransitionShot(fromRect, toRect, imgSrc, duration) {
       const shot = document.createElement("div");
       shot.className = "transition-shot";
@@ -419,10 +432,14 @@
       shot.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
       shot.style.borderRadius = "0px";
 
+      return { shot, duration };
+    }
+
+    function waitTransitionEnd(el, duration) {
       return new Promise((resolve) => {
-        const done = () => { shot.remove(); resolve(); };
-        shot.addEventListener("transitionend", done, { once: true });
-        setTimeout(done, duration + 60);
+        const done = () => resolve();
+        el.addEventListener("transitionend", done, { once:true });
+        setTimeout(done, duration + 80);
       });
     }
 
@@ -430,16 +447,22 @@
       thumbList.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
       thumbList.style.transform = `translateX(${-delta}px)`;
     }
-
     function resetThumbStrip() {
       thumbList.style.transition = "none";
       thumbList.style.transform = "translateX(0px)";
       thumbList.getBoundingClientRect();
     }
 
-    // ======= ALTERAÇÃO NOVA (para não “voltar”):
-    // 1) ativa o próximo fundo ANTES da animação (reordena sliderList já no começo)
-    // 2) só depois anima e no final reordena thumbList
+    function setActiveMediaSrc(src) {
+      const active = sliderList.querySelector(".item:first-child");
+      if (!active) return;
+      const bg = active.querySelector(".media .bg");
+      const fg = active.querySelector(".media .fg");
+      if (bg) bg.src = src;
+      if (fg) fg.src = src;
+    }
+
+    // ======= NEXT (sem piscada): imagem solta "vira" o fundo real
     async function next() {
       if (isAnimating) return;
       isAnimating = true;
@@ -447,7 +470,7 @@
       const duration = 650;
 
       const thumbs = thumbList.querySelectorAll(".thumb");
-      const originThumb = thumbs[1];
+      const originThumb = thumbs[1];                 // próxima thumb (a que vai virar fundo)
       const originImg = originThumb ? originThumb.querySelector("img") : null;
       const nextSrc = originImg ? originImg.getAttribute("src") : null;
 
@@ -456,25 +479,41 @@
         return;
       }
 
+      // garante que a imagem já está decodada (reduz chance de flash)
+      await preloadImage(nextSrc);
+
       const fromRect = originThumb.getBoundingClientRect();
       const toRect = slider.getBoundingClientRect();
-
-      // >>> TROCA O FUNDO REAL ANTES (elimina “recua/volta”)
-      sliderList.appendChild(sliderList.firstElementChild);
-      syncUI();
 
       const step = getThumbStepPx();
       animateThumbStripToLeft(step, duration);
 
-      await playTransitionShot(fromRect, toRect, nextSrc, duration);
+      // cria e anima a “imagem solta”
+      const { shot } = playTransitionShot(fromRect, toRect, nextSrc, duration);
 
-      resetThumbStrip();
+      // enquanto anima, já prepara o estado final do carrossel (sem mostrar “volta”)
+      // (a troca real do fundo só importa no fim)
+      await waitTransitionEnd(shot, duration);
+
+      // 1) finaliza o loop infinito (fila de slides e thumbs)
+      sliderList.appendChild(sliderList.firstElementChild);
       thumbList.appendChild(thumbList.firstElementChild);
-
+      resetThumbStrip();
       syncUI();
-      isAnimating = false;
+
+      // 2) agora o slide ativo deve ter o mesmo src do shot (fundo real igual ao shot)
+      setActiveMediaSrc(nextSrc);
+
+      // 3) remove o shot só depois de 1-2 frames, quando o fundo real já está renderizado
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          shot.remove();
+          isAnimating = false;
+        });
+      });
     }
 
+    // ======= PREV (mesma lógica)
     async function prev() {
       if (isAnimating) return;
       isAnimating = true;
@@ -490,27 +529,36 @@
         return;
       }
 
+      await preloadImage(prevSrc);
+
       const fromRect = lastThumb.getBoundingClientRect();
       const toRect = slider.getBoundingClientRect();
       const step = getThumbStepPx();
 
-      // >>> TROCA O FUNDO REAL ANTES (para prev também)
-      sliderList.prepend(sliderList.lastElementChild);
-      syncUI();
-
-      // strip para direita (pré-posição e volta)
+      // anima strip para direita (pré-posição e volta)
       thumbList.style.transition = "none";
       thumbList.style.transform = `translateX(${-step}px)`;
       thumbList.getBoundingClientRect();
       thumbList.style.transition = `transform ${duration}ms cubic-bezier(.22,.61,.36,1)`;
       thumbList.style.transform = `translateX(0px)`;
 
-      await playTransitionShot(fromRect, toRect, prevSrc, duration);
+      const { shot } = playTransitionShot(fromRect, toRect, prevSrc, duration);
 
+      await waitTransitionEnd(shot, duration);
+
+      sliderList.prepend(sliderList.lastElementChild);
       thumbList.prepend(thumbList.lastElementChild);
-
+      resetThumbStrip();
       syncUI();
-      isAnimating = false;
+
+      setActiveMediaSrc(prevSrc);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          shot.remove();
+          isAnimating = false;
+        });
+      });
     }
 
     btnNext.addEventListener("click", next);
