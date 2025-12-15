@@ -3,116 +3,153 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>3D Carousel</title>
+  <title>Magic Slider 3D Sync</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    :root{
+    :root {
       --bg: #0b0f14;
       --text: #eaf0ff;
       --muted: rgba(234,240,255,.75);
       --stroke: rgba(255,255,255,.12);
     }
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; margin:0; }
-    body{
-      font-family:Poppins, sans-serif;
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: Poppins, sans-serif;
       background: var(--bg);
       color: var(--text);
-      overflow:hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    /* O CONTAINER PRINCIPAL QUE CRIA A PERSPECTIVA 3D */
-    .carousel{
-      width: 100%;
-      height: 600px; /* Altura do carrossel */
-      position: relative;
-      perspective: 1200px; /* A "profundidade" da cena 3D */
       overflow: hidden;
-      display: flex;
-      align-items: center;
     }
 
-    /* A "ESTEIRA" QUE SEGURA E MOVE TODOS OS SLIDES */
-    .list{
-      display: flex;
+    /* CAMADA 1: FUNDO (Efeito Amanhecer) */
+    .background-slider {
       position: absolute;
-      left: 10%; /* Espaçamento inicial à esquerda */
-      width: max-content; /* Largura se ajusta ao conteúdo */
-      height: 100%;
-      transform-style: preserve-3d; /* Essencial para o 3D funcionar nos filhos */
-      transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+      inset: 0;
+      z-index: 1;
     }
-
-    /* ESTILO DE CADA SLIDE INDIVIDUAL */
-    .item{
-      width: 200px; /* Largura padrão dos slides inativos */
-      height: 300px;
-      position: relative;
-      margin: auto 15px; /* Espaçamento entre os slides */
-      border-radius: 10px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
-
-      /* Efeito 3D inicial para slides inativos */
-      transform: rotateY(-25deg) scale(0.8);
-      opacity: 0.6;
+    .bg-item {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out; /* Efeito Amanhecer */
+      z-index: 1;
     }
-    
-    .item img{
+    .bg-item.is-active {
+      opacity: 1;
+      z-index: 2;
+    }
+    .bg-item img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+    .bg-item::after {
+      content: "";
       position: absolute;
       inset: 0;
+      background: radial-gradient(circle at 20% 50%, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+      z-index: 2;
     }
-    
-    /* ESTADO ATIVO DO SLIDE */
-    .item.is-active{
-      width: 800px; /* Largura do slide principal */
-      height: 500px; /* Altura do slide principal */
-      transform: rotateY(0deg) scale(1); /* Fica reto e em tamanho normal */
-      opacity: 1;
+
+    /* CAMADA 2: INTERFACE (Texto e Botões) */
+    header.topbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
     }
-    
-    /* CONTEÚDO DENTRO DO SLIDE */
-    .content{
+    .brand { font-weight: 700; text-transform: lowercase; }
+    .menu { display: flex; gap: 18px; }
+    .menu a { color: var(--text); text-decoration: none; font-size: 14px; opacity: .8; }
+
+    .content-wrapper {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      padding: 40px;
+      left: 70px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 100;
+      pointer-events: none;
+    }
+    .content-item {
+      display: none;
+      width: min(500px, 85vw);
+      pointer-events: auto;
+    }
+    .content-item.is-active { display: block; animation: fadeInText 1s forwards; }
+    @keyframes fadeInText { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .tag { display: inline-block; padding: 5px 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--stroke); font-size: 12px; margin-bottom: 10px; }
+    .content-item h1 { font-size: 54px; margin: 10px 0; line-height: 1; }
+    .btn { padding: 12px 25px; background: transparent; border: 1px solid var(--text); color: var(--text); cursor: pointer; font-weight: 600; }
+
+    /* CAMADA 3: CARROSSEL 3D (Miniaturas) */
+    .thumbnail-carousel {
+      position: absolute;
+      right: 50px;
+      bottom: 80px;
+      z-index: 100;
+      perspective: 1000px;
+      width: 500px;
+      height: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .thumb-list {
+      position: relative;
       width: 100%;
-      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0));
-      opacity: 0; /* Escondido por padrão */
-      transition: opacity 0.8s ease 0.4s; /* Aparece com um pequeno delay */
-    }
-    
-    .item.is-active .content {
-      opacity: 1; /* Visível apenas no slide ativo */
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .content h1{ margin: 0; font-size: 54px; line-height: 1; }
-    .desc{ margin: 10px 0; color:var(--muted); font-size:15px; }
-
-    /* CONTROLES (SETAS) */
-    .controls{
+    .thumb-item {
       position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+      right: 0;
+      width: 150px;
+      height: 220px;
+      cursor: pointer;
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: center right;
+      border-radius: 0; /* Quadrado perfeito */
+      overflow: hidden;
+      border: 1px solid var(--stroke);
+      /* Efeito 3D padrão (inativo) */
+      transform: rotateY(-35deg) translateZ(-100px) translateX(-150%);
+      opacity: 0.5;
+    }
+
+    .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Miniatura ATIVA no Carrossel 3D */
+    .thumb-item.is-active {
+      transform: rotateY(0deg) translateZ(50px) translateX(0);
+      opacity: 1;
+      width: 180px;
+      height: 250px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      border: 2px solid rgba(255,255,255,0.5);
+    }
+
+    /* CONTROLES */
+    .controls {
+      position: absolute;
+      left: 70px;
+      bottom: 80px;
+      z-index: 100;
       display: flex;
       gap: 15px;
-      z-index: 100;
     }
-    .arrow{
+    .arrow {
       width: 50px;
       height: 50px;
       border-radius: 50%;
@@ -121,55 +158,76 @@
       color: var(--text);
       font-size: 24px;
       cursor: pointer;
+      transition: 0.3s;
+    }
+    .arrow:hover { background: rgba(255,255,255,0.2); }
+
+    @media (max-width: 768px) {
+      .content-wrapper { left: 20px; bottom: 150px; top: auto; transform: none; }
+      .thumbnail-carousel { right: 20px; width: 300px; bottom: 20px; }
+      .thumb-item { width: 80px; height: 120px; }
+      .thumb-item.is-active { width: 100px; height: 150px; }
+      .controls { left: 20px; bottom: 50px; }
     }
   </style>
 </head>
 
 <body>
+  <header class="topbar">
+    <div class="brand">der fuel</div>
+    <nav class="menu">
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">Portfolio</a>
+      <a href="#">Contact</a>
+    </nav>
+  </header>
 
-  <main class="carousel" id="carousel">
-    <div class="list" id="list">
+  <main class="slider">
+    <!-- Fundo Sincronizado -->
+    <div class="background-slider" id="bgSlider">
+      <div class="bg-item is-active"><img src="conjuntoescuro.png"></div>
+      <div class="bg-item"><img src="jaquetaverde.png"></div>
+      <div class="bg-item"><img src="conjunto.png"></div>
+      <div class="bg-item"><img src="conjuntoescuro.png"></div>
+    </div>
 
-      <article class="item">
-        <img src="conjuntoescuro.png" alt="">
-        <div class="content">
-          <h1>Valley</h1>
-          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-        </div>
-      </article>
+    <!-- Conteúdo Sincronizado -->
+    <div class="content-wrapper" id="contentSlider">
+      <div class="content-item is-active">
+        <p class="tag">DESIGN</p>
+        <h1>Valley</h1>
+        <p class="desc">Efeito amanhecer sincronizado com carrossel 3D.</p>
+        <button class="btn">SEE MORE</button>
+      </div>
+      <div class="content-item">
+        <p class="tag">NATURE</p>
+        <h1>Forest</h1>
+        <p class="desc">A natureza em alta definição no fundo da tela.</p>
+        <button class="btn">SEE MORE</button>
+      </div>
+      <div class="content-item">
+        <p class="tag">FASHION</p>
+        <h1>Style</h1>
+        <p class="desc">O melhor do design moderno em cada detalhe.</p>
+        <button class="btn">SEE MORE</button>
+      </div>
+      <div class="content-item">
+        <p class="tag">MODERN</p>
+        <h1>Concept</h1>
+        <p class="desc">Inovação e estética unidas em um único lugar.</p>
+        <button class="btn">SEE MORE</button>
+      </div>
+    </div>
 
-      <article class="item">
-        <img src="jaquetaverde.png" alt="">
-        <div class="content">
-          <h1>Forest</h1>
-          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-        </div>
-      </article>
-
-      <article class="item">
-        <img src="conjunto.png" alt="">
-        <div class="content">
-          <h1>Style</h1>
-          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-        </div>
-      </article>
-      
-      <article class="item">
-        <img src="conjuntoescuro.png" alt="">
-        <div class="content">
-          <h1>Modern</h1>
-          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-        </div>
-      </article>
-
-      <article class="item">
-        <img src="jaquetaverde.png" alt="">
-        <div class="content">
-          <h1>Green</h1>
-          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-        </div>
-      </article>
-
+    <!-- Miniaturas 3D Sincronizadas -->
+    <div class="thumbnail-carousel">
+      <div class="thumb-list" id="thumbList">
+        <div class="thumb-item is-active"><img src="conjuntoescuro.png"></div>
+        <div class="thumb-item"><img src="jaquetaverde.png"></div>
+        <div class="thumb-item"><img src="conjunto.png"></div>
+        <div class="thumb-item"><img src="conjuntoescuro.png"></div>
+      </div>
     </div>
 
     <div class="controls">
@@ -179,60 +237,68 @@
   </main>
 
   <script>
-    const list = document.getElementById("list");
-    const items = document.querySelectorAll(".item");
+    const bgItems = document.querySelectorAll(".bg-item");
+    const contentItems = document.querySelectorAll(".content-item");
+    const thumbItems = document.querySelectorAll(".thumb-item");
     const btnNext = document.getElementById("next");
     const btnPrev = document.getElementById("prev");
 
-    let activeIndex = 0;
+    let currentIndex = 0;
+    let isAnimating = false;
 
-    function showSlide(index) {
-      // 1. Remove a classe ativa de todos
-      items.forEach(item => item.classList.remove('is-active'));
-      
-      // 2. Adiciona a classe ativa ao item do índice desejado
-      items[index].classList.add('is-active');
-      
-      // 3. Calcula o deslocamento para centralizar o slide ativo
-      // A lógica aqui é mover a "esteira" para a esquerda
-      // A quantidade movida é a soma das larguras dos itens ANTES do ativo
-      let totalOffset = 0;
-      for (let i = 0; i < index; i++) {
-        // Usamos a largura do item e a margem (15px de cada lado = 30px)
-        totalOffset += items[i].offsetWidth + 30;
-      }
-      
-      // Para centralizar um pouco melhor, podemos ajustar o offset
-      // Subtraindo a diferença de tamanho entre o slide ativo e inativo
-      const activeItemWidth = items[index].offsetWidth;
-      const inactiveItemWidth = 200; // Largura do item inativo definida no CSS
-      const adjustment = (activeItemWidth - inactiveItemWidth) / 2;
-      
-      list.style.transform = `translateX(-${totalOffset - adjustment}px)`;
+    function updateGallery(index) {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      // Sincroniza Fundo e Texto
+      bgItems.forEach(item => item.classList.remove("is-active"));
+      contentItems.forEach(item => item.classList.remove("is-active"));
+      bgItems[index].classList.add("is-active");
+      contentItems[index].classList.add("is-active");
+
+      // Sincroniza Carrossel 3D de Miniaturas
+      thumbItems.forEach((thumb, i) => {
+        thumb.classList.remove("is-active");
+        
+        // Lógica de posicionamento 3D dinâmico
+        let offset = i - index;
+        
+        if (i === index) {
+          thumb.classList.add("is-active");
+          thumb.style.transform = `rotateY(0deg) translateZ(50px) translateX(0)`;
+          thumb.style.zIndex = 10;
+        } else {
+          // Itens que ficam "atrás" na esteira
+          let rotate = -35;
+          let translateZ = -100 * Math.abs(offset);
+          let translateX = offset * 120; // Espaçamento horizontal entre elas
+          
+          thumb.style.transform = `rotateY(${rotate}deg) translateZ(${translateZ}px) translateX(${translateX}px)`;
+          thumb.style.zIndex = 10 - Math.abs(offset);
+        }
+      });
+
+      // Libera animação após o tempo do fade (1.5s)
+      setTimeout(() => { isAnimating = false; }, 800); 
     }
 
     btnNext.onclick = () => {
-      activeIndex = (activeIndex + 1) % items.length; // Garante que o índice volte a 0 no final
-      showSlide(activeIndex);
+      currentIndex = (currentIndex + 1) % bgItems.length;
+      updateGallery(currentIndex);
     };
 
     btnPrev.onclick = () => {
-      // Garante que o índice volte para o final se estiver em 0
-      activeIndex = (activeIndex - 1 + items.length) % items.length;
-      showSlide(activeIndex);
+      currentIndex = (currentIndex - 1 + bgItems.length) % bgItems.length;
+      updateGallery(currentIndex);
     };
 
-    // Permite clicar em um slide inativo para ativá-lo
-    items.forEach((item, index) => {
-      item.addEventListener('click', () => {
-        activeIndex = index;
-        showSlide(activeIndex);
-      });
+    // Permitir clique direto na miniatura
+    thumbItems.forEach((thumb, i) => {
+      thumb.onclick = () => updateGallery(i);
     });
 
-    // Inicia o carrossel no primeiro slide
-    showSlide(activeIndex);
+    // Inicialização
+    updateGallery(0);
   </script>
-
 </body>
 </html>
