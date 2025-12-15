@@ -15,8 +15,9 @@
       --text: #eaf0ff;
       --muted: rgba(234,240,255,.75);
       --stroke: rgba(255,255,255,.12);
-      --ease: cubic-bezier(.22,.61,.36,1);
       --overlay: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
+      --ease: cubic-bezier(.22,.61,.36,1);
+      --dur: 650ms;
     }
 
     *{ box-sizing:border-box; }
@@ -60,50 +61,69 @@
       overflow:hidden;
     }
 
-    .list{ position:absolute; inset:0; }
-    .item{
-      position:absolute;
-      inset:0;
-      opacity:0;
-      transform: scale(1.02);
-      transition: opacity .45s ease, transform .6s ease;
-    }
-
-    /* ===== FUNDO FIXO (OPÇÃO A): background-image cover, ocupa 100% ===== */
-    .media{
+    /* ===== FUNDO (sem imagem solta) ===== */
+    .bgstack{
       position:absolute;
       inset:0;
       z-index:0;
     }
-    .media .bg,
-    .media .fg{
+    .bgstack .layer{
       position:absolute;
       inset:0;
-      width:100%;
-      height:100%;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
+      opacity:0;
+      transform: scale(1.02);
+      will-change: opacity, transform;
+      transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
     }
-    .media .bg{
+    .bgstack .layer.is-current{
+      opacity:1;
+      transform: scale(1);
+    }
+    .bgstack .layer.is-next{
+      opacity:0;
+      transform: scale(1.03);
+    }
+    .bgstack.is-animating .layer.is-next{
+      opacity:1;
+      transform: scale(1);
+    }
+    .bgstack.is-animating .layer.is-current{
+      opacity:0;
+      transform: scale(1.00);
+    }
+
+    .bgstack .blur{
       filter: blur(18px) brightness(.65);
       transform: scale(1.08);
     }
+    .bgstack.is-animating .blur.is-next{
+      transform: scale(1.08);
+    }
+    .bgstack.is-animating .blur.is-current{
+      transform: scale(1.08);
+    }
 
-    /* Overlay do slide (fundo final sempre tem isso) */
-    .item::after{
+    .bgstack::after{
       content:"";
       position:absolute;
       inset:0;
       background: var(--overlay);
-      z-index:1;
+      z-index:5;
       pointer-events:none;
     }
 
-    .item.is-active{
-      opacity:1;
-      transform: scale(1);
+    /* ===== SLIDES (conteúdo) ===== */
+    .list{ position:absolute; inset:0; z-index:10; }
+    .item{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      transition: opacity .35s ease;
     }
+    .item.is-active{ opacity:1; }
 
     /* UI sempre acima */
     .content{
@@ -254,42 +274,6 @@
       .thumb{ width:70px; height:46px; }
       .controls{ bottom:80px; }
     }
-
-    /* ====== CAMADA DE TRANSIÇÃO (abaixo do UI) ====== */
-    .transition-layer{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      z-index:15;
-    }
-
-    /* A imagem solta: também é "cover" + tem o MESMO overlay (anti-piscada) */
-    .transition-shot{
-      position: fixed;
-      left: 0; top: 0;
-      width: 10px; height: 10px;
-      border-radius: 14px;
-      overflow: hidden;
-      will-change: transform, border-radius, opacity;
-      transform-origin: top left;
-      opacity: 1;
-    }
-    .transition-shot::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background-image: var(--img);
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      transform: scale(1.02);
-    }
-    .transition-shot::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background: var(--overlay); /* <- igual ao slide final */
-    }
   </style>
 </head>
 
@@ -306,13 +290,16 @@
   </header>
 
   <main class="slider" id="slider">
-    <div class="list" id="sliderList">
+    <!-- Fundo com 2 buffers (current/next), sem “imagem solta” -->
+    <div class="bgstack" id="bgstack" aria-hidden="true">
+      <div class="layer blur is-current" id="bgBlurCur"></div>
+      <div class="layer blur is-next"    id="bgBlurNext"></div>
+      <div class="layer is-current"      id="bgCur"></div>
+      <div class="layer is-next"         id="bgNext"></div>
+    </div>
 
+    <div class="list" id="sliderList">
       <article class="item" data-src="conjuntoescuro.png">
-        <div class="media">
-          <div class="bg"></div>
-          <div class="fg"></div>
-        </div>
         <div class="content">
           <p class="tag">DESIGN</p>
           <h2>Magic Slider</h2>
@@ -323,10 +310,6 @@
       </article>
 
       <article class="item" data-src="jaquetaverde.png">
-        <div class="media">
-          <div class="bg"></div>
-          <div class="fg"></div>
-        </div>
         <div class="content">
           <p class="tag">NATURE</p>
           <h2>Magic Slider</h2>
@@ -337,10 +320,6 @@
       </article>
 
       <article class="item" data-src="conjuntoescuro.png">
-        <div class="media">
-          <div class="bg"></div>
-          <div class="fg"></div>
-        </div>
         <div class="content">
           <p class="tag">TRAVEL</p>
           <h2>Magic Slider</h2>
@@ -351,10 +330,6 @@
       </article>
 
       <article class="item" data-src="conjunto.png">
-        <div class="media">
-          <div class="bg"></div>
-          <div class="fg"></div>
-        </div>
         <div class="content">
           <p class="tag">MOUNTAIN</p>
           <h2>Magic Slider</h2>
@@ -363,7 +338,6 @@
           <button class="btn">SEE MORE</button>
         </div>
       </article>
-
     </div>
 
     <div class="controls">
@@ -377,8 +351,6 @@
       <button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button>
       <button class="thumb" type="button"><img src="conjunto.png" alt=""></button>
     </div>
-
-    <div class="transition-layer" id="transitionLayer"></div>
   </main>
 
   <script>
@@ -387,27 +359,40 @@
     const thumbList  = document.getElementById("thumbList");
     const btnNext    = document.getElementById("next");
     const btnPrev    = document.getElementById("prev");
-    const transitionLayer = document.getElementById("transitionLayer");
+
+    const bgstack = document.getElementById("bgstack");
+    const bgBlurCur  = document.getElementById("bgBlurCur");
+    const bgBlurNext = document.getElementById("bgBlurNext");
+    const bgCur      = document.getElementById("bgCur");
+    const bgNext     = document.getElementById("bgNext");
 
     let isAnimating = false;
 
-    function applyItemBackground(item) {
-      const src = item?.dataset?.src;
-      if (!src) return;
-      const bg = item.querySelector(".media .bg");
-      const fg = item.querySelector(".media .fg");
-      if (bg) bg.style.backgroundImage = `url("${src}")`;
-      if (fg) fg.style.backgroundImage = `url("${src}")`;
-    }
-
-    function syncUI() {
+    function syncActiveContent() {
       const items = sliderList.querySelectorAll(".item");
       const thumbs = thumbList.querySelectorAll(".thumb");
+      items.forEach((el,i)=>el.classList.toggle("is-active", i===0));
+      thumbs.forEach((el,i)=>el.classList.toggle("is-front", i===0));
+    }
 
-      items.forEach((el,i)=>el.classList.toggle("is-active",i===0));
-      thumbs.forEach((el,i)=>el.classList.toggle("is-front",i===0));
+    function setCurrentBackground(src) {
+      bgCur.style.backgroundImage = `url("${src}")`;
+      bgBlurCur.style.backgroundImage = `url("${src}")`;
+    }
 
-      items.forEach(applyItemBackground);
+    function setNextBackground(src) {
+      bgNext.style.backgroundImage = `url("${src}")`;
+      bgBlurNext.style.backgroundImage = `url("${src}")`;
+    }
+
+    function clearNextBackground() {
+      bgNext.style.backgroundImage = "";
+      bgBlurNext.style.backgroundImage = "";
+    }
+
+    function getSlideSrcAt(index) {
+      const item = sliderList.querySelectorAll(".item")[index];
+      return item ? item.dataset.src : "";
     }
 
     function getThumbStepPx() {
@@ -417,54 +402,6 @@
       const cs = getComputedStyle(thumbList);
       const gap = parseFloat(cs.gap || "0") || 0;
       return rect.width + gap;
-    }
-
-    async function preloadImage(src) {
-      if (!src) return;
-      const img = new Image();
-      img.decoding = "async";
-      img.src = src;
-      if (img.decode) {
-        try { await img.decode(); } catch {}
-      } else {
-        await new Promise(r => { img.onload = r; img.onerror = r; });
-      }
-    }
-
-    function createShot(fromRect, toRect, imgSrc, duration) {
-      const shot = document.createElement("div");
-      shot.className = "transition-shot";
-      shot.style.left = fromRect.left + "px";
-      shot.style.top = fromRect.top + "px";
-      shot.style.width = fromRect.width + "px";
-      shot.style.height = fromRect.height + "px";
-      shot.style.setProperty("--img", `url("${imgSrc}")`);
-      transitionLayer.appendChild(shot);
-
-      const dx = toRect.left - fromRect.left;
-      const dy = toRect.top - fromRect.top;
-      const sx = toRect.width / fromRect.width;
-      const sy = toRect.height / fromRect.height;
-
-      // start
-      shot.style.transform = "translate(0px,0px) scale(1,1)";
-      shot.style.borderRadius = "14px";
-      shot.getBoundingClientRect();
-
-      // animate
-      shot.style.transition = `transform ${duration}ms var(--ease), border-radius ${duration}ms var(--ease)`;
-      shot.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
-      shot.style.borderRadius = "0px";
-
-      return shot;
-    }
-
-    function waitTransitionEnd(el, duration) {
-      return new Promise((resolve) => {
-        const done = () => resolve();
-        el.addEventListener("transitionend", done, { once:true });
-        setTimeout(done, duration + 90);
-      });
     }
 
     function animateThumbStripToLeft(delta, duration) {
@@ -477,104 +414,107 @@
       thumbList.getBoundingClientRect();
     }
 
-    function fadeOutAndRemove(el, ms = 120) {
-      el.style.transition = `opacity ${ms}ms linear`;
-      el.style.opacity = "0";
-      setTimeout(() => el.remove(), ms + 30);
+    async function preload(src) {
+      if (!src) return;
+      const img = new Image();
+      img.decoding = "async";
+      img.src = src;
+      if (img.decode) { try { await img.decode(); } catch {} }
+      else { await new Promise(r => { img.onload=r; img.onerror=r; }); }
     }
 
-    async function next() {
+    function wait(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+    async function goNext() {
       if (isAnimating) return;
       isAnimating = true;
 
       const duration = 650;
 
-      const thumbs = thumbList.querySelectorAll(".thumb");
-      const originThumb = thumbs[1]; // próxima thumb (a que vira fundo)
-      const originImg = originThumb ? originThumb.querySelector("img") : null;
-      const nextSrc = originImg ? originImg.getAttribute("src") : null;
+      // próximo slide = item[1] (antes de reordenar)
+      const nextSrc = getSlideSrcAt(1);
+      if (!nextSrc) { isAnimating = false; return; }
 
-      if (!originThumb || !nextSrc) { isAnimating = false; return; }
+      await preload(nextSrc);
+      setNextBackground(nextSrc);
 
-      await preloadImage(nextSrc);
-
-      const fromRect = originThumb.getBoundingClientRect();
-      const toRect = slider.getBoundingClientRect();
-
-      // movimento do carrossel no mesmo tempo
+      // thumbs movimentam no mesmo tempo
       const step = getThumbStepPx();
       animateThumbStripToLeft(step, duration);
 
-      // shot cresce (com overlay igual ao do fundo final)
-      const shot = createShot(fromRect, toRect, nextSrc, duration);
-      await waitTransitionEnd(shot, duration);
+      // anima o fundo (crossfade + leve zoom) SEM trocar elementos
+      // força frame antes de ligar a classe animating
+      bgstack.classList.remove("is-animating");
+      bgstack.getBoundingClientRect();
+      requestAnimationFrame(() => bgstack.classList.add("is-animating"));
 
-      // commit do estado final (fundo real já fica idêntico: cover + overlay do slide)
+      await wait(duration);
+
+      // commit: next vira current (sem flicker)
+      setCurrentBackground(nextSrc);
+      bgstack.classList.remove("is-animating");
+      clearNextBackground();
+
+      // loop infinito real: rotaciona DOM (slides e thumbs)
       sliderList.appendChild(sliderList.firstElementChild);
       thumbList.appendChild(thumbList.firstElementChild);
       resetThumbStrip();
-
-      const active = sliderList.querySelector(".item:first-child");
-      if (active) {
-        active.dataset.src = nextSrc;
-        applyItemBackground(active);
-      }
-      syncUI();
-
-      // chave anti-piscada: não some "de uma vez" — dissolve sobre um fundo idêntico
-      fadeOutAndRemove(shot, 120);
+      syncActiveContent();
 
       isAnimating = false;
     }
 
-    async function prev() {
+    async function goPrev() {
       if (isAnimating) return;
       isAnimating = true;
 
       const duration = 650;
 
-      const lastThumb = thumbList.querySelector(".thumb:last-child");
-      const lastImg = lastThumb ? lastThumb.querySelector("img") : null;
-      const prevSrc = lastImg ? lastImg.getAttribute("src") : null;
+      // anterior = último item
+      const items = sliderList.querySelectorAll(".item");
+      const prevSrc = items.length ? items[items.length - 1].dataset.src : "";
+      if (!prevSrc) { isAnimating = false; return; }
 
-      if (!lastThumb || !prevSrc) { isAnimating = false; return; }
+      await preload(prevSrc);
+      setNextBackground(prevSrc); // reutiliza o buffer "next" como destino
 
-      await preloadImage(prevSrc);
-
-      const fromRect = lastThumb.getBoundingClientRect();
-      const toRect = slider.getBoundingClientRect();
+      // thumbs: simula deslocamento para direita (pré-offset e volta)
       const step = getThumbStepPx();
-
-      // anima strip para direita (pré-posição e volta)
       thumbList.style.transition = "none";
       thumbList.style.transform = `translateX(${-step}px)`;
       thumbList.getBoundingClientRect();
       thumbList.style.transition = `transform ${duration}ms var(--ease)`;
       thumbList.style.transform = `translateX(0px)`;
 
-      const shot = createShot(fromRect, toRect, prevSrc, duration);
-      await waitTransitionEnd(shot, duration);
+      bgstack.classList.remove("is-animating");
+      bgstack.getBoundingClientRect();
+      requestAnimationFrame(() => bgstack.classList.add("is-animating"));
 
+      await wait(duration);
+
+      // commit
+      setCurrentBackground(prevSrc);
+      bgstack.classList.remove("is-animating");
+      clearNextBackground();
+
+      // loop infinito real (ao contrário)
       sliderList.prepend(sliderList.lastElementChild);
       thumbList.prepend(thumbList.lastElementChild);
       resetThumbStrip();
-
-      const active = sliderList.querySelector(".item:first-child");
-      if (active) {
-        active.dataset.src = prevSrc;
-        applyItemBackground(active);
-      }
-      syncUI();
-
-      fadeOutAndRemove(shot, 120);
+      syncActiveContent();
 
       isAnimating = false;
     }
 
-    btnNext.addEventListener("click", next);
-    btnPrev.addEventListener("click", prev);
+    btnNext.addEventListener("click", goNext);
+    btnPrev.addEventListener("click", goPrev);
 
-    syncUI();
+    // init
+    (function init(){
+      syncActiveContent();
+      const cur = getSlideSrcAt(0);
+      setCurrentBackground(cur);
+    })();
   </script>
 </body>
 </html>
