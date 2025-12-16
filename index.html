@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo v3 - Scroll Infinito</title>
+    <title>Catálogo Interativo v4 - Loop Infinito Corrigido</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
@@ -132,9 +132,7 @@
         /* --- 5. Estilos para Mobile --- */
         @media (max-width: 768px) {
             .content {
-                top: 5vh;
-                left: 5vw;
-                right: 5vw;
+                top: 5vh; left: 5vw; right: 5vw;
                 transform: translateY(0);
                 max-width: 100%;
                 text-align: center;
@@ -143,22 +141,20 @@
             .content p { font-size: 0.9rem; }
 
             .card-carousel {
-                bottom: 0;
-                left: 0;
-                right: 0;
+                bottom: 0; left: 0; right: 0;
                 width: 100%;
                 padding: 20px 0;
                 justify-content: flex-start;
                 overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                /* Propriedades para o efeito de "snap" */
                 scroll-snap-type: x mandatory;
-                padding-left: 50%; /* Truque para centralizar o primeiro item */
-                padding-right: 50%; /* Truque para centralizar o último item */
+                scroll-behavior: smooth; /* Animação suave no scroll */
             }
             .card {
                 scroll-snap-align: center;
+                /* Adiciona margem para centralizar o primeiro/último item */
             }
+            .card:first-child { margin-left: calc(50% - 60px); }
+            .card:last-child { margin-right: calc(50% - 60px); }
             
             .card-carousel::-webkit-scrollbar { display: none; }
         }
@@ -180,19 +176,18 @@
         </div>
 
         <div class="card-carousel">
-            <!-- Os data-id são importantes para a lógica do loop infinito -->
             <div class="card active"
                  style="background-image: url('conjunto.png');"
-                 data-id="1" data-target="panel-1" data-title="Coleção Urbana" data-description="..."></div>
+                 data-id="1" data-target="panel-1" data-title="Coleção Urbana" data-description="Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões."></div>
             <div class="card"
                  style="background-image: url('conjuntoescuro.png');"
-                 data-id="2" data-target="panel-2" data-title="Estilo Noturno" data-description="..."></div>
+                 data-id="2" data-target="panel-2" data-title="Estilo Noturno" data-description="Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe."></div>
             <div class="card"
                  style="background-image: url('jaquetaverde.png');"
-                 data-id="3" data-target="panel-3" data-title="Aventura Casual" data-description="..."></div>
+                 data-id="3" data-target="panel-3" data-title="Aventura Casual" data-description="Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda."></div>
             <div class="card"
                  style="background-image: url('homem.png');"
-                 data-id="4" data-target="panel-4" data-title="Clássico Atemporal" data-description="..."></div>
+                 data-id="4" data-target="panel-4" data-title="Clássico Atemporal" data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa."></div>
         </div>
     </main>
 
@@ -203,86 +198,103 @@
             const contentTitle = document.getElementById('content-title');
             const contentDescription = document.getElementById('content-description');
             
-            // Função genérica para mudar o conteúdo
-            function changeActiveContent(card) {
-                if (card.classList.contains('active')) return;
+            // Função central para ATUALIZAR A INTERFACE. É a única fonte da verdade.
+            function changeActiveContent(targetCard) {
+                if (!targetCard || targetCard.classList.contains('active')) return;
 
-                const currentActive = document.querySelector('.card.active');
-                if (currentActive) currentActive.classList.remove('active');
-                card.classList.add('active');
-                
+                // Remove o estado ativo de qualquer card ou painel que o tenha
+                carousel.querySelector('.card.active')?.classList.remove('active');
                 document.querySelector('.panel.active')?.classList.remove('active');
-                document.getElementById(card.dataset.target).classList.add('active');
+                
+                // Aplica o estado ativo ao novo alvo
+                targetCard.classList.add('active');
+                document.getElementById(targetCard.dataset.target).classList.add('active');
 
+                // Anima e atualiza o texto
                 contentContainer.classList.add('fade-out');
                 setTimeout(() => {
-                    contentTitle.textContent = card.dataset.title;
-                    const desc = card.getAttribute('data-description');
-                    contentDescription.textContent = desc.length > 3 ? desc : "Descrição não disponível.";
+                    contentTitle.textContent = targetCard.dataset.title;
+                    contentDescription.textContent = targetCard.dataset.description;
                     contentContainer.classList.remove('fade-out');
                 }, 300);
             }
 
-            // LÓGICA PARA DESKTOP (baseada em clique)
-            function setupDesktopEvents() {
-                const cards = document.querySelectorAll('.card');
-                cards.forEach(card => {
-                    card.addEventListener('click', () => changeActiveContent(card));
-                });
-            }
-
-            // LÓGICA PARA MOBILE (baseada em scroll infinito)
-            function setupMobileCarousel() {
+            // Função para configurar o loop infinito no mobile
+            function setupMobileInfiniteLoop() {
                 const cards = Array.from(carousel.children);
                 const firstCardClone = cards[0].cloneNode(true);
                 const lastCardClone = cards[cards.length - 1].cloneNode(true);
-                firstCardClone.dataset.cloneId = cards[0].dataset.id;
-                lastCardClone.dataset.cloneId = cards[cards.length - 1].dataset.id;
+                
+                // Adiciona identificadores para sabermos que são clones
+                firstCardClone.setAttribute('data-is-clone', 'true');
+                lastCardClone.setAttribute('data-is-clone', 'true');
 
                 carousel.appendChild(firstCardClone);
                 carousel.insertBefore(lastCardClone, cards[0]);
-                
-                // Posição inicial no primeiro card *original*
-                cards[0].scrollIntoView({ behavior: 'instant', inline: 'center' });
 
-                // Intersection Observer para detectar o card central
+                // Esconde a transição de scroll para o salto ser invisível
+                carousel.style.scrollBehavior = 'auto';
+                // Posição inicial no primeiro card *original*
+                carousel.querySelector('.card:not([data-is-clone])').scrollIntoView({ inline: 'center' });
+                // Restaura a transição suave para o usuário
+                carousel.style.scrollBehavior = 'smooth';
+
+
+                let isScrolling;
+                carousel.addEventListener('scroll', () => {
+                    // Limpa o timeout anterior para detectar o fim do scroll
+                    window.clearTimeout(isScrolling);
+                    isScrolling = setTimeout(() => {
+                        const scrollLeft = carousel.scrollLeft;
+                        const scrollWidth = carousel.scrollWidth;
+                        const clientWidth = carousel.clientWidth;
+
+                        // Se o scroll chegou perto do final (onde está o clone do primeiro)
+                        if (scrollLeft >= scrollWidth - clientWidth - 1) {
+                            carousel.style.scrollBehavior = 'auto';
+                            carousel.querySelector('.card:not([data-is-clone])').scrollIntoView({ inline: 'center' });
+                            carousel.style.scrollBehavior = 'smooth';
+                        }
+                        // Se o scroll chegou perto do começo (onde está o clone do último)
+                        else if (scrollLeft <= 1) {
+                            carousel.style.scrollBehavior = 'auto';
+                             // Encontra o último card original
+                            const originalCards = carousel.querySelectorAll('.card:not([data-is-clone])');
+                            originalCards[originalCards.length - 1].scrollIntoView({ inline: 'center' });
+                            carousel.style.scrollBehavior = 'smooth';
+                        }
+                    }, 150); // Timeout para detectar o fim do scroll
+                });
+            }
+
+            // --- LÓGICA PRINCIPAL ---
+
+            const mediaQuery = window.matchMedia("(max-width: 768px)");
+            if (mediaQuery.matches) {
+                setupMobileInfiniteLoop();
+
+                // No mobile, a mudança acontece por observação do card central
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
                             changeActiveContent(entry.target);
                         }
                     });
-                }, { root: carousel, threshold: 0.6 });
-
-                document.querySelectorAll('.card').forEach(card => observer.observe(card));
-
-                // Lógica do "salto" para criar o loop infinito
-                carousel.addEventListener('scroll', () => {
-                    const activeCard = document.querySelector('.card.active');
-                    if (!activeCard) return;
-
-                    const originalId = activeCard.dataset.id;
-                    const cloneId = activeCard.dataset.cloneId;
-
-                    if (cloneId) { // Se o card ativo for um clone
-                        // Encontra o card original correspondente
-                        const originalCard = document.querySelector(`.card[data-id='${cloneId}']:not([data-clone-id])`);
-                        if (originalCard) {
-                             // Salta para a posição do card original sem animação
-                            originalCard.scrollIntoView({ behavior: 'instant', inline: 'center' });
-                        }
-                    }
-                }, { passive: true });
+                }, { root: carousel, threshold: 0.5 });
+                
+                carousel.querySelectorAll('.card').forEach(card => observer.observe(card));
             }
-
-
-            // Verifica o tamanho da tela e aplica a lógica correta
-            const mediaQuery = window.matchMedia("(max-width: 768px)");
-            if (mediaQuery.matches) {
-                setupMobileCarousel();
-            } else {
-                setupDesktopEvents();
-            }
+            
+            // O evento de clique é adicionado a TODOS os cards, para ambas as visualizações
+            // Usamos a delegação de eventos para funcionar também com os clones
+            carousel.addEventListener('click', (event) => {
+                const clickedCard = event.target.closest('.card');
+                if (clickedCard) {
+                    // Centraliza o card clicado com animação
+                    clickedCard.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+                    // A mudança de conteúdo será feita pelo IntersectionObserver ao final do scroll
+                }
+            });
         });
     </script>
 
