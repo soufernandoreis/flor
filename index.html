@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo v2</title>
+    <title>Catálogo Interativo v5 - Efeito Zoom</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
             --transition-speed-fast: 0.5s;
             --transition-speed-slow: 0.8s;
+            --zoom-duration: 20s; /* Duração do efeito de zoom */
         }
 
         * {
@@ -20,9 +21,19 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             height: 100vh;
-            overflow: hidden; /* Previne barras de rolagem */
+            overflow: hidden;
             color: white;
             background-color: #121212;
+        }
+
+        /* --- ANIMAÇÃO DE ZOOM --- */
+        @keyframes zoomIn {
+            from {
+                transform: scale(1);
+            }
+            to {
+                transform: scale(1.1); /* Zoom de 10% */
+            }
         }
 
         /* --- 2. Container Principal e Painéis de Fundo --- */
@@ -43,6 +54,8 @@
             opacity: 0;
             transition: opacity var(--transition-speed-slow) ease-in-out;
             z-index: 1;
+            /* Garante que o zoom se origine do centro */
+            transform-origin: center center; 
         }
 
         .background-panels .panel::before {
@@ -59,6 +72,8 @@
 
         .background-panels .panel.active {
             opacity: 1;
+            /* Aplica a animação de zoom apenas ao painel ativo */
+            animation: zoomIn var(--zoom-duration) ease-in-out forwards;
         }
 
         #panel-1 { background-image: url('conjunto.png'); }
@@ -116,21 +131,18 @@
             background-position: center;
             cursor: pointer;
             transition: transform var(--transition-speed-fast) ease, border-color var(--transition-speed-fast) ease;
-            flex-shrink: 0; /* Impede que os cartões encolham */
+            flex-shrink: 0;
         }
 
-        /* Animação de hover para cartões NÃO ativos */
         .card:not(.active):hover {
              transform: scale(1.05) translateZ(20px);
         }
         
-        /* Estado base do cartão ativo */
         .card.active {
             border-color: rgba(255, 255, 255, 0.9);
             transform: scale(1.1) translateZ(40px);
         }
         
-        /* Animação de hover para o cartão que JÁ ESTÁ ativo */
         .card.active:hover {
             transform: scale(1.15) translateZ(50px);
         }
@@ -138,33 +150,23 @@
         /* --- 5. Estilos para Mobile --- */
         @media (max-width: 768px) {
             .content {
-                top: 5vh;
-                left: 5vw;
-                right: 5vw;
+                top: 5vh; left: 5vw; right: 5vw;
                 transform: translateY(0);
                 max-width: 100%;
                 text-align: center;
             }
-            .content h1 {
-                font-size: 2.5rem;
-            }
-            .content p {
-                font-size: 0.9rem;
-            }
+            .content h1 { font-size: 2.5rem; }
+            .content p { font-size: 0.9rem; }
+
             .card-carousel {
-                bottom: 0;
-                left: 0;
-                right: 0;
+                bottom: 0; left: 0; right: 0;
                 width: 100%;
                 padding: 20px;
-                justify-content: flex-start; /* Alinha os cards à esquerda */
-                overflow-x: auto; /* Permite scroll horizontal */
-                -webkit-overflow-scrolling: touch; /* Melhora o scroll em iOS */
+                justify-content: flex-start;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
             }
-            /* Esconde a barra de scroll */
-            .card-carousel::-webkit-scrollbar {
-                display: none;
-            }
+            .card-carousel::-webkit-scrollbar { display: none; }
         }
     </style>
 </head>
@@ -218,13 +220,12 @@
             const contentTitle = document.getElementById('content-title');
             const contentDescription = document.getElementById('content-description');
             
-            let carouselInterval = null; // Variável para controlar o loop
-            let currentIndex = 0; // Índice do item atual no loop
-
             // Função para mudar o conteúdo
             function changeContent(card) {
+                // Se o card clicado já estiver ativo, não faz nada
                 if (card.classList.contains('active')) return;
 
+                // Encontra e remove a classe 'active' do card e painel atuais
                 const currentActiveCard = document.querySelector('.card.active');
                 if (currentActiveCard) {
                     currentActiveCard.classList.remove('active');
@@ -232,60 +233,25 @@
                     currentActivePanel.classList.remove('active');
                 }
 
+                // Adiciona a classe 'active' ao novo card e painel clicados
                 card.classList.add('active');
                 document.getElementById(card.dataset.target).classList.add('active');
 
+                // Anima a transição do texto
                 contentContainer.classList.add('fade-out');
                 setTimeout(() => {
                     contentTitle.textContent = card.dataset.title;
                     contentDescription.textContent = card.dataset.description;
                     contentContainer.classList.remove('fade-out');
-                }, 300);
+                }, 300); // Sincronizado com a transição do CSS
             }
 
-            // Função para iniciar o loop no mobile
-            function startCarouselLoop() {
-                stopCarouselLoop(); // Garante que não haja loops duplicados
-                carouselInterval = setInterval(() => {
-                    currentIndex = (currentIndex + 1) % cards.length;
-                    const nextCard = cards[currentIndex];
-                    changeContent(nextCard);
-                    // Rola o carrossel para manter o item ativo visível
-                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                }, 4000); // Muda a cada 4 segundos
-            }
-
-            // Função para parar o loop
-            function stopCarouselLoop() {
-                clearInterval(carouselInterval);
-            }
-
-            // Adiciona o evento de clique a cada cartão
-            cards.forEach((card, index) => {
+            // Adiciona um evento de clique a cada cartão
+            cards.forEach(card => {
                 card.addEventListener('click', () => {
-                    currentIndex = index; // Atualiza o índice para o cartão clicado
                     changeContent(card);
-                    // Se estiver no modo mobile, reinicia o timer do loop
-                    if (window.matchMedia("(max-width: 768px)").matches) {
-                        startCarouselLoop();
-                    }
                 });
             });
-
-            // Verifica o tamanho da tela para iniciar/parar o loop
-            const mediaQuery = window.matchMedia("(max-width: 768px)");
-            function handleScreenChange(e) {
-                if (e.matches) {
-                    // Tela pequena: inicia o loop
-                    startCarouselLoop();
-                } else {
-                    // Tela grande: para o loop
-                    stopCarouselLoop();
-                }
-            }
-            
-            mediaQuery.addEventListener('change', handleScreenChange); // Ouve mudanças no tamanho da tela
-            handleScreenChange(mediaQuery); // Executa na primeira vez que a página carrega
         });
     </script>
 
