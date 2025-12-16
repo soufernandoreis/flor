@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo v2</title>
+    <title>Catálogo Interativo v3 - Scroll Infinito</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
@@ -20,7 +20,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             height: 100vh;
-            overflow: hidden; /* Previne barras de rolagem */
+            overflow: hidden;
             color: white;
             background-color: #121212;
         }
@@ -56,7 +56,6 @@
             z-index: 2;
         }
 
-
         .background-panels .panel.active {
             opacity: 1;
         }
@@ -85,12 +84,10 @@
         .content h1 {
             font-size: 4rem;
             text-transform: uppercase;
-            letter-spacing: 2px;
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
         }
 
         .content p {
-            font-size: 1rem;
             line-height: 1.6;
             margin-top: 1rem;
             text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
@@ -116,21 +113,18 @@
             background-position: center;
             cursor: pointer;
             transition: transform var(--transition-speed-fast) ease, border-color var(--transition-speed-fast) ease;
-            flex-shrink: 0; /* Impede que os cartões encolham */
+            flex-shrink: 0;
         }
-
-        /* Animação de hover para cartões NÃO ativos */
+        
         .card:not(.active):hover {
              transform: scale(1.05) translateZ(20px);
         }
         
-        /* Estado base do cartão ativo */
         .card.active {
             border-color: rgba(255, 255, 255, 0.9);
             transform: scale(1.1) translateZ(40px);
         }
         
-        /* Animação de hover para o cartão que JÁ ESTÁ ativo */
         .card.active:hover {
             transform: scale(1.15) translateZ(50px);
         }
@@ -145,26 +139,28 @@
                 max-width: 100%;
                 text-align: center;
             }
-            .content h1 {
-                font-size: 2.5rem;
-            }
-            .content p {
-                font-size: 0.9rem;
-            }
+            .content h1 { font-size: 2.5rem; }
+            .content p { font-size: 0.9rem; }
+
             .card-carousel {
                 bottom: 0;
                 left: 0;
                 right: 0;
                 width: 100%;
-                padding: 20px;
-                justify-content: flex-start; /* Alinha os cards à esquerda */
-                overflow-x: auto; /* Permite scroll horizontal */
-                -webkit-overflow-scrolling: touch; /* Melhora o scroll em iOS */
+                padding: 20px 0;
+                justify-content: flex-start;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                /* Propriedades para o efeito de "snap" */
+                scroll-snap-type: x mandatory;
+                padding-left: 50%; /* Truque para centralizar o primeiro item */
+                padding-right: 50%; /* Truque para centralizar o último item */
             }
-            /* Esconde a barra de scroll */
-            .card-carousel::-webkit-scrollbar {
-                display: none;
+            .card {
+                scroll-snap-align: center;
             }
+            
+            .card-carousel::-webkit-scrollbar { display: none; }
         }
     </style>
 </head>
@@ -184,108 +180,109 @@
         </div>
 
         <div class="card-carousel">
+            <!-- Os data-id são importantes para a lógica do loop infinito -->
             <div class="card active"
                  style="background-image: url('conjunto.png');"
-                 data-target="panel-1" 
-                 data-title="Coleção Urbana" 
-                 data-description="Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.">
-            </div>
+                 data-id="1" data-target="panel-1" data-title="Coleção Urbana" data-description="..."></div>
             <div class="card"
                  style="background-image: url('conjuntoescuro.png');"
-                 data-target="panel-2" 
-                 data-title="Estilo Noturno" 
-                 data-description="Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe.">
-            </div>
+                 data-id="2" data-target="panel-2" data-title="Estilo Noturno" data-description="..."></div>
             <div class="card"
                  style="background-image: url('jaquetaverde.png');"
-                 data-target="panel-3" 
-                 data-title="Aventura Casual" 
-                 data-description="Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda.">
-            </div>
+                 data-id="3" data-target="panel-3" data-title="Aventura Casual" data-description="..."></div>
             <div class="card"
                  style="background-image: url('homem.png');"
-                 data-target="panel-4" 
-                 data-title="Clássico Atemporal" 
-                 data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.">
-            </div>
+                 data-id="4" data-target="panel-4" data-title="Clássico Atemporal" data-description="..."></div>
         </div>
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const cards = document.querySelectorAll('.card');
+            const carousel = document.querySelector('.card-carousel');
             const contentContainer = document.querySelector('.content');
             const contentTitle = document.getElementById('content-title');
             const contentDescription = document.getElementById('content-description');
             
-            let carouselInterval = null; // Variável para controlar o loop
-            let currentIndex = 0; // Índice do item atual no loop
-
-            // Função para mudar o conteúdo
-            function changeContent(card) {
+            // Função genérica para mudar o conteúdo
+            function changeActiveContent(card) {
                 if (card.classList.contains('active')) return;
 
-                const currentActiveCard = document.querySelector('.card.active');
-                if (currentActiveCard) {
-                    currentActiveCard.classList.remove('active');
-                    const currentActivePanel = document.getElementById(currentActiveCard.dataset.target);
-                    currentActivePanel.classList.remove('active');
-                }
-
+                const currentActive = document.querySelector('.card.active');
+                if (currentActive) currentActive.classList.remove('active');
                 card.classList.add('active');
+                
+                document.querySelector('.panel.active')?.classList.remove('active');
                 document.getElementById(card.dataset.target).classList.add('active');
 
                 contentContainer.classList.add('fade-out');
                 setTimeout(() => {
                     contentTitle.textContent = card.dataset.title;
-                    contentDescription.textContent = card.dataset.description;
+                    const desc = card.getAttribute('data-description');
+                    contentDescription.textContent = desc.length > 3 ? desc : "Descrição não disponível.";
                     contentContainer.classList.remove('fade-out');
                 }, 300);
             }
 
-            // Função para iniciar o loop no mobile
-            function startCarouselLoop() {
-                stopCarouselLoop(); // Garante que não haja loops duplicados
-                carouselInterval = setInterval(() => {
-                    currentIndex = (currentIndex + 1) % cards.length;
-                    const nextCard = cards[currentIndex];
-                    changeContent(nextCard);
-                    // Rola o carrossel para manter o item ativo visível
-                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                }, 4000); // Muda a cada 4 segundos
-            }
-
-            // Função para parar o loop
-            function stopCarouselLoop() {
-                clearInterval(carouselInterval);
-            }
-
-            // Adiciona o evento de clique a cada cartão
-            cards.forEach((card, index) => {
-                card.addEventListener('click', () => {
-                    currentIndex = index; // Atualiza o índice para o cartão clicado
-                    changeContent(card);
-                    // Se estiver no modo mobile, reinicia o timer do loop
-                    if (window.matchMedia("(max-width: 768px)").matches) {
-                        startCarouselLoop();
-                    }
+            // LÓGICA PARA DESKTOP (baseada em clique)
+            function setupDesktopEvents() {
+                const cards = document.querySelectorAll('.card');
+                cards.forEach(card => {
+                    card.addEventListener('click', () => changeActiveContent(card));
                 });
-            });
-
-            // Verifica o tamanho da tela para iniciar/parar o loop
-            const mediaQuery = window.matchMedia("(max-width: 768px)");
-            function handleScreenChange(e) {
-                if (e.matches) {
-                    // Tela pequena: inicia o loop
-                    startCarouselLoop();
-                } else {
-                    // Tela grande: para o loop
-                    stopCarouselLoop();
-                }
             }
-            
-            mediaQuery.addEventListener('change', handleScreenChange); // Ouve mudanças no tamanho da tela
-            handleScreenChange(mediaQuery); // Executa na primeira vez que a página carrega
+
+            // LÓGICA PARA MOBILE (baseada em scroll infinito)
+            function setupMobileCarousel() {
+                const cards = Array.from(carousel.children);
+                const firstCardClone = cards[0].cloneNode(true);
+                const lastCardClone = cards[cards.length - 1].cloneNode(true);
+                firstCardClone.dataset.cloneId = cards[0].dataset.id;
+                lastCardClone.dataset.cloneId = cards[cards.length - 1].dataset.id;
+
+                carousel.appendChild(firstCardClone);
+                carousel.insertBefore(lastCardClone, cards[0]);
+                
+                // Posição inicial no primeiro card *original*
+                cards[0].scrollIntoView({ behavior: 'instant', inline: 'center' });
+
+                // Intersection Observer para detectar o card central
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            changeActiveContent(entry.target);
+                        }
+                    });
+                }, { root: carousel, threshold: 0.6 });
+
+                document.querySelectorAll('.card').forEach(card => observer.observe(card));
+
+                // Lógica do "salto" para criar o loop infinito
+                carousel.addEventListener('scroll', () => {
+                    const activeCard = document.querySelector('.card.active');
+                    if (!activeCard) return;
+
+                    const originalId = activeCard.dataset.id;
+                    const cloneId = activeCard.dataset.cloneId;
+
+                    if (cloneId) { // Se o card ativo for um clone
+                        // Encontra o card original correspondente
+                        const originalCard = document.querySelector(`.card[data-id='${cloneId}']:not([data-clone-id])`);
+                        if (originalCard) {
+                             // Salta para a posição do card original sem animação
+                            originalCard.scrollIntoView({ behavior: 'instant', inline: 'center' });
+                        }
+                    }
+                }, { passive: true });
+            }
+
+
+            // Verifica o tamanho da tela e aplica a lógica correta
+            const mediaQuery = window.matchMedia("(max-width: 768px)");
+            if (mediaQuery.matches) {
+                setupMobileCarousel();
+            } else {
+                setupDesktopEvents();
+            }
         });
     </script>
 
