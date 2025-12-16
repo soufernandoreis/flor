@@ -18,10 +18,10 @@
       --ease: cubic-bezier(.22,.61,.36,1);
       --dur: 650ms;
 
-      /* ZOOM-IN puro (começa menor e cresce até 1) */
-      --zoomStart: .965;
+      /* ZOOM-IN: começa menor e cresce até 1 */
+      --zoomStart: .97;
 
-      /* Overlay fixo do layout (não anima, não “escurece” na transição) */
+      /* Overlay fixo (não anima, não muda “brilho” no meio) */
       --overlay: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
     }
 
@@ -66,10 +66,10 @@
       overflow:hidden;
     }
 
-    /* ===== FUNDO: troca LIMPA (sem crossfade) =====
-       - Current fica estático (opacity 1 sempre).
-       - Next faz zoom-in e no final vira current.
-       - Sem fade-out => não aparece “escurecer” no meio.
+    /* ===== FUNDO: troca limpa (sem “anoitecer”) =====
+       - Current fica 100% visível o tempo todo.
+       - Next entra por cima: opacity 0->1 e scale <1 -> 1
+       - Current NÃO faz fade-out.
     */
     .bgstack{
       position:absolute;
@@ -78,8 +78,6 @@
       overflow:hidden;
       background: var(--bg);
     }
-
-    /* overlay fixo (não animado) */
     .bgstack::after{
       content:"";
       position:absolute;
@@ -97,24 +95,27 @@
       object-fit:cover;
       backface-visibility:hidden;
       transform: translateZ(0) scale(1);
-      will-change: transform;
+      will-change: transform, opacity;
     }
 
-    /* Current sempre visível */
     .bgimg.is-current{
       z-index:1;
+      opacity:1;
+      transform: translateZ(0) scale(1);
     }
 
-    /* Next fica por cima, mas “invisível” via transform (não via opacity) */
+    /* IMPORTANTE: quando não está animando, o next fica invisível */
     .bgimg.is-next{
       z-index:2;
+      opacity:0;
       transform: translateZ(0) scale(var(--zoomStart));
     }
 
-    /* durante animação: só o NEXT anima (zoom-in) */
+    /* durante animação: só o NEXT anima */
     .bgstack.is-animating .bgimg.is-next{
-      transition: transform var(--dur) var(--ease);
+      opacity:1;
       transform: translateZ(0) scale(1);
+      transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
     }
 
     /* ===== SLIDES (conteúdo) ===== */
@@ -127,7 +128,7 @@
     }
     .item.is-active{ opacity:1; }
 
-    /* UI sempre acima */
+    /* UI */
     .content{
       position:absolute;
       left:70px;
@@ -400,40 +401,36 @@
     function forceReflow(el){ el.getBoundingClientRect(); }
 
     function beginBgTransition(nextSrc){
-      // coloca o next por cima (sem opacity), só zoom-in
+      // garante estado base (next invisível e menor)
+      bgstack.classList.remove("is-animating");
       bgNextEl.src = nextSrc;
 
-      // garante que já “assentou” antes de animar
+      // “assenta” o src/estado antes de animar
       forceReflow(bgNextEl);
-      bgstack.classList.remove("is-animating");
       forceReflow(bgstack);
 
+      // dispara animação (opacity 0->1 + zoomStart->1)
       requestAnimationFrame(() => bgstack.classList.add("is-animating"));
     }
 
     function commitBgTransition(){
-      // remove transição (pra não interferir no swap)
+      // finaliza (remove classe de animar)
       bgstack.classList.remove("is-animating");
 
-      // next vira current (swap de referências + classes)
+      // next vira current
       bgCurrentEl.classList.remove("is-current");
       bgCurrentEl.classList.add("is-next");
 
       bgNextEl.classList.remove("is-next");
       bgNextEl.classList.add("is-current");
 
+      // troca referências
       const tmp = bgCurrentEl;
       bgCurrentEl = bgNextEl;
       bgNextEl = tmp;
 
-      // reseta o buffer "next" para o próximo uso (fora do frame crítico)
-      requestAnimationFrame(() => {
-        bgNextEl.src = "";
-        bgNextEl.style.transition = "none";
-        bgNextEl.style.transform = `translateZ(0) scale(var(--zoomStart))`;
-        forceReflow(bgNextEl);
-        bgNextEl.style.transition = "";
-      });
+      // limpa o buffer next (fora do frame crítico)
+      requestAnimationFrame(() => { bgNextEl.src = ""; });
     }
 
     function thumbStepPx() {
@@ -471,7 +468,7 @@
 
       await decodeImage(nextSrc);
 
-      // alinha thumb/front já no início
+      // alinha thumb/front no começo
       syncActiveContent(1);
 
       beginBgTransition(nextSrc);
