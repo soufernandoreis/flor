@@ -11,27 +11,28 @@
 
   <style>
     :root{
-      --bg: #0b0f14;
-      --text: #eaf0ff;
-      --muted: rgba(234,240,255,.75);
-      --stroke: rgba(255,255,255,.12);
-      --ease: cubic-bezier(.22,.61,.36,1);
-      --dur: 650ms;
+      --bg:#0b0f14;
+      --text:#eaf0ff;
+      --muted:rgba(234,240,255,.75);
+      --stroke:rgba(255,255,255,.12);
 
-      /* ZOOM-IN: começa menor e cresce até 1 */
-      --zoomStart: .97;
+      --ease:cubic-bezier(.22,.61,.36,1);
+      --dur:650ms;
 
-      /* Overlay fixo (não anima, não muda “brilho” no meio) */
-      --overlay: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
+      /* zoom-in: começa menor e cresce */
+      --zoomStart:.97;
+
+      /* overlay fixo */
+      --overlay:radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
     }
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
       font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      background:var(--bg);
+      color:var(--text);
       overflow:hidden;
     }
 
@@ -43,120 +44,79 @@
       align-items:center;
       justify-content:space-between;
       padding:18px 28px;
-      background: linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,0));
+      background:linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,0));
     }
-    .brand{
-      font-weight:700;
-      letter-spacing:.5px;
-      text-transform:lowercase;
-      opacity:.9;
-    }
-    .menu{ display:flex; gap:18px; }
-    .menu a{
-      color: var(--text);
-      text-decoration:none;
-      font-size:14px;
-      opacity:.85;
-    }
-    .menu a:hover{ opacity:1; }
+    .brand{font-weight:700;letter-spacing:.5px;text-transform:lowercase;opacity:.9}
+    .menu{display:flex;gap:18px}
+    .menu a{color:var(--text);text-decoration:none;font-size:14px;opacity:.85}
+    .menu a:hover{opacity:1}
 
-    main.slider{
-      position:relative;
-      height:100vh;
-      overflow:hidden;
-    }
+    main.slider{position:relative;height:100vh;overflow:hidden}
 
-    /* ===== FUNDO: troca limpa (sem “anoitecer”) =====
-       - Current fica 100% visível o tempo todo.
-       - Next entra por cima: opacity 0->1 e scale <1 -> 1
-       - Current NÃO faz fade-out.
-    */
+    /* ===== FUNDO (2 IMG, entrada limpa com zoom-in) ===== */
     .bgstack{
-      position:absolute;
-      inset:0;
-      z-index:0;
+      position:absolute; inset:0; z-index:0;
       overflow:hidden;
-      background: var(--bg);
+      background:var(--bg);
     }
     .bgstack::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background: var(--overlay);
-      z-index:5;
-      pointer-events:none;
+      content:""; position:absolute; inset:0;
+      background:var(--overlay);
+      z-index:5; pointer-events:none;
     }
-
     .bgimg{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
+      position:absolute; inset:0;
+      width:100%; height:100%;
       object-fit:cover;
       backface-visibility:hidden;
-      transform: translateZ(0) scale(1);
-      will-change: transform, opacity;
+      transform:translateZ(0) scale(1);
+      will-change:transform, opacity;
     }
-
-    .bgimg.is-current{
-      z-index:1;
-      opacity:1;
-      transform: translateZ(0) scale(1);
-    }
-
-    /* IMPORTANTE: quando não está animando, o next fica invisível */
+    .bgimg.is-current{z-index:1;opacity:1}
     .bgimg.is-next{
       z-index:2;
       opacity:0;
-      transform: translateZ(0) scale(var(--zoomStart));
+      transform:translateZ(0) scale(var(--zoomStart));
     }
-
-    /* durante animação: só o NEXT anima */
     .bgstack.is-animating .bgimg.is-next{
       opacity:1;
-      transform: translateZ(0) scale(1);
-      transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+      transform:translateZ(0) scale(1);
+      transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
     }
 
-    /* ===== SLIDES (conteúdo) ===== */
-    .list{ position:absolute; inset:0; z-index:10; }
-    .item{
-      position:absolute;
-      inset:0;
-      opacity:0;
-      transition: opacity .25s ease;
-    }
-    .item.is-active{ opacity:1; }
+    /* ===== SLIDES (texto) ===== */
+    .list{position:absolute; inset:0; z-index:10}
+    .item{position:absolute; inset:0; opacity:0; transition:opacity .25s ease}
+    .item.is-active{opacity:1}
 
-    /* UI */
     .content{
       position:absolute;
       left:70px;
       top:50%;
       transform:translateY(-50%);
-      width:min(520px, 85vw);
+      width:min(520px,85vw);
       z-index:30;
     }
     .tag{
       display:inline-block;
       padding:6px 10px;
       border-radius:10px;
-      background: rgba(0,0,0,.35);
+      background:rgba(0,0,0,.35);
       border:1px solid var(--stroke);
       font-size:12px;
       letter-spacing:.08em;
       margin:0 0 14px;
       color:var(--muted);
     }
-    .content h2{ margin:0; font-size:28px; font-weight:600; }
-    .content h1{ margin:6px 0 12px; font-size:44px; line-height:1.05; }
-    .desc{ margin:0 0 16px; color:var(--muted); font-size:14px; }
+    .content h2{margin:0;font-size:28px;font-weight:600}
+    .content h1{margin:6px 0 12px;font-size:44px;line-height:1.05}
+    .desc{margin:0 0 16px;color:var(--muted);font-size:14px}
     .btn{
       padding:10px 14px;
       border-radius:12px;
       border:1px solid var(--stroke);
-      background: rgba(0,0,0,.35);
-      color: var(--text);
+      background:rgba(0,0,0,.35);
+      color:var(--text);
       cursor:pointer;
     }
 
@@ -169,57 +129,74 @@
       gap:10px;
     }
     .arrow{
-      width:44px;
-      height:44px;
+      width:44px;height:44px;
       border-radius:14px;
       border:1px solid var(--stroke);
-      background: rgba(0,0,0,.35);
-      color: var(--text);
+      background:rgba(0,0,0,.35);
+      color:var(--text);
       font-size:26px;
       cursor:pointer;
       user-select:none;
     }
 
-    /* ===== THUMBS: sem card escuro ===== */
+    /* ==========================================================
+       THUMBS — “IDEIA DO CSS CAROUSEL”
+       - sem card/fundo atrás
+       - cada thumb parece um “card” individual (sombra + highlight)
+       - movimento suave “solto”
+       - o ativo fica maior/mais iluminado
+       ========================================================== */
     .thumbnail{
       position:absolute;
       right:70px;
       bottom:55px;
       z-index:30;
 
-      background: transparent;
-      border: 0;
-      backdrop-filter: none;
-      padding: 0;
-      border-radius: 0;
-
       display:flex;
-      gap:12px;
-      align-items:flex-end;
+      gap:14px;
+      align-items:center;
+
+      padding:0;
+      background:transparent;
+      border:0;
+      backdrop-filter:none;
 
       max-width: calc(100vw - 140px);
       overflow:auto;
+
+      /* deixa o scroll mais “limpo” */
+      scrollbar-width: none;
     }
+    .thumbnail::-webkit-scrollbar{display:none}
 
     .thumb{
-      width:110px;
-      height:70px;
-      padding:0;
+      width:118px;
+      height:74px;
       border:0;
+      padding:0;
       cursor:pointer;
 
-      border-radius:12px;
+      border-radius:14px;
       overflow:hidden;
-      outline:2px solid transparent;
-      opacity:.9;
 
       flex:0 0 auto;
 
-      transform: translateX(0);
-      will-change: transform, opacity;
-      transition: opacity .2s ease, transform var(--dur) var(--ease), outline-color .2s ease;
-      box-shadow: 0 14px 32px rgba(0,0,0,.28);
-      background: rgba(255,255,255,.02);
+      /* cada thumb é um “card” */
+      background:rgba(255,255,255,.03);
+      box-shadow:
+        0 18px 40px rgba(0,0,0,.35),
+        0 0 0 1px rgba(255,255,255,.06) inset;
+
+      opacity:.65;
+      transform:translateX(0) scale(.92);
+      filter:saturate(.95) contrast(1.02);
+
+      will-change:transform, opacity, filter;
+      transition:
+        transform var(--dur) var(--ease),
+        opacity 220ms ease,
+        filter 220ms ease,
+        box-shadow 220ms ease;
     }
 
     .thumb img{
@@ -227,58 +204,73 @@
       height:100%;
       object-fit:cover;
       display:block;
+      transform:scale(1.06);
+      transition:transform 400ms var(--ease);
     }
 
+    .thumb:hover{
+      opacity:.9;
+      filter:saturate(1.05) contrast(1.05);
+    }
+    .thumb:hover img{transform:scale(1.12)}
+
+    /* thumb “ativa” (a da frente) */
     .thumb.is-front{
       opacity:1;
-      outline-color: rgba(255,255,255,.35);
-      transform: translateY(-6px);
+      transform:translateY(-10px) scale(1.02);
+      filter:saturate(1.12) contrast(1.06);
+      box-shadow:
+        0 22px 50px rgba(0,0,0,.45),
+        0 0 0 2px rgba(255,255,255,.18) inset;
     }
 
+    /* movimento individual (não move container) */
     .thumb.is-moving.is-front{
-      transform: translateY(-6px) translateX(var(--tx, 0px));
+      transform:translateY(-10px) translateX(var(--tx, 0px)) scale(1.02);
     }
     .thumb.is-moving:not(.is-front){
-      transform: translateX(var(--tx, 0px));
+      transform:translateX(var(--tx, 0px)) scale(.92);
     }
 
-    /* ====== RESPONSIVO ====== */
-    @media (max-width: 1024px){
-      header.topbar{ padding:14px 16px; }
-      .menu{ gap:12px; }
-      .content{ left:18px; width:min(520px, calc(100vw - 36px)); }
-      .controls{ left:18px; bottom:106px; }
-      .thumbnail{ left:18px; right:18px; max-width: calc(100vw - 36px); }
-      .thumb{ width:96px; height:62px; }
-      .content h2{ font-size:24px; }
-      .content h1{ font-size:38px; }
+    /* ===== RESPONSIVO ===== */
+    @media (max-width:1024px){
+      header.topbar{padding:14px 16px}
+      .menu{gap:12px}
+      .content{left:18px;width:min(520px,calc(100vw - 36px))}
+      .controls{left:18px;bottom:106px}
+      .thumbnail{left:18px;right:18px;max-width:calc(100vw - 36px)}
+      .thumb{width:102px;height:64px;border-radius:14px}
+      .content h2{font-size:24px}
+      .content h1{font-size:38px}
     }
-    @media (max-width: 768px){
+    @media (max-width:768px){
       .content{
         left:14px;
         top:auto;
         bottom:128px;
         transform:none;
-        width: calc(100vw - 28px);
+        width:calc(100vw - 28px);
       }
-      .content h2{ font-size:20px; }
-      .content h1{ font-size:30px; }
-      .desc{ font-size:13px; }
+      .content h2{font-size:20px}
+      .content h1{font-size:30px}
+      .desc{font-size:13px}
 
-      .controls{ left:14px; bottom:84px; }
-      .arrow{ width:40px; height:40px; border-radius:14px; font-size:22px; }
+      .controls{left:14px;bottom:84px}
+      .arrow{width:40px;height:40px;border-radius:14px;font-size:22px}
 
       .thumbnail{
-        left:14px; right:14px; bottom:14px;
-        max-width: calc(100vw - 28px);
-        gap:8px;
+        left:14px;right:14px;bottom:14px;
+        max-width:calc(100vw - 28px);
+        gap:10px;
       }
-      .thumb{ width:76px; height:50px; border-radius:12px; }
+      .thumb{width:84px;height:54px;border-radius:14px}
+      .thumb.is-front{transform:translateY(-8px) scale(1.02)}
+      .thumb.is-moving.is-front{transform:translateY(-8px) translateX(var(--tx,0px)) scale(1.02)}
     }
-    @media (max-width: 420px){
-      .content h1{ font-size:28px; }
-      .thumb{ width:70px; height:46px; }
-      .controls{ bottom:80px; }
+    @media (max-width:420px){
+      .content h1{font-size:28px}
+      .controls{bottom:80px}
+      .thumb{width:78px;height:50px}
     }
   </style>
 </head>
@@ -401,35 +393,28 @@
     function forceReflow(el){ el.getBoundingClientRect(); }
 
     function beginBgTransition(nextSrc){
-      // garante estado base (next invisível e menor)
       bgstack.classList.remove("is-animating");
       bgNextEl.src = nextSrc;
 
-      // “assenta” o src/estado antes de animar
       forceReflow(bgNextEl);
       forceReflow(bgstack);
 
-      // dispara animação (opacity 0->1 + zoomStart->1)
       requestAnimationFrame(() => bgstack.classList.add("is-animating"));
     }
 
     function commitBgTransition(){
-      // finaliza (remove classe de animar)
       bgstack.classList.remove("is-animating");
 
-      // next vira current
       bgCurrentEl.classList.remove("is-current");
       bgCurrentEl.classList.add("is-next");
 
       bgNextEl.classList.remove("is-next");
       bgNextEl.classList.add("is-current");
 
-      // troca referências
       const tmp = bgCurrentEl;
       bgCurrentEl = bgNextEl;
       bgNextEl = tmp;
 
-      // limpa o buffer next (fora do frame crítico)
       requestAnimationFrame(() => { bgNextEl.src = ""; });
     }
 
@@ -448,6 +433,7 @@
         t.style.setProperty("--tx", `${tx}px`);
       });
     }
+
     function resetThumbs() {
       const thumbs = getThumbs();
       thumbs.forEach(t => {
@@ -468,7 +454,7 @@
 
       await decodeImage(nextSrc);
 
-      // alinha thumb/front no começo
+      /* alinha thumb/front no começo */
       syncActiveContent(1);
 
       beginBgTransition(nextSrc);
@@ -480,7 +466,7 @@
 
       commitBgTransition();
 
-      // loop infinito real
+      /* loop infinito real */
       sliderList.appendChild(sliderList.firstElementChild);
       thumbList.appendChild(thumbList.firstElementChild);
 
