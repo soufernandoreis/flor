@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo v6 - Com Botões de Ação</title>
+    <title>Catálogo Interativo v7 - Layout Fixo</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
@@ -21,6 +21,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             overflow-y: auto; /* Permite scroll vertical se necessário */
+            overflow-x: hidden; /* <<-- CORREÇÃO PRINCIPAL: Trava o scroll horizontal da página */
             color: white;
             background-color: #121212;
         }
@@ -34,18 +35,16 @@
         /* --- 2. Container Principal e Painéis de Fundo --- */
         .main-container {
             position: relative;
-            width: 100%;
-            min-height: 100vh; /* Garante que ocupe a tela inteira, mas pode crescer */
-            display: flex; /* Usado para centralizar o conteúdo se a página for maior que a tela */
+            width: 100vw; /* Garante que o container ocupe a largura exata da tela */
+            min-height: 100vh;
+            display: flex;
             align-items: center;
         }
 
         .background-panels .panel {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background-size: cover;
             background-position: center;
             opacity: 0;
@@ -76,7 +75,7 @@
         /* --- 3. Conteúdo de Texto --- */
         .content {
             position: absolute;
-            top: 40%; /* Ajustado para dar espaço ao footer */
+            top: 40%;
             left: 10%;
             transform: translateY(-50%);
             z-index: 3;
@@ -113,16 +112,27 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 25px; /* Espaço entre o carrossel e os botões */
+            gap: 25px;
         }
         
         .card-carousel {
             display: flex;
             gap: 15px;
             perspective: 1000px;
-            padding: 0 5vw; /* Garante que não cole nas bordas */
+            padding: 0 5vw;
             max-width: 100%;
+            overflow-x: auto; /* <<-- CORREÇÃO 2: Permite que APENAS o carrossel role se necessário */
         }
+        
+        /* Esconde a barra de scroll do carrossel para um visual limpo */
+        .card-carousel::-webkit-scrollbar {
+            display: none;
+        }
+        .card-carousel {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
 
         .card {
             width: 120px;
@@ -147,7 +157,7 @@
         .action-buttons {
             display: flex;
             justify-content: center;
-            flex-wrap: wrap; /* Permite que os botões quebrem a linha em telas pequenas */
+            flex-wrap: wrap;
             gap: 15px;
             padding: 0 20px;
         }
@@ -181,18 +191,15 @@
             .content p { font-size: 0.9rem; }
 
             .footer-container {
-                position: relative; /* Volta ao fluxo normal do documento */
-                margin-top: calc(5vh + 200px); /* Empurra o footer para baixo do texto */
+                position: relative;
+                margin-top: calc(5vh + 200px);
                 padding-bottom: 30px;
             }
 
             .card-carousel {
                 width: 100%;
                 justify-content: flex-start;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
             }
-            .card-carousel::-webkit-scrollbar { display: none; }
         }
     </style>
 </head>
