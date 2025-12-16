@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo com Botões</title>
+    <title>Catálogo Interativo - Layout Final</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
@@ -19,20 +19,21 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow-y: auto; /* Permite scroll vertical */
-            overflow-x: hidden; /* Previne scroll horizontal (página solta) */
+            overflow-y: auto;
+            overflow-x: hidden;
             color: white;
             background-color: #121212;
+            overscroll-behavior-y: contain; /* <<-- CORREÇÃO DEFINITIVA: Impede o "efeito elástico" */
         }
 
         /* --- 2. Container Principal e Painéis de Fundo --- */
         .main-container {
             position: relative;
             width: 100%;
-            min-height: 100vh; /* Permite que a página cresça */
+            min-height: 100vh;
             display: flex;
-            align-items: center; /* Ajuda a alinhar o conteúdo */
-            overflow: hidden; /* Segurança extra contra overflow */
+            align-items: center;
+            overflow: hidden;
         }
 
         .background-panels .panel {
@@ -72,7 +73,7 @@
         /* --- 3. Conteúdo de Texto --- */
         .content {
             position: absolute;
-            top: 40%; /* Sobe um pouco para dar espaço ao footer */
+            top: 40%;
             left: 10%;
             transform: translateY(-50%);
             z-index: 3;
@@ -118,7 +119,7 @@
             gap: 15px;
             perspective: 1000px;
             width: 100%;
-            padding: 0 5vw; /* Espaçamento lateral */
+            padding: 0 5vw;
             overflow-x: auto;
         }
 
@@ -185,8 +186,8 @@
             .content p { font-size: 0.9rem; }
 
             .footer-container {
-                position: relative; /* Volta ao fluxo normal do documento */
-                margin-top: calc(5vh + 200px); /* Empurra o footer para baixo do texto */
+                position: relative;
+                margin-top: calc(5vh + 200px);
                 padding-bottom: 30px;
             }
 
@@ -257,10 +258,9 @@
             const contentTitle = document.getElementById('content-title');
             const contentDescription = document.getElementById('content-description');
             
-            let carouselInterval = null; // Variável para controlar o loop
-            let currentIndex = 0; // Índice do item atual no loop
+            let carouselInterval = null;
+            let currentIndex = 0;
 
-            // Função para mudar o conteúdo
             function changeContent(card) {
                 if (card.classList.contains('active')) return;
 
@@ -282,49 +282,41 @@
                 }, 300);
             }
 
-            // Função para iniciar o loop no mobile
             function startCarouselLoop() {
-                stopCarouselLoop(); // Garante que não haja loops duplicados
+                stopCarouselLoop();
                 carouselInterval = setInterval(() => {
                     currentIndex = (currentIndex + 1) % cards.length;
                     const nextCard = cards[currentIndex];
                     changeContent(nextCard);
-                    // Rola o carrossel para manter o item ativo visível
                     nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                }, 4000); // Muda a cada 4 segundos
+                }, 4000);
             }
 
-            // Função para parar o loop
             function stopCarouselLoop() {
                 clearInterval(carouselInterval);
             }
 
-            // Adiciona o evento de clique a cada cartão
             cards.forEach((card, index) => {
                 card.addEventListener('click', () => {
-                    currentIndex = index; // Atualiza o índice para o cartão clicado
+                    currentIndex = index;
                     changeContent(card);
-                    // Se estiver no modo mobile, reinicia o timer do loop
                     if (window.matchMedia("(max-width: 768px)").matches) {
                         startCarouselLoop();
                     }
                 });
             });
 
-            // Verifica o tamanho da tela para iniciar/parar o loop
             const mediaQuery = window.matchMedia("(max-width: 768px)");
             function handleScreenChange(e) {
                 if (e.matches) {
-                    // Tela pequena: inicia o loop
                     startCarouselLoop();
                 } else {
-                    // Tela grande: para o loop
                     stopCarouselLoop();
                 }
             }
             
-            mediaQuery.addEventListener('change', handleScreenChange); // Ouve mudanças no tamanho da tela
-            handleScreenChange(mediaQuery); // Executa na primeira vez que a página carrega
+            mediaQuery.addEventListener('change', handleScreenChange);
+            handleScreenChange(mediaQuery);
         });
     </script>
 
