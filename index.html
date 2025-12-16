@@ -15,12 +15,14 @@
       --text: #eaf0ff;
       --muted: rgba(234,240,255,.75);
       --stroke: rgba(255,255,255,.12);
-      --overlay: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
       --ease: cubic-bezier(.22,.61,.36,1);
       --dur: 650ms;
 
-      /* Efeito novo (zoom-in): começa menor e cresce */
+      /* ZOOM-IN puro (começa menor e cresce até 1) */
       --zoomStart: .965;
+
+      /* Overlay fixo do layout (não anima, não “escurece” na transição) */
+      --overlay: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
     }
 
     *{ box-sizing:border-box; }
@@ -64,13 +66,20 @@
       overflow:hidden;
     }
 
-    /* ===== FUNDO: 2 <img> fixas (estável, sem flicker) ===== */
+    /* ===== FUNDO: troca LIMPA (sem crossfade) =====
+       - Current fica estático (opacity 1 sempre).
+       - Next faz zoom-in e no final vira current.
+       - Sem fade-out => não aparece “escurecer” no meio.
+    */
     .bgstack{
       position:absolute;
       inset:0;
       z-index:0;
       overflow:hidden;
+      background: var(--bg);
     }
+
+    /* overlay fixo (não animado) */
     .bgstack::after{
       content:"";
       position:absolute;
@@ -86,30 +95,26 @@
       width:100%;
       height:100%;
       object-fit:cover;
-      opacity:0;
-      transform: translateZ(0) scale(1);
-      will-change: opacity, transform;
       backface-visibility:hidden;
+      transform: translateZ(0) scale(1);
+      will-change: transform;
     }
 
+    /* Current sempre visível */
     .bgimg.is-current{
-      opacity:1;
-      transform: translateZ(0) scale(1);
-    }
-    .bgimg.is-next{
-      opacity:0;
-      transform: translateZ(0) scale(var(--zoomStart)); /* começa menor */
+      z-index:1;
     }
 
-    .bgstack.is-animating .bgimg.is-next{
-      opacity:1;
-      transform: translateZ(0) scale(1);
-      transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+    /* Next fica por cima, mas “invisível” via transform (não via opacity) */
+    .bgimg.is-next{
+      z-index:2;
+      transform: translateZ(0) scale(var(--zoomStart));
     }
-    .bgstack.is-animating .bgimg.is-current{
-      opacity:0;
-      transform: translateZ(0) scale(1.01);
-      transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+
+    /* durante animação: só o NEXT anima (zoom-in) */
+    .bgstack.is-animating .bgimg.is-next{
+      transition: transform var(--dur) var(--ease);
+      transform: translateZ(0) scale(1);
     }
 
     /* ===== SLIDES (conteúdo) ===== */
@@ -174,14 +179,13 @@
       user-select:none;
     }
 
-    /* ===== THUMBS: SEM CARD ESCURO ===== */
+    /* ===== THUMBS: sem card escuro ===== */
     .thumbnail{
       position:absolute;
       right:70px;
       bottom:55px;
       z-index:30;
 
-      /* remove faixa escura */
       background: transparent;
       border: 0;
       backdrop-filter: none;
@@ -206,11 +210,10 @@
       border-radius:12px;
       overflow:hidden;
       outline:2px solid transparent;
-      opacity:.85;
+      opacity:.9;
 
       flex:0 0 auto;
 
-      /* “solto”: cada thumb anima sozinha */
       transform: translateX(0);
       will-change: transform, opacity;
       transition: opacity .2s ease, transform var(--dur) var(--ease), outline-color .2s ease;
@@ -231,7 +234,6 @@
       transform: translateY(-6px);
     }
 
-    /* durante slide: ignora o translateY do is-front e usa movimento horizontal */
     .thumb.is-moving.is-front{
       transform: translateY(-6px) translateX(var(--tx, 0px));
     }
@@ -366,13 +368,12 @@
     let isAnimating = false;
     const DURATION = 650;
 
-    function getItems(){ return Array.from(sliderList.querySelectorAll(".item")); }
-    function getThumbs(){ return Array.from(thumbList.querySelectorAll(".thumb")); }
+    const getItems  = () => Array.from(sliderList.querySelectorAll(".item"));
+    const getThumbs = () => Array.from(thumbList.querySelectorAll(".thumb"));
 
     function syncActiveContent(frontIndex = 0) {
       const items = getItems();
       const thumbs = getThumbs();
-
       items.forEach((el,i)=>el.classList.toggle("is-active", i===0));
       thumbs.forEach((el,i)=>el.classList.toggle("is-front", i===frontIndex));
     }
@@ -399,14 +400,22 @@
     function forceReflow(el){ el.getBoundingClientRect(); }
 
     function beginBgTransition(nextSrc){
+      // coloca o next por cima (sem opacity), só zoom-in
       bgNextEl.src = nextSrc;
+
+      // garante que já “assentou” antes de animar
       forceReflow(bgNextEl);
       bgstack.classList.remove("is-animating");
       forceReflow(bgstack);
+
       requestAnimationFrame(() => bgstack.classList.add("is-animating"));
     }
 
     function commitBgTransition(){
+      // remove transição (pra não interferir no swap)
+      bgstack.classList.remove("is-animating");
+
+      // next vira current (swap de referências + classes)
       bgCurrentEl.classList.remove("is-current");
       bgCurrentEl.classList.add("is-next");
 
@@ -417,8 +426,14 @@
       bgCurrentEl = bgNextEl;
       bgNextEl = tmp;
 
-      bgstack.classList.remove("is-animating");
-      requestAnimationFrame(() => { bgNextEl.src = ""; });
+      // reseta o buffer "next" para o próximo uso (fora do frame crítico)
+      requestAnimationFrame(() => {
+        bgNextEl.src = "";
+        bgNextEl.style.transition = "none";
+        bgNextEl.style.transform = `translateZ(0) scale(var(--zoomStart))`;
+        forceReflow(bgNextEl);
+        bgNextEl.style.transition = "";
+      });
     }
 
     function thumbStepPx() {
@@ -429,7 +444,6 @@
       return rect.width + gap;
     }
 
-    // Move cada thumb individualmente (não o container)
     function animateThumbs(tx) {
       const thumbs = getThumbs();
       thumbs.forEach(t => {
@@ -443,7 +457,6 @@
         t.classList.remove("is-moving");
         t.style.setProperty("--tx", `0px`);
       });
-      // força layout pra “assentar” antes de reordenar
       forceReflow(thumbList);
     }
 
@@ -458,10 +471,9 @@
 
       await decodeImage(nextSrc);
 
-      // 1) já marca o "front" como o próximo (ALINHA com o fundo)
+      // alinha thumb/front já no início
       syncActiveContent(1);
 
-      // 2) começa fundo e thumbs juntos
       beginBgTransition(nextSrc);
 
       const step = thumbStepPx();
@@ -469,14 +481,12 @@
 
       await wait(DURATION);
 
-      // 3) commit fundo
       commitBgTransition();
 
-      // 4) loop infinito real (slides + thumbs)
+      // loop infinito real
       sliderList.appendChild(sliderList.firstElementChild);
       thumbList.appendChild(thumbList.firstElementChild);
 
-      // 5) reseta thumbs e agora front volta a ser o primeiro
       resetThumbs();
       syncActiveContent(0);
 
@@ -493,8 +503,6 @@
 
       await decodeImage(prevSrc);
 
-      // 1) no prev, o “front” visual vira o último (ele vai entrar na frente)
-      // (como estamos movendo para direita, o último passa a ser o front)
       const thumbs = getThumbs();
       syncActiveContent(thumbs.length - 1);
 
