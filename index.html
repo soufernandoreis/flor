@@ -3,123 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo - Layout Final</title>
+    <title>Catálogo Interativo - Layout Sólido</title>
     <style>
-        /* --- 1. Configuração Geral e Reset --- */
-        :root {
-            --transition-speed-fast: 0.5s;
-            --transition-speed-slow: 0.8s;
+        /* --- 1. TRAVA DEFINITIVA DA PÁGINA "SOLTA" --- */
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Desabilita TODO o scroll na janela principal */
+            position: fixed; /* Trava a janela no lugar */
+            -webkit-font-smoothing: antialiased;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow-y: auto;
+        /* --- 2. NOSSA NOVA ÁREA DE SCROLL CONTROLADA --- */
+        .scroll-wrapper {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto; /* Apenas este elemento pode rolar verticalmente */
             overflow-x: hidden;
-            color: white;
             background-color: #121212;
-            overscroll-behavior-y: contain; /* <<-- CORREÇÃO DEFINITIVA: Impede o "efeito elástico" */
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overscroll-behavior-y: contain; /* Segurança extra contra o efeito elástico */
+            scroll-behavior: smooth;
         }
 
-        /* --- 2. Container Principal e Painéis de Fundo --- */
+        /* --- 3. CONTAINER PRINCIPAL (TELA CHEIA) --- */
         .main-container {
             position: relative;
             width: 100%;
-            min-height: 100vh;
+            height: 100vh; /* Ocupa exatamente a primeira tela */
             display: flex;
             align-items: center;
+            justify-content: center;
             overflow: hidden;
         }
 
         .background-panels .panel {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-size: cover; background-position: center;
             opacity: 0;
-            transition: opacity var(--transition-speed-slow) ease-in-out;
+            transition: opacity 0.8s ease-in-out;
             z-index: 1;
         }
 
         .background-panels .panel::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            content: ''; position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
             background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
             z-index: 2;
         }
 
-
-        .background-panels .panel.active {
-            opacity: 1;
-        }
-
+        .background-panels .panel.active { opacity: 1; }
         #panel-1 { background-image: url('conjunto.png'); }
         #panel-2 { background-image: url('conjuntoescuro.png'); }
         #panel-3 { background-image: url('jaquetaverde.png'); }
         #panel-4 { background-image: url('homem.png'); }
 
-        /* --- 3. Conteúdo de Texto --- */
         .content {
-            position: absolute;
-            top: 40%;
-            left: 10%;
+            position: absolute; top: 40%; left: 10%;
             transform: translateY(-50%);
-            z-index: 3;
-            max-width: 450px;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        
-        .content.fade-out {
-            opacity: 0;
-            transform: translateY(-60%);
+            z-index: 3; max-width: 450px;
         }
 
         .content h1 {
-            font-size: 4rem;
-            text-transform: uppercase;
+            font-size: 4rem; text-transform: uppercase;
             letter-spacing: 2px;
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
         }
 
         .content p {
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-top: 1rem;
+            font-size: 1rem; line-height: 1.6; margin-top: 1rem;
             text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
         }
 
-        /* --- 4. Footer (Carrossel e Botões) --- */
-        .footer-container {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            z-index: 4;
-            padding: 3vh 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 25px;
+        .footer-carousel {
+            position: absolute; bottom: 5vh; left: 0;
+            width: 100%; z-index: 4;
         }
 
         .card-carousel {
-            display: flex;
-            gap: 15px;
-            perspective: 1000px;
-            width: 100%;
-            padding: 0 5vw;
+            display: flex; gap: 15px; perspective: 1000px;
+            width: 100%; padding: 0 5vw;
             overflow-x: auto;
         }
 
@@ -127,14 +92,11 @@
         .card-carousel { -ms-overflow-style: none; scrollbar-width: none; }
 
         .card {
-            width: 120px;
-            height: 180px;
-            border-radius: 12px;
+            width: 120px; height: 180px; border-radius: 12px;
             border: 3px solid rgba(255, 255, 255, 0.2);
-            background-size: cover;
-            background-position: center;
+            background-size: cover; background-position: center;
             cursor: pointer;
-            transition: transform var(--transition-speed-fast) ease, border-color var(--transition-speed-fast) ease;
+            transition: transform 0.5s ease, border-color 0.5s ease;
             flex-shrink: 0;
         }
 
@@ -145,101 +107,90 @@
         }
         .card.active:hover { transform: scale(1.15) translateZ(50px); }
         
-        /* --- 5. Botões de Ação --- */
-        .action-buttons {
+        /* --- 4. NOVA SEÇÃO DE BOTÕES --- */
+        .buttons-section {
+            background-color: #121212;
+            padding: 50px 20px; /* Espaçamento generoso */
             display: flex;
             justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            padding: 0 20px;
+        }
+
+        .action-buttons {
+            display: flex; justify-content: center;
+            flex-wrap: wrap; gap: 15px;
+            max-width: 800px; /* Limita a largura dos botões em telas grandes */
         }
 
         .btn {
-            display: inline-block;
-            padding: 12px 24px;
+            display: inline-block; padding: 12px 24px;
             border: 2px solid rgba(255, 255, 255, 0.8);
             border-radius: 50px;
             background-color: rgba(0, 0, 0, 0.4);
-            color: white;
-            text-decoration: none;
+            color: white; text-decoration: none;
             font-weight: bold;
             transition: all 0.3s ease;
         }
 
         .btn:hover {
-            background-color: white;
-            color: black;
+            background-color: white; color: black;
             transform: translateY(-2px);
         }
 
-        /* --- 6. Estilos para Mobile --- */
+        /* --- 5. Estilos para Mobile --- */
         @media (max-width: 768px) {
             .content {
-                top: 5vh;
-                left: 5vw;
-                right: 5vw;
+                top: 5vh; left: 5vw; right: 5vw;
                 transform: translateY(0);
-                max-width: 100%;
                 text-align: center;
             }
             .content h1 { font-size: 2.5rem; }
             .content p { font-size: 0.9rem; }
-
-            .footer-container {
-                position: relative;
-                margin-top: calc(5vh + 200px);
-                padding-bottom: 30px;
-            }
-
-            .card-carousel {
-                justify-content: flex-start;
+            .footer-carousel {
+                position: absolute;
+                bottom: 3vh;
             }
         }
     </style>
 </head>
 <body>
 
-    <main class="main-container">
-        <div class="background-panels">
-            <div class="panel active" id="panel-1"></div>
-            <div class="panel" id="panel-2"></div>
-            <div class="panel" id="panel-3"></div>
-            <div class="panel" id="panel-4"></div>
-        </div>
+    <div class="scroll-wrapper">
+        <main class="main-container">
+            <div class="background-panels">
+                <div class="panel active" id="panel-1"></div>
+                <div class="panel" id="panel-2"></div>
+                <div class="panel" id="panel-3"></div>
+                <div class="panel" id="panel-4"></div>
+            </div>
 
-        <div class="content">
-            <h1 id="content-title">Coleção Urbana</h1>
-            <p id="content-description">Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.</p>
-        </div>
+            <div class="content">
+                <h1 id="content-title">Coleção Urbana</h1>
+                <p id="content-description">Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.</p>
+            </div>
 
-        <div class="footer-container">
-            <div class="card-carousel">
-                <div class="card active"
-                     style="background-image: url('conjunto.png');"
-                     data-target="panel-1" 
-                     data-title="Coleção Urbana" 
-                     data-description="Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.">
-                </div>
-                <div class="card"
-                     style="background-image: url('conjuntoescuro.png');"
-                     data-target="panel-2" 
-                     data-title="Estilo Noturno" 
-                     data-description="Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe.">
-                </div>
-                <div class="card"
-                     style="background-image: url('jaquetaverde.png');"
-                     data-target="panel-3" 
-                     data-title="Aventura Casual" 
-                     data-description="Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda.">
-                </div>
-                <div class="card"
-                     style="background-image: url('homem.png');"
-                     data-target="panel-4" 
-                     data-title="Clássico Atemporal" 
-                     data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.">
+            <div class="footer-carousel">
+                <div class="card-carousel">
+                    <div class="card active"
+                         style="background-image: url('conjunto.png');"
+                         data-target="panel-1" data-title="Coleção Urbana" data-description="Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.">
+                    </div>
+                    <div class="card"
+                         style="background-image: url('conjuntoescuro.png');"
+                         data-target="panel-2" data-title="Estilo Noturno" data-description="Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe.">
+                    </div>
+                    <div class="card"
+                         style="background-image: url('jaquetaverde.png');"
+                         data-target="panel-3" data-title="Aventura Casual" data-description="Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda.">
+                    </div>
+                    <div class="card"
+                         style="background-image: url('homem.png');"
+                         data-target="panel-4" data-title="Clássico Atemporal" data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.">
+                    </div>
                 </div>
             </div>
-            
+        </main>
+
+        <section class="buttons-section">
             <div class="action-buttons">
                 <a href="#" class="btn">Vendedora</a>
                 <a href="#" class="btn">Vendedora</a>
@@ -247,9 +198,8 @@
                 <a href="#" class="btn">Grupo de Oferta</a>
                 <a href="#" class="btn">Compra no Site</a>
             </div>
-        </div>
-
-    </main>
+        </section>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
