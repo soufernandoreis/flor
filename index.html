@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo v5 - Efeito Zoom</title>
+    <title>Catálogo Interativo v6 - Com Botões de Ação</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
             --transition-speed-fast: 0.5s;
             --transition-speed-slow: 0.8s;
-            --zoom-duration: 20s; /* Duração do efeito de zoom */
+            --zoom-duration: 20s;
         }
 
         * {
@@ -20,27 +20,24 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            height: 100vh;
-            overflow: hidden;
+            overflow-y: auto; /* Permite scroll vertical se necessário */
             color: white;
             background-color: #121212;
         }
 
         /* --- ANIMAÇÃO DE ZOOM --- */
         @keyframes zoomIn {
-            from {
-                transform: scale(1);
-            }
-            to {
-                transform: scale(1.1); /* Zoom de 10% */
-            }
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
         }
 
         /* --- 2. Container Principal e Painéis de Fundo --- */
         .main-container {
             position: relative;
             width: 100%;
-            height: 100%;
+            min-height: 100vh; /* Garante que ocupe a tela inteira, mas pode crescer */
+            display: flex; /* Usado para centralizar o conteúdo se a página for maior que a tela */
+            align-items: center;
         }
 
         .background-panels .panel {
@@ -54,25 +51,20 @@
             opacity: 0;
             transition: opacity var(--transition-speed-slow) ease-in-out;
             z-index: 1;
-            /* Garante que o zoom se origine do centro */
-            transform-origin: center center; 
+            transform-origin: center center;
         }
 
         .background-panels .panel::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
             z-index: 2;
         }
 
-
         .background-panels .panel.active {
             opacity: 1;
-            /* Aplica a animação de zoom apenas ao painel ativo */
             animation: zoomIn var(--zoom-duration) ease-in-out forwards;
         }
 
@@ -84,7 +76,7 @@
         /* --- 3. Conteúdo de Texto --- */
         .content {
             position: absolute;
-            top: 50%;
+            top: 40%; /* Ajustado para dar espaço ao footer */
             left: 10%;
             transform: translateY(-50%);
             z-index: 3;
@@ -100,7 +92,6 @@
         .content h1 {
             font-size: 4rem;
             text-transform: uppercase;
-            letter-spacing: 2px;
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
         }
 
@@ -111,15 +102,26 @@
             text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
         }
 
-        /* --- 4. Carrossel e Cartões --- */
-        .card-carousel {
+        /* --- 4. Footer (Carrossel e Botões) --- */
+        .footer-container {
             position: absolute;
-            bottom: 5vh;
-            right: 5vw;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 4;
+            padding: 3vh 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px; /* Espaço entre o carrossel e os botões */
+        }
+        
+        .card-carousel {
             display: flex;
             gap: 15px;
-            z-index: 4;
             perspective: 1000px;
+            padding: 0 5vw; /* Garante que não cole nas bordas */
+            max-width: 100%;
         }
 
         .card {
@@ -134,34 +136,58 @@
             flex-shrink: 0;
         }
 
-        .card:not(.active):hover {
-             transform: scale(1.05) translateZ(20px);
-        }
-        
+        .card:not(.active):hover { transform: scale(1.05) translateZ(20px); }
         .card.active {
             border-color: rgba(255, 255, 255, 0.9);
             transform: scale(1.1) translateZ(40px);
         }
-        
-        .card.active:hover {
-            transform: scale(1.15) translateZ(50px);
+        .card.active:hover { transform: scale(1.15) translateZ(50px); }
+
+        /* --- 5. Botões de Ação --- */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; /* Permite que os botões quebrem a linha em telas pequenas */
+            gap: 15px;
+            padding: 0 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50px;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: white;
+            color: black;
+            transform: translateY(-2px);
         }
         
-        /* --- 5. Estilos para Mobile --- */
+        /* --- 6. Estilos para Mobile --- */
         @media (max-width: 768px) {
             .content {
                 top: 5vh; left: 5vw; right: 5vw;
                 transform: translateY(0);
-                max-width: 100%;
                 text-align: center;
             }
             .content h1 { font-size: 2.5rem; }
             .content p { font-size: 0.9rem; }
 
+            .footer-container {
+                position: relative; /* Volta ao fluxo normal do documento */
+                margin-top: calc(5vh + 200px); /* Empurra o footer para baixo do texto */
+                padding-bottom: 30px;
+            }
+
             .card-carousel {
-                bottom: 0; left: 0; right: 0;
                 width: 100%;
-                padding: 20px;
                 justify-content: flex-start;
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
@@ -185,30 +211,39 @@
             <p id="content-description">Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.</p>
         </div>
 
-        <div class="card-carousel">
-            <div class="card active"
-                 style="background-image: url('conjunto.png');"
-                 data-target="panel-1" 
-                 data-title="Coleção Urbana" 
-                 data-description="Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.">
+        <div class="footer-container">
+            <div class="card-carousel">
+                <div class="card active"
+                     style="background-image: url('conjunto.png');"
+                     data-target="panel-1" 
+                     data-title="Coleção Urbana" 
+                     data-description="Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.">
+                </div>
+                <div class="card"
+                     style="background-image: url('conjuntoescuro.png');"
+                     data-target="panel-2" 
+                     data-title="Estilo Noturno" 
+                     data-description="Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe.">
+                </div>
+                <div class="card"
+                     style="background-image: url('jaquetaverde.png');"
+                     data-target="panel-3" 
+                     data-title="Aventura Casual" 
+                     data-description="Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda.">
+                </div>
+                <div class="card"
+                     style="background-image: url('homem.png');"
+                     data-target="panel-4" 
+                     data-title="Clássico Atemporal" 
+                     data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.">
+                </div>
             </div>
-            <div class="card"
-                 style="background-image: url('conjuntoescuro.png');"
-                 data-target="panel-2" 
-                 data-title="Estilo Noturno" 
-                 data-description="Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe.">
-            </div>
-            <div class="card"
-                 style="background-image: url('jaquetaverde.png');"
-                 data-target="panel-3" 
-                 data-title="Aventura Casual" 
-                 data-description="Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda.">
-            </div>
-            <div class="card"
-                 style="background-image: url('homem.png');"
-                 data-target="panel-4" 
-                 data-title="Clássico Atemporal" 
-                 data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.">
+
+            <div class="action-buttons">
+                <a href="#" class="btn">Vendedora Ana</a>
+                <a href="#" class="btn">Vendedora Paula</a>
+                <a href="#" class="btn">Compre no Site</a>
+                <a href="#" class="btn">Grupo de Ofertas</a>
             </div>
         </div>
     </main>
@@ -220,12 +255,9 @@
             const contentTitle = document.getElementById('content-title');
             const contentDescription = document.getElementById('content-description');
             
-            // Função para mudar o conteúdo
             function changeContent(card) {
-                // Se o card clicado já estiver ativo, não faz nada
                 if (card.classList.contains('active')) return;
 
-                // Encontra e remove a classe 'active' do card e painel atuais
                 const currentActiveCard = document.querySelector('.card.active');
                 if (currentActiveCard) {
                     currentActiveCard.classList.remove('active');
@@ -233,20 +265,17 @@
                     currentActivePanel.classList.remove('active');
                 }
 
-                // Adiciona a classe 'active' ao novo card e painel clicados
                 card.classList.add('active');
                 document.getElementById(card.dataset.target).classList.add('active');
 
-                // Anima a transição do texto
                 contentContainer.classList.add('fade-out');
                 setTimeout(() => {
                     contentTitle.textContent = card.dataset.title;
                     contentDescription.textContent = card.dataset.description;
                     contentContainer.classList.remove('fade-out');
-                }, 300); // Sincronizado com a transição do CSS
+                }, 300);
             }
 
-            // Adiciona um evento de clique a cada cartão
             cards.forEach(card => {
                 card.addEventListener('click', () => {
                     changeContent(card);
