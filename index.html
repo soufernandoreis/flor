@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo v8 - Layout Travado</title>
+    <title>Catálogo Interativo Final</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
             --transition-speed-fast: 0.5s;
-            --transition-speed-slow: 0.8s;
-            --zoom-duration: 20s;
+            --transition-speed-slow: 0.6s; /* <<-- MAIS RÁPIDO */
+            --zoom-duration: 1.2s; /* <<-- MAIS RÁPIDO */
         }
 
         * {
@@ -21,25 +21,31 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             overflow-y: auto;
-            overflow-x: hidden; /* <<-- GARANTIA MÁXIMA: Impede o scroll horizontal na página inteira */
+            overflow-x: hidden;
             color: white;
             background-color: #121212;
         }
 
-        /* --- ANIMAÇÃO DE ZOOM --- */
-        @keyframes zoomIn {
-            from { transform: scale(1); }
-            to { transform: scale(1.1); }
+        /* --- ANIMAÇÃO DE ZOOM IMPACTANTE --- */
+        @keyframes impactZoom {
+            from {
+                transform: scale(1.2); /* Começa um pouco maior */
+                opacity: 0.8;
+            }
+            to {
+                transform: scale(1.1); /* Termina no estado final de zoom */
+                opacity: 1;
+            }
         }
 
         /* --- 2. Container Principal e Painéis de Fundo --- */
         .main-container {
             position: relative;
-            width: 100%; /* <<-- CORREÇÃO DEFINITIVA: Trocado de 100vw para 100% */
+            width: 100%;
             min-height: 100vh;
             display: flex;
             align-items: center;
-            overflow: hidden; /* Garante que nada dentro dele vaze para fora */
+            overflow: hidden;
         }
 
         .background-panels .panel {
@@ -65,7 +71,8 @@
 
         .background-panels .panel.active {
             opacity: 1;
-            animation: zoomIn var(--zoom-duration) ease-in-out forwards;
+            /* Aplica a nova animação de zoom */
+            animation: impactZoom var(--zoom-duration) cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
 
         #panel-1 { background-image: url('conjunto.png'); }
@@ -81,25 +88,18 @@
             transform: translateY(-50%);
             z-index: 3;
             max-width: 450px;
-            transition: opacity 0.3s ease, transform 0.3s ease;
         }
         
-        .content.fade-out {
-            opacity: 0;
-            transform: translateY(-60%);
-        }
-
         .content h1 {
             font-size: 4rem;
             text-transform: uppercase;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
-        }
-
-        .content p {
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-top: 1rem;
-            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+            /* <<-- EFEITO AMANHECER -->> */
+            background: linear-gradient(45deg, #f0c30e, #ff8c00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            /* Um leve brilho para destacar o gradiente */
+            filter: drop-shadow(2px 2px 8px rgba(0,0,0,0.7));
         }
 
         /* --- 4. Footer (Carrossel e Botões) --- */
@@ -182,11 +182,10 @@
                 text-align: center;
             }
             .content h1 { font-size: 2.5rem; }
-            .content p { font-size: 0.9rem; }
 
             .footer-container {
                 position: relative;
-                margin-top: calc(5vh + 200px);
+                margin-top: calc(5vh + 150px); /* Ajustado para a ausência do parágrafo */
                 padding-bottom: 30px;
             }
 
@@ -208,7 +207,6 @@
 
         <div class="content">
             <h1 id="content-title">Coleção Urbana</h1>
-            <p id="content-description">Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.</p>
         </div>
 
         <div class="footer-container">
@@ -216,26 +214,22 @@
                 <div class="card active"
                      style="background-image: url('conjunto.png');"
                      data-target="panel-1" 
-                     data-title="Coleção Urbana" 
-                     data-description="Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.">
+                     data-title="Coleção Urbana">
                 </div>
                 <div class="card"
                      style="background-image: url('conjuntoescuro.png');"
                      data-target="panel-2" 
-                     data-title="Estilo Noturno" 
-                     data-description="Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe.">
+                     data-title="Estilo Noturno">
                 </div>
                 <div class="card"
                      style="background-image: url('jaquetaverde.png');"
                      data-target="panel-3" 
-                     data-title="Aventura Casual" 
-                     data-description="Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda.">
+                     data-title="Aventura Casual">
                 </div>
                 <div class="card"
                      style="background-image: url('homem.png');"
                      data-target="panel-4" 
-                     data-title="Clássico Atemporal" 
-                     data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.">
+                     data-title="Clássico Atemporal">
                 </div>
             </div>
 
@@ -253,7 +247,6 @@
             const cards = document.querySelectorAll('.card');
             const contentContainer = document.querySelector('.content');
             const contentTitle = document.getElementById('content-title');
-            const contentDescription = document.getElementById('content-description');
             
             function changeContent(card) {
                 if (card.classList.contains('active')) return;
@@ -268,12 +261,8 @@
                 card.classList.add('active');
                 document.getElementById(card.dataset.target).classList.add('active');
 
-                contentContainer.classList.add('fade-out');
-                setTimeout(() => {
-                    contentTitle.textContent = card.dataset.title;
-                    contentDescription.textContent = card.dataset.description;
-                    contentContainer.classList.remove('fade-out');
-                }, 300);
+                // O JavaScript agora só precisa atualizar o título.
+                contentTitle.textContent = card.dataset.title;
             }
 
             cards.forEach(card => {
