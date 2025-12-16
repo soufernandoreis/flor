@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo v2</title>
+    <title>Catálogo Interativo v3</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
@@ -52,21 +52,21 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
             z-index: 2;
         }
-
 
         .background-panels .panel.active {
             opacity: 1;
         }
 
+        /* --- Imagens de Fundo --- */
         #panel-1 { background-image: url('conjunto.png'); }
         #panel-2 { background-image: url('conjuntoescuro.png'); }
         #panel-3 { background-image: url('jaquetaverde.png'); }
         #panel-4 { background-image: url('homem.png'); }
 
-        /* --- 3. Conteúdo de Texto --- */
+        /* --- 3. Conteúdo de Texto e Botões --- */
         .content {
             position: absolute;
             top: 50%;
@@ -95,54 +95,44 @@
             margin-top: 1rem;
             text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
         }
-
-        /* --- 4. Carrossel e Cartões --- */
-        .card-carousel {
-            position: absolute;
-            bottom: 5vh;
-            right: 5vw;
+        
+        /* --- 4. Botões de Ação --- */
+        .action-buttons {
+            margin-top: 2rem;
             display: flex;
-            gap: 15px;
-            z-index: 4;
-            perspective: 1000px;
+            flex-wrap: wrap; /* Permite que os botões quebrem linha */
+            gap: 10px; /* Espaçamento entre os botões */
         }
 
-        .card {
-            width: 120px;
-            height: 180px;
-            border-radius: 12px;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            background-size: cover;
-            background-position: center;
-            cursor: pointer;
-            transition: transform var(--transition-speed-fast) ease, border-color var(--transition-speed-fast) ease;
-            flex-shrink: 0; /* Impede que os cartões encolham */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 500;
+            backdrop-filter: blur(5px); /* Efeito de vidro fosco */
+            -webkit-backdrop-filter: blur(5px);
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-        /* Animação de hover para cartões NÃO ativos */
-        .card:not(.active):hover {
-             transform: scale(1.05) translateZ(20px);
-        }
-        
-        /* Estado base do cartão ativo */
-        .card.active {
-            border-color: rgba(255, 255, 255, 0.9);
-            transform: scale(1.1) translateZ(40px);
-        }
-        
-        /* Animação de hover para o cartão que JÁ ESTÁ ativo */
-        .card.active:hover {
-            transform: scale(1.15) translateZ(50px);
+        .btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
         }
         
         /* --- 5. Estilos para Mobile --- */
         @media (max-width: 768px) {
             .content {
-                top: 5vh;
+                top: 10vh; /* Sobe um pouco o conteúdo */
                 left: 5vw;
                 right: 5vw;
                 transform: translateY(0);
-                max-width: 100%;
+                width: 90%;
+                max-width: 90%;
                 text-align: center;
             }
             .content h1 {
@@ -151,19 +141,8 @@
             .content p {
                 font-size: 0.9rem;
             }
-            .card-carousel {
-                bottom: 0;
-                left: 0;
-                right: 0;
-                width: 100%;
-                padding: 20px;
-                justify-content: flex-start; /* Alinha os cards à esquerda */
-                overflow-x: auto; /* Permite scroll horizontal */
-                -webkit-overflow-scrolling: touch; /* Melhora o scroll em iOS */
-            }
-            /* Esconde a barra de scroll */
-            .card-carousel::-webkit-scrollbar {
-                display: none;
+            .action-buttons {
+                justify-content: center; /* Centraliza os botões */
             }
         }
     </style>
@@ -179,113 +158,82 @@
         </div>
 
         <div class="content">
-            <h1 id="content-title">Coleção Urbana</h1>
-            <p id="content-description">Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.</p>
-        </div>
-
-        <div class="card-carousel">
-            <div class="card active"
-                 style="background-image: url('conjunto.png');"
-                 data-target="panel-1" 
-                 data-title="Coleção Urbana" 
-                 data-description="Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.">
-            </div>
-            <div class="card"
-                 style="background-image: url('conjuntoescuro.png');"
-                 data-target="panel-2" 
-                 data-title="Estilo Noturno" 
-                 data-description="Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe.">
-            </div>
-            <div class="card"
-                 style="background-image: url('jaquetaverde.png');"
-                 data-target="panel-3" 
-                 data-title="Aventura Casual" 
-                 data-description="Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda.">
-            </div>
-            <div class="card"
-                 style="background-image: url('homem.png');"
-                 data-target="panel-4" 
-                 data-title="Clássico Atemporal" 
-                 data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.">
+            <h1 id="content-title"></h1>
+            <p id="content-description"></p>
+            <div class="action-buttons">
+                <!-- Use os links corretos para o seu negócio -->
+                <a href="#" class="btn">Vendedora 1</a>
+                <a href="#" class="btn">Vendedora 2</a>
+                <a href="#" class="btn">Grupo VIP</a>
+                <a href="#" class="btn">Compras no Site</a>
             </div>
         </div>
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const cards = document.querySelectorAll('.card');
             const contentContainer = document.querySelector('.content');
             const contentTitle = document.getElementById('content-title');
             const contentDescription = document.getElementById('content-description');
-            
-            let carouselInterval = null; // Variável para controlar o loop
-            let currentIndex = 0; // Índice do item atual no loop
+            const panels = document.querySelectorAll('.panel');
 
-            // Função para mudar o conteúdo
-            function changeContent(card) {
-                if (card.classList.contains('active')) return;
-
-                const currentActiveCard = document.querySelector('.card.active');
-                if (currentActiveCard) {
-                    currentActiveCard.classList.remove('active');
-                    const currentActivePanel = document.getElementById(currentActiveCard.dataset.target);
-                    currentActivePanel.classList.remove('active');
+            // Armazena os dados que antes estavam nos cartões
+            const slidesData = [
+                {
+                    target: 'panel-1', 
+                    title: 'Coleção Urbana', 
+                    description: 'Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.'
+                },
+                {
+                    target: 'panel-2', 
+                    title: 'Estilo Noturno', 
+                    description: 'Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe.'
+                },
+                {
+                    target: 'panel-3', 
+                    title: 'Aventura Casual', 
+                    description: 'Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda.'
+                },
+                {
+                    target: 'panel-4', 
+                    title: 'Clássico Atemporal', 
+                    description: 'O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.'
                 }
+            ];
 
-                card.classList.add('active');
-                document.getElementById(card.dataset.target).classList.add('active');
+            let currentIndex = 0;
 
+            function showSlide(index) {
+                const slide = slidesData[index];
+
+                // Efeito de fade-out no texto
                 contentContainer.classList.add('fade-out');
+
                 setTimeout(() => {
-                    contentTitle.textContent = card.dataset.title;
-                    contentDescription.textContent = card.dataset.description;
+                    // Atualiza o texto
+                    contentTitle.textContent = slide.title;
+                    contentDescription.textContent = slide.description;
+                    
+                    // Remove a classe 'active' de todos os painéis
+                    panels.forEach(p => p.classList.remove('active'));
+                    // Adiciona a classe 'active' ao painel correto
+                    document.getElementById(slide.target).classList.add('active');
+
+                    // Efeito de fade-in no texto
                     contentContainer.classList.remove('fade-out');
-                }, 300);
+                }, 300); // Deve corresponder ao tempo da transição no CSS
             }
 
-            // Função para iniciar o loop no mobile
-            function startCarouselLoop() {
-                stopCarouselLoop(); // Garante que não haja loops duplicados
-                carouselInterval = setInterval(() => {
-                    currentIndex = (currentIndex + 1) % cards.length;
-                    const nextCard = cards[currentIndex];
-                    changeContent(nextCard);
-                    // Rola o carrossel para manter o item ativo visível
-                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                }, 4000); // Muda a cada 4 segundos
+            function nextSlide() {
+                currentIndex = (currentIndex + 1) % slidesData.length;
+                showSlide(currentIndex);
             }
 
-            // Função para parar o loop
-            function stopCarouselLoop() {
-                clearInterval(carouselInterval);
-            }
+            // Inicia o conteúdo com o primeiro slide
+            showSlide(0);
 
-            // Adiciona o evento de clique a cada cartão
-            cards.forEach((card, index) => {
-                card.addEventListener('click', () => {
-                    currentIndex = index; // Atualiza o índice para o cartão clicado
-                    changeContent(card);
-                    // Se estiver no modo mobile, reinicia o timer do loop
-                    if (window.matchMedia("(max-width: 768px)").matches) {
-                        startCarouselLoop();
-                    }
-                });
-            });
-
-            // Verifica o tamanho da tela para iniciar/parar o loop
-            const mediaQuery = window.matchMedia("(max-width: 768px)");
-            function handleScreenChange(e) {
-                if (e.matches) {
-                    // Tela pequena: inicia o loop
-                    startCarouselLoop();
-                } else {
-                    // Tela grande: para o loop
-                    stopCarouselLoop();
-                }
-            }
-            
-            mediaQuery.addEventListener('change', handleScreenChange); // Ouve mudanças no tamanho da tela
-            handleScreenChange(mediaQuery); // Executa na primeira vez que a página carrega
+            // Inicia a transição automática
+            setInterval(nextSlide, 5000); // Muda a cada 5 segundos
         });
     </script>
 
