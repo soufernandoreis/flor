@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo</title>
+    <title>Catálogo Interativo v2</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
@@ -45,7 +45,6 @@
             z-index: 1;
         }
 
-        /* Sobreposição para garantir a legibilidade do texto */
         .background-panels .panel::before {
             content: '';
             position: absolute;
@@ -53,8 +52,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.3); 
-            z-index: -1; /* Fica entre o painel e a imagem */
+            background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+            z-index: 2;
         }
 
 
@@ -62,7 +61,6 @@
             opacity: 1;
         }
 
-        /* Imagens de fundo */
         #panel-1 { background-image: url('conjunto.png'); }
         #panel-2 { background-image: url('conjuntoescuro.png'); }
         #panel-3 { background-image: url('jaquetaverde.png'); }
@@ -74,12 +72,11 @@
             top: 50%;
             left: 10%;
             transform: translateY(-50%);
-            z-index: 2;
+            z-index: 3;
             max-width: 450px;
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
         
-        /* Classe para animar a troca de texto */
         .content.fade-out {
             opacity: 0;
             transform: translateY(-60%);
@@ -106,8 +103,8 @@
             right: 5vw;
             display: flex;
             gap: 15px;
-            z-index: 3;
-            perspective: 1000px; /* Ativa o ambiente 3D para os cartões filhos */
+            z-index: 4;
+            perspective: 1000px;
         }
 
         .card {
@@ -119,23 +116,61 @@
             background-position: center;
             cursor: pointer;
             transition: transform var(--transition-speed-fast) ease, border-color var(--transition-speed-fast) ease;
+            flex-shrink: 0; /* Impede que os cartões encolham */
         }
 
-        .card:hover {
+        /* Animação de hover para cartões NÃO ativos */
+        .card:not(.active):hover {
              transform: scale(1.05) translateZ(20px);
         }
         
+        /* Estado base do cartão ativo */
         .card.active {
             border-color: rgba(255, 255, 255, 0.9);
             transform: scale(1.1) translateZ(40px);
+        }
+        
+        /* Animação de hover para o cartão que JÁ ESTÁ ativo */
+        .card.active:hover {
+            transform: scale(1.15) translateZ(50px);
+        }
+        
+        /* --- 5. Estilos para Mobile --- */
+        @media (max-width: 768px) {
+            .content {
+                top: 5vh;
+                left: 5vw;
+                right: 5vw;
+                transform: translateY(0);
+                max-width: 100%;
+                text-align: center;
+            }
+            .content h1 {
+                font-size: 2.5rem;
+            }
+            .content p {
+                font-size: 0.9rem;
+            }
+            .card-carousel {
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                padding: 20px;
+                justify-content: flex-start; /* Alinha os cards à esquerda */
+                overflow-x: auto; /* Permite scroll horizontal */
+                -webkit-overflow-scrolling: touch; /* Melhora o scroll em iOS */
+            }
+            /* Esconde a barra de scroll */
+            .card-carousel::-webkit-scrollbar {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
 
     <main class="main-container">
-        
-        <!-- PAINÉIS DE FUNDO -->
         <div class="background-panels">
             <div class="panel active" id="panel-1"></div>
             <div class="panel" id="panel-2"></div>
@@ -143,13 +178,11 @@
             <div class="panel" id="panel-4"></div>
         </div>
 
-        <!-- CONTEÚDO PRINCIPAL (TEXTO) -->
         <div class="content">
             <h1 id="content-title">Coleção Urbana</h1>
             <p id="content-description">Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.</p>
         </div>
 
-        <!-- CARROSSEL DE CARTÕES -->
         <div class="card-carousel">
             <div class="card active"
                  style="background-image: url('conjunto.png');"
@@ -176,51 +209,83 @@
                  data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.">
             </div>
         </div>
-
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const cards = document.querySelectorAll('.card');
-            const carousel = document.querySelector('.card-carousel');
-            
             const contentContainer = document.querySelector('.content');
             const contentTitle = document.getElementById('content-title');
             const contentDescription = document.getElementById('content-description');
+            
+            let carouselInterval = null; // Variável para controlar o loop
+            let currentIndex = 0; // Índice do item atual no loop
 
-            cards.forEach(card => {
-                card.addEventListener('click', () => {
-                    // Impede a execução se o cartão clicado já estiver ativo
-                    if (card.classList.contains('active')) {
-                        return;
-                    }
-                    
-                    // 1. Remove o estado ativo dos elementos atuais
-                    const currentActiveCard = document.querySelector('.card.active');
-                    const currentActivePanelId = currentActiveCard.dataset.target;
-                    const currentActivePanel = document.getElementById(currentActivePanelId);
+            // Função para mudar o conteúdo
+            function changeContent(card) {
+                if (card.classList.contains('active')) return;
 
+                const currentActiveCard = document.querySelector('.card.active');
+                if (currentActiveCard) {
                     currentActiveCard.classList.remove('active');
+                    const currentActivePanel = document.getElementById(currentActiveCard.dataset.target);
                     currentActivePanel.classList.remove('active');
+                }
 
-                    // 2. Adiciona o estado ativo ao novo cartão e painel
-                    card.classList.add('active');
-                    const newPanelId = card.dataset.target;
-                    document.getElementById(newPanelId).classList.add('active');
+                card.classList.add('active');
+                document.getElementById(card.dataset.target).classList.add('active');
 
-                    // 3. Anima e atualiza o conteúdo de texto
-                    contentContainer.classList.add('fade-out');
-                    
-                    setTimeout(() => {
-                        contentTitle.textContent = card.dataset.title;
-                        contentDescription.textContent = card.dataset.description;
-                        contentContainer.classList.remove('fade-out');
-                    }, 300); // Deve ser um pouco menor que a transição do CSS
+                contentContainer.classList.add('fade-out');
+                setTimeout(() => {
+                    contentTitle.textContent = card.dataset.title;
+                    contentDescription.textContent = card.dataset.description;
+                    contentContainer.classList.remove('fade-out');
+                }, 300);
+            }
 
-                    // 4. (Bônus) Move o cartão ativo para o início da lista
-                    carousel.prepend(card);
+            // Função para iniciar o loop no mobile
+            function startCarouselLoop() {
+                stopCarouselLoop(); // Garante que não haja loops duplicados
+                carouselInterval = setInterval(() => {
+                    currentIndex = (currentIndex + 1) % cards.length;
+                    const nextCard = cards[currentIndex];
+                    changeContent(nextCard);
+                    // Rola o carrossel para manter o item ativo visível
+                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }, 4000); // Muda a cada 4 segundos
+            }
+
+            // Função para parar o loop
+            function stopCarouselLoop() {
+                clearInterval(carouselInterval);
+            }
+
+            // Adiciona o evento de clique a cada cartão
+            cards.forEach((card, index) => {
+                card.addEventListener('click', () => {
+                    currentIndex = index; // Atualiza o índice para o cartão clicado
+                    changeContent(card);
+                    // Se estiver no modo mobile, reinicia o timer do loop
+                    if (window.matchMedia("(max-width: 768px)").matches) {
+                        startCarouselLoop();
+                    }
                 });
             });
+
+            // Verifica o tamanho da tela para iniciar/parar o loop
+            const mediaQuery = window.matchMedia("(max-width: 768px)");
+            function handleScreenChange(e) {
+                if (e.matches) {
+                    // Tela pequena: inicia o loop
+                    startCarouselLoop();
+                } else {
+                    // Tela grande: para o loop
+                    stopCarouselLoop();
+                }
+            }
+            
+            mediaQuery.addEventListener('change', handleScreenChange); // Ouve mudanças no tamanho da tela
+            handleScreenChange(mediaQuery); // Executa na primeira vez que a página carrega
         });
     </script>
 
