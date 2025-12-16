@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página Interativa de Destinos</title>
+    <title>Catálogo Interativo</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
@@ -38,20 +38,35 @@
             left: 0;
             width: 100%;
             height: 100%;
+            background-size: cover;
+            background-position: center;
             opacity: 0;
             transition: opacity var(--transition-speed-slow) ease-in-out;
             z-index: 1;
         }
 
+        /* Sobreposição para garantir a legibilidade do texto */
+        .background-panels .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3); 
+            z-index: -1; /* Fica entre o painel e a imagem */
+        }
+
+
         .background-panels .panel.active {
             opacity: 1;
         }
 
-        /* Cores de fundo para simular as imagens */
-        #panel-1 { background: linear-gradient(45deg, #00467F, #A5CC82); }
-        #panel-2 { background: linear-gradient(45deg, #8E2DE2, #4A00E0); }
-        #panel-3 { background: linear-gradient(45deg, #ff416c, #ff4b2b); }
-        #panel-4 { background: linear-gradient(45deg, #11998e, #38ef7d); }
+        /* Imagens de fundo */
+        #panel-1 { background-image: url('conjunto.png'); }
+        #panel-2 { background-image: url('conjuntoescuro.png'); }
+        #panel-3 { background-image: url('jaquetaverde.png'); }
+        #panel-4 { background-image: url('homem.png'); }
 
         /* --- 3. Conteúdo de Texto --- */
         .content {
@@ -100,16 +115,10 @@
             height: 180px;
             border-radius: 12px;
             border: 3px solid rgba(255, 255, 255, 0.2);
-            background-color: rgba(0, 0, 0, 0.3);
             background-size: cover;
             background-position: center;
             cursor: pointer;
             transition: transform var(--transition-speed-fast) ease, border-color var(--transition-speed-fast) ease;
-            display: flex;
-            align-items: flex-end;
-            padding: 10px;
-            font-weight: bold;
-            text-shadow: 1px 1px 3px black;
         }
 
         .card:hover {
@@ -136,35 +145,35 @@
 
         <!-- CONTEÚDO PRINCIPAL (TEXTO) -->
         <div class="content">
-            <h1 id="content-title">Alpes Suíços</h1>
-            <p id="content-description">Descubra a beleza imponente dos picos nevados e vales verdejantes, um paraíso para aventureiros e amantes da natureza.</p>
+            <h1 id="content-title">Coleção Urbana</h1>
+            <p id="content-description">Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.</p>
         </div>
 
         <!-- CARROSSEL DE CARTÕES -->
         <div class="card-carousel">
-            <div class="card active" 
+            <div class="card active"
+                 style="background-image: url('conjunto.png');"
                  data-target="panel-1" 
-                 data-title="Alpes Suíços" 
-                 data-description="Descubra a beleza imponente dos picos nevados e vales verdejantes, um paraíso para aventureiros e amantes da natureza.">
-                 Suíça
+                 data-title="Coleção Urbana" 
+                 data-description="Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.">
             </div>
-            <div class="card" 
+            <div class="card"
+                 style="background-image: url('conjuntoescuro.png');"
                  data-target="panel-2" 
-                 data-title="Kyoto Imperial" 
-                 data-description="Viaje no tempo através de templos serenos, jardins místicos e a rica herança cultural da antiga capital do Japão.">
-                 Japão
+                 data-title="Estilo Noturno" 
+                 data-description="Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe.">
             </div>
-            <div class="card" 
+            <div class="card"
+                 style="background-image: url('jaquetaverde.png');"
                  data-target="panel-3" 
-                 data-title="Costa Amalfitana" 
-                 data-description="Perca-se nas vilas coloridas suspensas sobre o mar azul-turquesa. Uma joia italiana de tirar o fôlego.">
-                 Itália
+                 data-title="Aventura Casual" 
+                 data-description="Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda.">
             </div>
-            <div class="card" 
+            <div class="card"
+                 style="background-image: url('homem.png');"
                  data-target="panel-4" 
-                 data-title="Florestas da Amazônia" 
-                 data-description="Explore a maior floresta tropical do mundo, um santuário de biodiversidade e vida selvagem exuberante.">
-                 Brasil
+                 data-title="Clássico Atemporal" 
+                 data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.">
             </div>
         </div>
 
