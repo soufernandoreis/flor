@@ -3,203 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo - Layout Sólido</title>
+    <title>Catálogo Interativo v2</title>
     <style>
-        /* --- 1. TRAVA DEFINITIVA DA PÁGINA "SOLTA" --- */
-        html, body {
-            height: 100%;
-            width: 100%;
-            overflow: hidden; /* Desabilita TODO o scroll na janela principal */
-            position: fixed; /* Trava a janela no lugar */
-            -webkit-font-smoothing: antialiased;
+        /* --- 1. Configuração Geral e Reset --- */
+        :root {
+            --transition-speed-fast: 0.5s;
+            --transition-speed-slow: 0.8s;
         }
 
-        /* --- 2. NOSSA NOVA ÁREA DE SCROLL CONTROLADA --- */
-        .scroll-wrapper {
-            width: 100%;
-            height: 100%;
-            overflow-y: auto; /* Apenas este elemento pode rolar verticalmente */
-            overflow-x: hidden;
-            background-color: #121212;
-            color: white;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overscroll-behavior-y: contain; /* Segurança extra contra o efeito elástico */
-            scroll-behavior: smooth;
+            height: 100vh;
+            overflow: hidden; /* Previne barras de rolagem */
+            color: white;
+            background-color: #121212;
         }
 
-        /* --- 3. CONTAINER PRINCIPAL (TELA CHEIA) --- */
+        /* --- 2. Container Principal e Painéis de Fundo --- */
         .main-container {
             position: relative;
             width: 100%;
-            height: 100vh; /* Ocupa exatamente a primeira tela */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
+            height: 100%;
         }
 
         .background-panels .panel {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-size: cover; background-position: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
             opacity: 0;
-            transition: opacity 0.8s ease-in-out;
+            transition: opacity var(--transition-speed-slow) ease-in-out;
             z-index: 1;
         }
 
         .background-panels .panel::before {
-            content: ''; position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
             z-index: 2;
         }
 
-        .background-panels .panel.active { opacity: 1; }
+
+        .background-panels .panel.active {
+            opacity: 1;
+        }
+
         #panel-1 { background-image: url('conjunto.png'); }
         #panel-2 { background-image: url('conjuntoescuro.png'); }
         #panel-3 { background-image: url('jaquetaverde.png'); }
         #panel-4 { background-image: url('homem.png'); }
 
+        /* --- 3. Conteúdo de Texto --- */
         .content {
-            position: absolute; top: 40%; left: 10%;
+            position: absolute;
+            top: 50%;
+            left: 10%;
             transform: translateY(-50%);
-            z-index: 3; max-width: 450px;
+            z-index: 3;
+            max-width: 450px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .content.fade-out {
+            opacity: 0;
+            transform: translateY(-60%);
         }
 
         .content h1 {
-            font-size: 4rem; text-transform: uppercase;
+            font-size: 4rem;
+            text-transform: uppercase;
             letter-spacing: 2px;
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
         }
 
         .content p {
-            font-size: 1rem; line-height: 1.6; margin-top: 1rem;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-top: 1rem;
             text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
         }
 
-        .footer-carousel {
-            position: absolute; bottom: 5vh; left: 0;
-            width: 100%; z-index: 4;
-        }
-
+        /* --- 4. Carrossel e Cartões --- */
         .card-carousel {
-            display: flex; gap: 15px; perspective: 1000px;
-            width: 100%; padding: 0 5vw;
-            overflow-x: auto;
+            position: absolute;
+            bottom: 5vh;
+            right: 5vw;
+            display: flex;
+            gap: 15px;
+            z-index: 4;
+            perspective: 1000px;
         }
-
-        .card-carousel::-webkit-scrollbar { display: none; }
-        .card-carousel { -ms-overflow-style: none; scrollbar-width: none; }
 
         .card {
-            width: 120px; height: 180px; border-radius: 12px;
+            width: 120px;
+            height: 180px;
+            border-radius: 12px;
             border: 3px solid rgba(255, 255, 255, 0.2);
-            background-size: cover; background-position: center;
+            background-size: cover;
+            background-position: center;
             cursor: pointer;
-            transition: transform 0.5s ease, border-color 0.5s ease;
-            flex-shrink: 0;
+            transition: transform var(--transition-speed-fast) ease, border-color var(--transition-speed-fast) ease;
+            flex-shrink: 0; /* Impede que os cartões encolham */
         }
 
-        .card:not(.active):hover { transform: scale(1.05) translateZ(20px); }
+        /* Animação de hover para cartões NÃO ativos */
+        .card:not(.active):hover {
+             transform: scale(1.05) translateZ(20px);
+        }
+        
+        /* Estado base do cartão ativo */
         .card.active {
             border-color: rgba(255, 255, 255, 0.9);
             transform: scale(1.1) translateZ(40px);
         }
-        .card.active:hover { transform: scale(1.15) translateZ(50px); }
         
-        /* --- 4. NOVA SEÇÃO DE BOTÕES --- */
-        .buttons-section {
-            background-color: #121212;
-            padding: 50px 20px; /* Espaçamento generoso */
-            display: flex;
-            justify-content: center;
+        /* Animação de hover para o cartão que JÁ ESTÁ ativo */
+        .card.active:hover {
+            transform: scale(1.15) translateZ(50px);
         }
-
-        .action-buttons {
-            display: flex; justify-content: center;
-            flex-wrap: wrap; gap: 15px;
-            max-width: 800px; /* Limita a largura dos botões em telas grandes */
-        }
-
-        .btn {
-            display: inline-block; padding: 12px 24px;
-            border: 2px solid rgba(255, 255, 255, 0.8);
-            border-radius: 50px;
-            background-color: rgba(0, 0, 0, 0.4);
-            color: white; text-decoration: none;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            background-color: white; color: black;
-            transform: translateY(-2px);
-        }
-
+        
         /* --- 5. Estilos para Mobile --- */
         @media (max-width: 768px) {
             .content {
-                top: 5vh; left: 5vw; right: 5vw;
+                top: 5vh;
+                left: 5vw;
+                right: 5vw;
                 transform: translateY(0);
+                max-width: 100%;
                 text-align: center;
             }
-            .content h1 { font-size: 2.5rem; }
-            .content p { font-size: 0.9rem; }
-            .footer-carousel {
-                position: absolute;
-                bottom: 3vh;
+            .content h1 {
+                font-size: 2.5rem;
+            }
+            .content p {
+                font-size: 0.9rem;
+            }
+            .card-carousel {
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                padding: 20px;
+                justify-content: flex-start; /* Alinha os cards à esquerda */
+                overflow-x: auto; /* Permite scroll horizontal */
+                -webkit-overflow-scrolling: touch; /* Melhora o scroll em iOS */
+            }
+            /* Esconde a barra de scroll */
+            .card-carousel::-webkit-scrollbar {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="scroll-wrapper">
-        <main class="main-container">
-            <div class="background-panels">
-                <div class="panel active" id="panel-1"></div>
-                <div class="panel" id="panel-2"></div>
-                <div class="panel" id="panel-3"></div>
-                <div class="panel" id="panel-4"></div>
-            </div>
+    <main class="main-container">
+        <div class="background-panels">
+            <div class="panel active" id="panel-1"></div>
+            <div class="panel" id="panel-2"></div>
+            <div class="panel" id="panel-3"></div>
+            <div class="panel" id="panel-4"></div>
+        </div>
 
-            <div class="content">
-                <h1 id="content-title">Coleção Urbana</h1>
-                <p id="content-description">Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.</p>
-            </div>
+        <div class="content">
+            <h1 id="content-title">Coleção Urbana</h1>
+            <p id="content-description">Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.</p>
+        </div>
 
-            <div class="footer-carousel">
-                <div class="card-carousel">
-                    <div class="card active"
-                         style="background-image: url('conjunto.png');"
-                         data-target="panel-1" data-title="Coleção Urbana" data-description="Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.">
-                    </div>
-                    <div class="card"
-                         style="background-image: url('conjuntoescuro.png');"
-                         data-target="panel-2" data-title="Estilo Noturno" data-description="Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe.">
-                    </div>
-                    <div class="card"
-                         style="background-image: url('jaquetaverde.png');"
-                         data-target="panel-3" data-title="Aventura Casual" data-description="Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda.">
-                    </div>
-                    <div class="card"
-                         style="background-image: url('homem.png');"
-                         data-target="panel-4" data-title="Clássico Atemporal" data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.">
-                    </div>
-                </div>
+        <div class="card-carousel">
+            <div class="card active"
+                 style="background-image: url('conjunto.png');"
+                 data-target="panel-1" 
+                 data-title="Coleção Urbana" 
+                 data-description="Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.">
             </div>
-        </main>
-
-        <section class="buttons-section">
-            <div class="action-buttons">
-                <a href="#" class="btn">Vendedora</a>
-                <a href="#" class="btn">Vendedora</a>
-                <a href="#" class="btn">Vendedora</a>
-                <a href="#" class="btn">Grupo de Oferta</a>
-                <a href="#" class="btn">Compra no Site</a>
+            <div class="card"
+                 style="background-image: url('conjuntoescuro.png');"
+                 data-target="panel-2" 
+                 data-title="Estilo Noturno" 
+                 data-description="Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe.">
             </div>
-        </section>
-    </div>
+            <div class="card"
+                 style="background-image: url('jaquetaverde.png');"
+                 data-target="panel-3" 
+                 data-title="Aventura Casual" 
+                 data-description="Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda.">
+            </div>
+            <div class="card"
+                 style="background-image: url('homem.png');"
+                 data-target="panel-4" 
+                 data-title="Clássico Atemporal" 
+                 data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.">
+            </div>
+        </div>
+    </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -208,9 +218,10 @@
             const contentTitle = document.getElementById('content-title');
             const contentDescription = document.getElementById('content-description');
             
-            let carouselInterval = null;
-            let currentIndex = 0;
+            let carouselInterval = null; // Variável para controlar o loop
+            let currentIndex = 0; // Índice do item atual no loop
 
+            // Função para mudar o conteúdo
             function changeContent(card) {
                 if (card.classList.contains('active')) return;
 
@@ -232,41 +243,49 @@
                 }, 300);
             }
 
+            // Função para iniciar o loop no mobile
             function startCarouselLoop() {
-                stopCarouselLoop();
+                stopCarouselLoop(); // Garante que não haja loops duplicados
                 carouselInterval = setInterval(() => {
                     currentIndex = (currentIndex + 1) % cards.length;
                     const nextCard = cards[currentIndex];
                     changeContent(nextCard);
+                    // Rola o carrossel para manter o item ativo visível
                     nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                }, 4000);
+                }, 4000); // Muda a cada 4 segundos
             }
 
+            // Função para parar o loop
             function stopCarouselLoop() {
                 clearInterval(carouselInterval);
             }
 
+            // Adiciona o evento de clique a cada cartão
             cards.forEach((card, index) => {
                 card.addEventListener('click', () => {
-                    currentIndex = index;
+                    currentIndex = index; // Atualiza o índice para o cartão clicado
                     changeContent(card);
+                    // Se estiver no modo mobile, reinicia o timer do loop
                     if (window.matchMedia("(max-width: 768px)").matches) {
                         startCarouselLoop();
                     }
                 });
             });
 
+            // Verifica o tamanho da tela para iniciar/parar o loop
             const mediaQuery = window.matchMedia("(max-width: 768px)");
             function handleScreenChange(e) {
                 if (e.matches) {
+                    // Tela pequena: inicia o loop
                     startCarouselLoop();
                 } else {
+                    // Tela grande: para o loop
                     stopCarouselLoop();
                 }
             }
             
-            mediaQuery.addEventListener('change', handleScreenChange);
-            handleScreenChange(mediaQuery);
+            mediaQuery.addEventListener('change', handleScreenChange); // Ouve mudanças no tamanho da tela
+            handleScreenChange(mediaQuery); // Executa na primeira vez que a página carrega
         });
     </script>
 
