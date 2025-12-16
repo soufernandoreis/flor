@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo v4 - Loop Infinito Corrigido</title>
+    <title>Catálogo Interativo v2</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
@@ -20,7 +20,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             height: 100vh;
-            overflow: hidden;
+            overflow: hidden; /* Previne barras de rolagem */
             color: white;
             background-color: #121212;
         }
@@ -56,6 +56,7 @@
             z-index: 2;
         }
 
+
         .background-panels .panel.active {
             opacity: 1;
         }
@@ -84,10 +85,12 @@
         .content h1 {
             font-size: 4rem;
             text-transform: uppercase;
+            letter-spacing: 2px;
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
         }
 
         .content p {
+            font-size: 1rem;
             line-height: 1.6;
             margin-top: 1rem;
             text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
@@ -113,18 +116,21 @@
             background-position: center;
             cursor: pointer;
             transition: transform var(--transition-speed-fast) ease, border-color var(--transition-speed-fast) ease;
-            flex-shrink: 0;
+            flex-shrink: 0; /* Impede que os cartões encolham */
         }
-        
+
+        /* Animação de hover para cartões NÃO ativos */
         .card:not(.active):hover {
              transform: scale(1.05) translateZ(20px);
         }
         
+        /* Estado base do cartão ativo */
         .card.active {
             border-color: rgba(255, 255, 255, 0.9);
             transform: scale(1.1) translateZ(40px);
         }
         
+        /* Animação de hover para o cartão que JÁ ESTÁ ativo */
         .card.active:hover {
             transform: scale(1.15) translateZ(50px);
         }
@@ -132,31 +138,33 @@
         /* --- 5. Estilos para Mobile --- */
         @media (max-width: 768px) {
             .content {
-                top: 5vh; left: 5vw; right: 5vw;
+                top: 5vh;
+                left: 5vw;
+                right: 5vw;
                 transform: translateY(0);
                 max-width: 100%;
                 text-align: center;
             }
-            .content h1 { font-size: 2.5rem; }
-            .content p { font-size: 0.9rem; }
-
+            .content h1 {
+                font-size: 2.5rem;
+            }
+            .content p {
+                font-size: 0.9rem;
+            }
             .card-carousel {
-                bottom: 0; left: 0; right: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
                 width: 100%;
-                padding: 20px 0;
-                justify-content: flex-start;
-                overflow-x: auto;
-                scroll-snap-type: x mandatory;
-                scroll-behavior: smooth; /* Animação suave no scroll */
+                padding: 20px;
+                justify-content: flex-start; /* Alinha os cards à esquerda */
+                overflow-x: auto; /* Permite scroll horizontal */
+                -webkit-overflow-scrolling: touch; /* Melhora o scroll em iOS */
             }
-            .card {
-                scroll-snap-align: center;
-                /* Adiciona margem para centralizar o primeiro/último item */
+            /* Esconde a barra de scroll */
+            .card-carousel::-webkit-scrollbar {
+                display: none;
             }
-            .card:first-child { margin-left: calc(50% - 60px); }
-            .card:last-child { margin-right: calc(50% - 60px); }
-            
-            .card-carousel::-webkit-scrollbar { display: none; }
         }
     </style>
 </head>
@@ -178,123 +186,106 @@
         <div class="card-carousel">
             <div class="card active"
                  style="background-image: url('conjunto.png');"
-                 data-id="1" data-target="panel-1" data-title="Coleção Urbana" data-description="Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões."></div>
+                 data-target="panel-1" 
+                 data-title="Coleção Urbana" 
+                 data-description="Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.">
+            </div>
             <div class="card"
                  style="background-image: url('conjuntoescuro.png');"
-                 data-id="2" data-target="panel-2" data-title="Estilo Noturno" data-description="Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe."></div>
+                 data-target="panel-2" 
+                 data-title="Estilo Noturno" 
+                 data-description="Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe.">
+            </div>
             <div class="card"
                  style="background-image: url('jaquetaverde.png');"
-                 data-id="3" data-target="panel-3" data-title="Aventura Casual" data-description="Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda."></div>
+                 data-target="panel-3" 
+                 data-title="Aventura Casual" 
+                 data-description="Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda.">
+            </div>
             <div class="card"
                  style="background-image: url('homem.png');"
-                 data-id="4" data-target="panel-4" data-title="Clássico Atemporal" data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa."></div>
+                 data-target="panel-4" 
+                 data-title="Clássico Atemporal" 
+                 data-description="O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.">
+            </div>
         </div>
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const carousel = document.querySelector('.card-carousel');
+            const cards = document.querySelectorAll('.card');
             const contentContainer = document.querySelector('.content');
             const contentTitle = document.getElementById('content-title');
             const contentDescription = document.getElementById('content-description');
             
-            // Função central para ATUALIZAR A INTERFACE. É a única fonte da verdade.
-            function changeActiveContent(targetCard) {
-                if (!targetCard || targetCard.classList.contains('active')) return;
+            let carouselInterval = null; // Variável para controlar o loop
+            let currentIndex = 0; // Índice do item atual no loop
 
-                // Remove o estado ativo de qualquer card ou painel que o tenha
-                carousel.querySelector('.card.active')?.classList.remove('active');
-                document.querySelector('.panel.active')?.classList.remove('active');
-                
-                // Aplica o estado ativo ao novo alvo
-                targetCard.classList.add('active');
-                document.getElementById(targetCard.dataset.target).classList.add('active');
+            // Função para mudar o conteúdo
+            function changeContent(card) {
+                if (card.classList.contains('active')) return;
 
-                // Anima e atualiza o texto
+                const currentActiveCard = document.querySelector('.card.active');
+                if (currentActiveCard) {
+                    currentActiveCard.classList.remove('active');
+                    const currentActivePanel = document.getElementById(currentActiveCard.dataset.target);
+                    currentActivePanel.classList.remove('active');
+                }
+
+                card.classList.add('active');
+                document.getElementById(card.dataset.target).classList.add('active');
+
                 contentContainer.classList.add('fade-out');
                 setTimeout(() => {
-                    contentTitle.textContent = targetCard.dataset.title;
-                    contentDescription.textContent = targetCard.dataset.description;
+                    contentTitle.textContent = card.dataset.title;
+                    contentDescription.textContent = card.dataset.description;
                     contentContainer.classList.remove('fade-out');
                 }, 300);
             }
 
-            // Função para configurar o loop infinito no mobile
-            function setupMobileInfiniteLoop() {
-                const cards = Array.from(carousel.children);
-                const firstCardClone = cards[0].cloneNode(true);
-                const lastCardClone = cards[cards.length - 1].cloneNode(true);
-                
-                // Adiciona identificadores para sabermos que são clones
-                firstCardClone.setAttribute('data-is-clone', 'true');
-                lastCardClone.setAttribute('data-is-clone', 'true');
-
-                carousel.appendChild(firstCardClone);
-                carousel.insertBefore(lastCardClone, cards[0]);
-
-                // Esconde a transição de scroll para o salto ser invisível
-                carousel.style.scrollBehavior = 'auto';
-                // Posição inicial no primeiro card *original*
-                carousel.querySelector('.card:not([data-is-clone])').scrollIntoView({ inline: 'center' });
-                // Restaura a transição suave para o usuário
-                carousel.style.scrollBehavior = 'smooth';
-
-
-                let isScrolling;
-                carousel.addEventListener('scroll', () => {
-                    // Limpa o timeout anterior para detectar o fim do scroll
-                    window.clearTimeout(isScrolling);
-                    isScrolling = setTimeout(() => {
-                        const scrollLeft = carousel.scrollLeft;
-                        const scrollWidth = carousel.scrollWidth;
-                        const clientWidth = carousel.clientWidth;
-
-                        // Se o scroll chegou perto do final (onde está o clone do primeiro)
-                        if (scrollLeft >= scrollWidth - clientWidth - 1) {
-                            carousel.style.scrollBehavior = 'auto';
-                            carousel.querySelector('.card:not([data-is-clone])').scrollIntoView({ inline: 'center' });
-                            carousel.style.scrollBehavior = 'smooth';
-                        }
-                        // Se o scroll chegou perto do começo (onde está o clone do último)
-                        else if (scrollLeft <= 1) {
-                            carousel.style.scrollBehavior = 'auto';
-                             // Encontra o último card original
-                            const originalCards = carousel.querySelectorAll('.card:not([data-is-clone])');
-                            originalCards[originalCards.length - 1].scrollIntoView({ inline: 'center' });
-                            carousel.style.scrollBehavior = 'smooth';
-                        }
-                    }, 150); // Timeout para detectar o fim do scroll
-                });
+            // Função para iniciar o loop no mobile
+            function startCarouselLoop() {
+                stopCarouselLoop(); // Garante que não haja loops duplicados
+                carouselInterval = setInterval(() => {
+                    currentIndex = (currentIndex + 1) % cards.length;
+                    const nextCard = cards[currentIndex];
+                    changeContent(nextCard);
+                    // Rola o carrossel para manter o item ativo visível
+                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }, 4000); // Muda a cada 4 segundos
             }
 
-            // --- LÓGICA PRINCIPAL ---
+            // Função para parar o loop
+            function stopCarouselLoop() {
+                clearInterval(carouselInterval);
+            }
 
+            // Adiciona o evento de clique a cada cartão
+            cards.forEach((card, index) => {
+                card.addEventListener('click', () => {
+                    currentIndex = index; // Atualiza o índice para o cartão clicado
+                    changeContent(card);
+                    // Se estiver no modo mobile, reinicia o timer do loop
+                    if (window.matchMedia("(max-width: 768px)").matches) {
+                        startCarouselLoop();
+                    }
+                });
+            });
+
+            // Verifica o tamanho da tela para iniciar/parar o loop
             const mediaQuery = window.matchMedia("(max-width: 768px)");
-            if (mediaQuery.matches) {
-                setupMobileInfiniteLoop();
-
-                // No mobile, a mudança acontece por observação do card central
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            changeActiveContent(entry.target);
-                        }
-                    });
-                }, { root: carousel, threshold: 0.5 });
-                
-                carousel.querySelectorAll('.card').forEach(card => observer.observe(card));
+            function handleScreenChange(e) {
+                if (e.matches) {
+                    // Tela pequena: inicia o loop
+                    startCarouselLoop();
+                } else {
+                    // Tela grande: para o loop
+                    stopCarouselLoop();
+                }
             }
             
-            // O evento de clique é adicionado a TODOS os cards, para ambas as visualizações
-            // Usamos a delegação de eventos para funcionar também com os clones
-            carousel.addEventListener('click', (event) => {
-                const clickedCard = event.target.closest('.card');
-                if (clickedCard) {
-                    // Centraliza o card clicado com animação
-                    clickedCard.scrollIntoView({ behavior: 'smooth', inline: 'center' });
-                    // A mudança de conteúdo será feita pelo IntersectionObserver ao final do scroll
-                }
-            });
+            mediaQuery.addEventListener('change', handleScreenChange); // Ouve mudanças no tamanho da tela
+            handleScreenChange(mediaQuery); // Executa na primeira vez que a página carrega
         });
     </script>
 
