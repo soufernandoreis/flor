@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo v3</title>
+    <title>Catálogo Interativo v4</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
@@ -100,8 +100,8 @@
         .action-buttons {
             margin-top: 2rem;
             display: flex;
-            flex-wrap: wrap; /* Permite que os botões quebrem linha */
-            gap: 10px; /* Espaçamento entre os botões */
+            flex-wrap: wrap; 
+            gap: 10px;
         }
 
         .btn {
@@ -114,7 +114,7 @@
             text-decoration: none;
             text-align: center;
             font-weight: 500;
-            backdrop-filter: blur(5px); /* Efeito de vidro fosco */
+            backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
@@ -123,17 +123,26 @@
             background-color: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px);
         }
+
+        /* --- 5. Logo da Marca --- */
+        .brand-logo {
+            max-width: 120px; /* Define um tamanho máximo para a logo */
+            margin-top: 2rem; /* Espaçamento acima da logo */
+        }
         
-        /* --- 5. Estilos para Mobile --- */
+        /* --- 6. Estilos para Mobile --- */
         @media (max-width: 768px) {
             .content {
-                top: 10vh; /* Sobe um pouco o conteúdo */
+                top: 5vh; /* Ajusta a posição para dar mais espaço */
                 left: 5vw;
                 right: 5vw;
                 transform: translateY(0);
                 width: 90%;
                 max-width: 90%;
                 text-align: center;
+                display: flex; /* Adicionado para facilitar o centramento */
+                flex-direction: column; /* Organiza os itens em coluna */
+                align-items: center; /* Centraliza tudo horizontalmente */
             }
             .content h1 {
                 font-size: 2.5rem;
@@ -142,7 +151,7 @@
                 font-size: 0.9rem;
             }
             .action-buttons {
-                justify-content: center; /* Centraliza os botões */
+                justify-content: center;
             }
         }
     </style>
@@ -161,12 +170,13 @@
             <h1 id="content-title"></h1>
             <p id="content-description"></p>
             <div class="action-buttons">
-                <!-- Use os links corretos para o seu negócio -->
                 <a href="#" class="btn">Vendedora 1</a>
                 <a href="#" class="btn">Vendedora 2</a>
                 <a href="#" class="btn">Grupo VIP</a>
                 <a href="#" class="btn">Compras no Site</a>
             </div>
+            <!-- Imagem adicionada aqui -->
+            <img src="brother.png" alt="Logo da Marca" class="brand-logo">
         </div>
     </main>
 
@@ -177,7 +187,6 @@
             const contentDescription = document.getElementById('content-description');
             const panels = document.querySelectorAll('.panel');
 
-            // Armazena os dados que antes estavam nos cartões
             const slidesData = [
                 {
                     target: 'panel-1', 
@@ -205,23 +214,17 @@
 
             function showSlide(index) {
                 const slide = slidesData[index];
-
-                // Efeito de fade-out no texto
                 contentContainer.classList.add('fade-out');
 
                 setTimeout(() => {
-                    // Atualiza o texto
                     contentTitle.textContent = slide.title;
                     contentDescription.textContent = slide.description;
                     
-                    // Remove a classe 'active' de todos os painéis
                     panels.forEach(p => p.classList.remove('active'));
-                    // Adiciona a classe 'active' ao painel correto
                     document.getElementById(slide.target).classList.add('active');
 
-                    // Efeito de fade-in no texto
                     contentContainer.classList.remove('fade-out');
-                }, 300); // Deve corresponder ao tempo da transição no CSS
+                }, 300);
             }
 
             function nextSlide() {
@@ -229,11 +232,8 @@
                 showSlide(currentIndex);
             }
 
-            // Inicia o conteúdo com o primeiro slide
             showSlide(0);
-
-            // Inicia a transição automática
-            setInterval(nextSlide, 5000); // Muda a cada 5 segundos
+            setInterval(nextSlide, 5000);
         });
     </script>
 
