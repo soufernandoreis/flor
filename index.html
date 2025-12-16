@@ -1,530 +1,219 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Magic Slider</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Interativa de Destinos</title>
+    <style>
+        /* --- 1. Configuração Geral e Reset --- */
+        :root {
+            --transition-speed-fast: 0.5s;
+            --transition-speed-slow: 0.8s;
+        }
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <style>
-    :root{
-      --bg: #0b0f14;
-      --text: #eaf0ff;
-      --muted: rgba(234,240,255,.75);
-      --stroke: rgba(255,255,255,.12);
-      --overlay: radial-gradient(1200px 600px at 20% 45%, rgba(0,0,0,.10), rgba(0,0,0,.55));
-      --ease: cubic-bezier(.22,.61,.36,1);
-      --dur: 650ms;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden; /* Previne barras de rolagem */
+            color: white;
+            background-color: #121212;
+        }
 
-      /* Efeito novo (zoom-in): começa menor e cresce */
-      --zoomStart: .965;
-    }
+        /* --- 2. Container Principal e Painéis de Fundo --- */
+        .main-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      overflow:hidden;
-    }
+        .background-panels .panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity var(--transition-speed-slow) ease-in-out;
+            z-index: 1;
+        }
 
-    header.topbar{
-      position:fixed;
-      inset:0 0 auto 0;
-      z-index:50;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:18px 28px;
-      background: linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,0));
-    }
-    .brand{
-      font-weight:700;
-      letter-spacing:.5px;
-      text-transform:lowercase;
-      opacity:.9;
-    }
-    .menu{ display:flex; gap:18px; }
-    .menu a{
-      color: var(--text);
-      text-decoration:none;
-      font-size:14px;
-      opacity:.85;
-    }
-    .menu a:hover{ opacity:1; }
+        .background-panels .panel.active {
+            opacity: 1;
+        }
 
-    main.slider{
-      position:relative;
-      height:100vh;
-      overflow:hidden;
-    }
+        /* Cores de fundo para simular as imagens */
+        #panel-1 { background: linear-gradient(45deg, #00467F, #A5CC82); }
+        #panel-2 { background: linear-gradient(45deg, #8E2DE2, #4A00E0); }
+        #panel-3 { background: linear-gradient(45deg, #ff416c, #ff4b2b); }
+        #panel-4 { background: linear-gradient(45deg, #11998e, #38ef7d); }
 
-    /* ===== FUNDO: 2 <img> fixas (estável, sem flicker) ===== */
-    .bgstack{
-      position:absolute;
-      inset:0;
-      z-index:0;
-      overflow:hidden;
-    }
-    .bgstack::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background: var(--overlay);
-      z-index:5;
-      pointer-events:none;
-    }
+        /* --- 3. Conteúdo de Texto --- */
+        .content {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            transform: translateY(-50%);
+            z-index: 2;
+            max-width: 450px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        /* Classe para animar a troca de texto */
+        .content.fade-out {
+            opacity: 0;
+            transform: translateY(-60%);
+        }
 
-    .bgimg{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      opacity:0;
-      transform: translateZ(0) scale(1);
-      will-change: opacity, transform;
-      backface-visibility:hidden;
-    }
+        .content h1 {
+            font-size: 4rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+        }
 
-    .bgimg.is-current{
-      opacity:1;
-      transform: translateZ(0) scale(1);
-    }
-    .bgimg.is-next{
-      opacity:0;
-      transform: translateZ(0) scale(var(--zoomStart)); /* começa menor */
-    }
+        .content p {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-top: 1rem;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+        }
 
-    .bgstack.is-animating .bgimg.is-next{
-      opacity:1;
-      transform: translateZ(0) scale(1);
-      transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
-    }
-    .bgstack.is-animating .bgimg.is-current{
-      opacity:0;
-      transform: translateZ(0) scale(1.01);
-      transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
-    }
+        /* --- 4. Carrossel e Cartões --- */
+        .card-carousel {
+            position: absolute;
+            bottom: 5vh;
+            right: 5vw;
+            display: flex;
+            gap: 15px;
+            z-index: 3;
+            perspective: 1000px; /* Ativa o ambiente 3D para os cartões filhos */
+        }
 
-    /* ===== SLIDES (conteúdo) ===== */
-    .list{ position:absolute; inset:0; z-index:10; }
-    .item{
-      position:absolute;
-      inset:0;
-      opacity:0;
-      transition: opacity .25s ease;
-    }
-    .item.is-active{ opacity:1; }
+        .card {
+            width: 120px;
+            height: 180px;
+            border-radius: 12px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(0, 0, 0, 0.3);
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            transition: transform var(--transition-speed-fast) ease, border-color var(--transition-speed-fast) ease;
+            display: flex;
+            align-items: flex-end;
+            padding: 10px;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px black;
+        }
 
-    /* UI sempre acima */
-    .content{
-      position:absolute;
-      left:70px;
-      top:50%;
-      transform:translateY(-50%);
-      width:min(520px, 85vw);
-      z-index:30;
-    }
-    .tag{
-      display:inline-block;
-      padding:6px 10px;
-      border-radius:10px;
-      background: rgba(0,0,0,.35);
-      border:1px solid var(--stroke);
-      font-size:12px;
-      letter-spacing:.08em;
-      margin:0 0 14px;
-      color:var(--muted);
-    }
-    .content h2{ margin:0; font-size:28px; font-weight:600; }
-    .content h1{ margin:6px 0 12px; font-size:44px; line-height:1.05; }
-    .desc{ margin:0 0 16px; color:var(--muted); font-size:14px; }
-    .btn{
-      padding:10px 14px;
-      border-radius:12px;
-      border:1px solid var(--stroke);
-      background: rgba(0,0,0,.35);
-      color: var(--text);
-      cursor:pointer;
-    }
-
-    .controls{
-      position:absolute;
-      left:70px;
-      bottom:120px;
-      z-index:30;
-      display:flex;
-      gap:10px;
-    }
-    .arrow{
-      width:44px;
-      height:44px;
-      border-radius:14px;
-      border:1px solid var(--stroke);
-      background: rgba(0,0,0,.35);
-      color: var(--text);
-      font-size:26px;
-      cursor:pointer;
-      user-select:none;
-    }
-
-    /* ===== THUMBS: SEM CARD ESCURO ===== */
-    .thumbnail{
-      position:absolute;
-      right:70px;
-      bottom:55px;
-      z-index:30;
-
-      /* remove faixa escura */
-      background: transparent;
-      border: 0;
-      backdrop-filter: none;
-      padding: 0;
-      border-radius: 0;
-
-      display:flex;
-      gap:12px;
-      align-items:flex-end;
-
-      max-width: calc(100vw - 140px);
-      overflow:auto;
-    }
-
-    .thumb{
-      width:110px;
-      height:70px;
-      padding:0;
-      border:0;
-      cursor:pointer;
-
-      border-radius:12px;
-      overflow:hidden;
-      outline:2px solid transparent;
-      opacity:.85;
-
-      flex:0 0 auto;
-
-      /* “solto”: cada thumb anima sozinha */
-      transform: translateX(0);
-      will-change: transform, opacity;
-      transition: opacity .2s ease, transform var(--dur) var(--ease), outline-color .2s ease;
-      box-shadow: 0 14px 32px rgba(0,0,0,.28);
-      background: rgba(255,255,255,.02);
-    }
-
-    .thumb img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .thumb.is-front{
-      opacity:1;
-      outline-color: rgba(255,255,255,.35);
-      transform: translateY(-6px);
-    }
-
-    /* durante slide: ignora o translateY do is-front e usa movimento horizontal */
-    .thumb.is-moving.is-front{
-      transform: translateY(-6px) translateX(var(--tx, 0px));
-    }
-    .thumb.is-moving:not(.is-front){
-      transform: translateX(var(--tx, 0px));
-    }
-
-    /* ====== RESPONSIVO ====== */
-    @media (max-width: 1024px){
-      header.topbar{ padding:14px 16px; }
-      .menu{ gap:12px; }
-      .content{ left:18px; width:min(520px, calc(100vw - 36px)); }
-      .controls{ left:18px; bottom:106px; }
-      .thumbnail{ left:18px; right:18px; max-width: calc(100vw - 36px); }
-      .thumb{ width:96px; height:62px; }
-      .content h2{ font-size:24px; }
-      .content h1{ font-size:38px; }
-    }
-    @media (max-width: 768px){
-      .content{
-        left:14px;
-        top:auto;
-        bottom:128px;
-        transform:none;
-        width: calc(100vw - 28px);
-      }
-      .content h2{ font-size:20px; }
-      .content h1{ font-size:30px; }
-      .desc{ font-size:13px; }
-
-      .controls{ left:14px; bottom:84px; }
-      .arrow{ width:40px; height:40px; border-radius:14px; font-size:22px; }
-
-      .thumbnail{
-        left:14px; right:14px; bottom:14px;
-        max-width: calc(100vw - 28px);
-        gap:8px;
-      }
-      .thumb{ width:76px; height:50px; border-radius:12px; }
-    }
-    @media (max-width: 420px){
-      .content h1{ font-size:28px; }
-      .thumb{ width:70px; height:46px; }
-      .controls{ bottom:80px; }
-    }
-  </style>
+        .card:hover {
+             transform: scale(1.05) translateZ(20px);
+        }
+        
+        .card.active {
+            border-color: rgba(255, 255, 255, 0.9);
+            transform: scale(1.1) translateZ(40px);
+        }
+    </style>
 </head>
-
 <body>
-  <header class="topbar">
-    <div class="brand">der fuel</div>
-    <nav class="menu">
-      <a href="#">Home</a>
-      <a href="#">About</a>
-      <a href="#">Portfolio</a>
-      <a href="#">Services</a>
-      <a href="#">Contact</a>
-    </nav>
-  </header>
 
-  <main class="slider" id="slider">
-    <div class="bgstack" id="bgstack" aria-hidden="true">
-      <img class="bgimg is-current" id="bgCurrent" alt="">
-      <img class="bgimg is-next" id="bgNext" alt="">
-    </div>
-
-    <div class="list" id="sliderList">
-      <article class="item" data-src="conjuntoescuro.png">
-        <div class="content">
-          <p class="tag">DESIGN</p>
-          <h2>Magic Slider</h2>
-          <h1>Flower</h1>
-          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-          <button class="btn">SEE MORE</button>
+    <main class="main-container">
+        
+        <!-- PAINÉIS DE FUNDO -->
+        <div class="background-panels">
+            <div class="panel active" id="panel-1"></div>
+            <div class="panel" id="panel-2"></div>
+            <div class="panel" id="panel-3"></div>
+            <div class="panel" id="panel-4"></div>
         </div>
-      </article>
 
-      <article class="item" data-src="jaquetaverde.png">
+        <!-- CONTEÚDO PRINCIPAL (TEXTO) -->
         <div class="content">
-          <p class="tag">NATURE</p>
-          <h2>Magic Slider</h2>
-          <h1>Lake</h1>
-          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-          <button class="btn">SEE MORE</button>
+            <h1 id="content-title">Alpes Suíços</h1>
+            <p id="content-description">Descubra a beleza imponente dos picos nevados e vales verdejantes, um paraíso para aventureiros e amantes da natureza.</p>
         </div>
-      </article>
 
-      <article class="item" data-src="conjuntoescuro.png">
-        <div class="content">
-          <p class="tag">TRAVEL</p>
-          <h2>Magic Slider</h2>
-          <h1>Valley</h1>
-          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-          <button class="btn">SEE MORE</button>
+        <!-- CARROSSEL DE CARTÕES -->
+        <div class="card-carousel">
+            <div class="card active" 
+                 data-target="panel-1" 
+                 data-title="Alpes Suíços" 
+                 data-description="Descubra a beleza imponente dos picos nevados e vales verdejantes, um paraíso para aventureiros e amantes da natureza.">
+                 Suíça
+            </div>
+            <div class="card" 
+                 data-target="panel-2" 
+                 data-title="Kyoto Imperial" 
+                 data-description="Viaje no tempo através de templos serenos, jardins místicos e a rica herança cultural da antiga capital do Japão.">
+                 Japão
+            </div>
+            <div class="card" 
+                 data-target="panel-3" 
+                 data-title="Costa Amalfitana" 
+                 data-description="Perca-se nas vilas coloridas suspensas sobre o mar azul-turquesa. Uma joia italiana de tirar o fôlego.">
+                 Itália
+            </div>
+            <div class="card" 
+                 data-target="panel-4" 
+                 data-title="Florestas da Amazônia" 
+                 data-description="Explore a maior floresta tropical do mundo, um santuário de biodiversidade e vida selvagem exuberante.">
+                 Brasil
+            </div>
         </div>
-      </article>
 
-      <article class="item" data-src="conjunto.png">
-        <div class="content">
-          <p class="tag">MOUNTAIN</p>
-          <h2>Magic Slider</h2>
-          <h1>Snow</h1>
-          <p class="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-          <button class="btn">SEE MORE</button>
-        </div>
-      </article>
-    </div>
+    </main>
 
-    <div class="controls">
-      <button class="arrow" id="prev" aria-label="Anterior">‹</button>
-      <button class="arrow" id="next" aria-label="Próximo">›</button>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card');
+            const carousel = document.querySelector('.card-carousel');
+            
+            const contentContainer = document.querySelector('.content');
+            const contentTitle = document.getElementById('content-title');
+            const contentDescription = document.getElementById('content-description');
 
-    <div class="thumbnail" id="thumbList" aria-label="Miniaturas">
-      <button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button>
-      <button class="thumb" type="button"><img src="jaquetaverde.png" alt=""></button>
-      <button class="thumb" type="button"><img src="conjuntoescuro.png" alt=""></button>
-      <button class="thumb" type="button"><img src="conjunto.png" alt=""></button>
-    </div>
-  </main>
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    // Impede a execução se o cartão clicado já estiver ativo
+                    if (card.classList.contains('active')) {
+                        return;
+                    }
+                    
+                    // 1. Remove o estado ativo dos elementos atuais
+                    const currentActiveCard = document.querySelector('.card.active');
+                    const currentActivePanelId = currentActiveCard.dataset.target;
+                    const currentActivePanel = document.getElementById(currentActivePanelId);
 
-  <script>
-    const sliderList = document.getElementById("sliderList");
-    const thumbList  = document.getElementById("thumbList");
-    const btnNext    = document.getElementById("next");
-    const btnPrev    = document.getElementById("prev");
+                    currentActiveCard.classList.remove('active');
+                    currentActivePanel.classList.remove('active');
 
-    const bgstack   = document.getElementById("bgstack");
-    let bgCurrentEl = document.getElementById("bgCurrent");
-    let bgNextEl    = document.getElementById("bgNext");
+                    // 2. Adiciona o estado ativo ao novo cartão e painel
+                    card.classList.add('active');
+                    const newPanelId = card.dataset.target;
+                    document.getElementById(newPanelId).classList.add('active');
 
-    let isAnimating = false;
-    const DURATION = 650;
+                    // 3. Anima e atualiza o conteúdo de texto
+                    contentContainer.classList.add('fade-out');
+                    
+                    setTimeout(() => {
+                        contentTitle.textContent = card.dataset.title;
+                        contentDescription.textContent = card.dataset.description;
+                        contentContainer.classList.remove('fade-out');
+                    }, 300); // Deve ser um pouco menor que a transição do CSS
 
-    function getItems(){ return Array.from(sliderList.querySelectorAll(".item")); }
-    function getThumbs(){ return Array.from(thumbList.querySelectorAll(".thumb")); }
+                    // 4. (Bônus) Move o cartão ativo para o início da lista
+                    carousel.prepend(card);
+                });
+            });
+        });
+    </script>
 
-    function syncActiveContent(frontIndex = 0) {
-      const items = getItems();
-      const thumbs = getThumbs();
-
-      items.forEach((el,i)=>el.classList.toggle("is-active", i===0));
-      thumbs.forEach((el,i)=>el.classList.toggle("is-front", i===frontIndex));
-    }
-
-    function getSlideSrcAt(index) {
-      const items = getItems();
-      return items[index] ? items[index].dataset.src : "";
-    }
-
-    async function decodeImage(src) {
-      if (!src) return;
-      const img = new Image();
-      img.decoding = "async";
-      img.src = src;
-      if (img.decode) { try { await img.decode(); } catch {} }
-      else { await new Promise(r => { img.onload=r; img.onerror=r; }); }
-    }
-
-    async function preloadAll() {
-      const srcs = getItems().map(it => it.dataset.src).filter(Boolean);
-      for (const s of srcs) await decodeImage(s);
-    }
-
-    function forceReflow(el){ el.getBoundingClientRect(); }
-
-    function beginBgTransition(nextSrc){
-      bgNextEl.src = nextSrc;
-      forceReflow(bgNextEl);
-      bgstack.classList.remove("is-animating");
-      forceReflow(bgstack);
-      requestAnimationFrame(() => bgstack.classList.add("is-animating"));
-    }
-
-    function commitBgTransition(){
-      bgCurrentEl.classList.remove("is-current");
-      bgCurrentEl.classList.add("is-next");
-
-      bgNextEl.classList.remove("is-next");
-      bgNextEl.classList.add("is-current");
-
-      const tmp = bgCurrentEl;
-      bgCurrentEl = bgNextEl;
-      bgNextEl = tmp;
-
-      bgstack.classList.remove("is-animating");
-      requestAnimationFrame(() => { bgNextEl.src = ""; });
-    }
-
-    function thumbStepPx() {
-      const first = thumbList.querySelector(".thumb");
-      if (!first) return 0;
-      const rect = first.getBoundingClientRect();
-      const gap = parseFloat(getComputedStyle(thumbList).gap || "0") || 0;
-      return rect.width + gap;
-    }
-
-    // Move cada thumb individualmente (não o container)
-    function animateThumbs(tx) {
-      const thumbs = getThumbs();
-      thumbs.forEach(t => {
-        t.classList.add("is-moving");
-        t.style.setProperty("--tx", `${tx}px`);
-      });
-    }
-    function resetThumbs() {
-      const thumbs = getThumbs();
-      thumbs.forEach(t => {
-        t.classList.remove("is-moving");
-        t.style.setProperty("--tx", `0px`);
-      });
-      // força layout pra “assentar” antes de reordenar
-      forceReflow(thumbList);
-    }
-
-    const wait = (ms) => new Promise(r => setTimeout(r, ms));
-
-    async function goNext() {
-      if (isAnimating) return;
-      isAnimating = true;
-
-      const nextSrc = getSlideSrcAt(1);
-      if (!nextSrc) { isAnimating = false; return; }
-
-      await decodeImage(nextSrc);
-
-      // 1) já marca o "front" como o próximo (ALINHA com o fundo)
-      syncActiveContent(1);
-
-      // 2) começa fundo e thumbs juntos
-      beginBgTransition(nextSrc);
-
-      const step = thumbStepPx();
-      animateThumbs(-step);
-
-      await wait(DURATION);
-
-      // 3) commit fundo
-      commitBgTransition();
-
-      // 4) loop infinito real (slides + thumbs)
-      sliderList.appendChild(sliderList.firstElementChild);
-      thumbList.appendChild(thumbList.firstElementChild);
-
-      // 5) reseta thumbs e agora front volta a ser o primeiro
-      resetThumbs();
-      syncActiveContent(0);
-
-      isAnimating = false;
-    }
-
-    async function goPrev() {
-      if (isAnimating) return;
-      isAnimating = true;
-
-      const items = getItems();
-      const prevSrc = items.length ? items[items.length - 1].dataset.src : "";
-      if (!prevSrc) { isAnimating = false; return; }
-
-      await decodeImage(prevSrc);
-
-      // 1) no prev, o “front” visual vira o último (ele vai entrar na frente)
-      // (como estamos movendo para direita, o último passa a ser o front)
-      const thumbs = getThumbs();
-      syncActiveContent(thumbs.length - 1);
-
-      beginBgTransition(prevSrc);
-
-      const step = thumbStepPx();
-      animateThumbs(+step);
-
-      await wait(DURATION);
-
-      commitBgTransition();
-
-      sliderList.prepend(sliderList.lastElementChild);
-      thumbList.prepend(thumbList.lastElementChild);
-
-      resetThumbs();
-      syncActiveContent(0);
-
-      isAnimating = false;
-    }
-
-    btnNext.addEventListener("click", goNext);
-    btnPrev.addEventListener("click", goPrev);
-
-    (async function init(){
-      syncActiveContent(0);
-      await preloadAll();
-      bgCurrentEl.src = getSlideSrcAt(0);
-      bgNextEl.src = "";
-    })();
-  </script>
 </body>
 </html>
