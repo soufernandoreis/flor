@@ -19,8 +19,8 @@
       --ease: cubic-bezier(.22,.61,.36,1);
       --dur: 650ms;
 
-      /* EFEITO NOVO: crescer para frente (zoom-in) */
-      --zoomStart: .965; /* < 1 => começa menor e cresce até 1 */
+      /* Efeito novo (zoom-in): começa menor e cresce */
+      --zoomStart: .965;
     }
 
     *{ box-sizing:border-box; }
@@ -64,9 +64,7 @@
       overflow:hidden;
     }
 
-    /* ===== FUNDO: 2 <img> fixas (sem background-image) =====
-       Isso reduz muito flicker em vários browsers/GPU.
-    */
+    /* ===== FUNDO: 2 <img> fixas (estável, sem flicker) ===== */
     .bgstack{
       position:absolute;
       inset:0;
@@ -94,7 +92,6 @@
       backface-visibility:hidden;
     }
 
-    /* estados */
     .bgimg.is-current{
       opacity:1;
       transform: translateZ(0) scale(1);
@@ -104,15 +101,14 @@
       transform: translateZ(0) scale(var(--zoomStart)); /* começa menor */
     }
 
-    /* animação */
     .bgstack.is-animating .bgimg.is-next{
       opacity:1;
-      transform: translateZ(0) scale(1); /* cresce para frente */
+      transform: translateZ(0) scale(1);
       transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
     }
     .bgstack.is-animating .bgimg.is-current{
       opacity:0;
-      transform: translateZ(0) scale(1.01); /* leve “respiração” ao sair (opcional) */
+      transform: translateZ(0) scale(1.01);
       transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
     }
 
@@ -122,7 +118,7 @@
       position:absolute;
       inset:0;
       opacity:0;
-      transition: opacity .35s ease;
+      transition: opacity .25s ease;
     }
     .item.is-active{ opacity:1; }
 
@@ -178,47 +174,69 @@
       user-select:none;
     }
 
+    /* ===== THUMBS: SEM CARD ESCURO ===== */
     .thumbnail{
       position:absolute;
       right:70px;
       bottom:55px;
       z-index:30;
+
+      /* remove faixa escura */
+      background: transparent;
+      border: 0;
+      backdrop-filter: none;
+      padding: 0;
+      border-radius: 0;
+
       display:flex;
       gap:12px;
       align-items:flex-end;
-      padding:14px;
-      border-radius:18px;
-      background: rgba(0,0,0,.22);
-      border:1px solid var(--stroke);
-      backdrop-filter: blur(10px);
+
       max-width: calc(100vw - 140px);
       overflow:auto;
-      transform: translateX(0);
     }
+
     .thumb{
       width:110px;
       height:70px;
       padding:0;
       border:0;
-      background:transparent;
       cursor:pointer;
+
       border-radius:12px;
       overflow:hidden;
       outline:2px solid transparent;
       opacity:.85;
-      transition: opacity .2s ease, transform .2s ease, outline-color .2s ease;
+
       flex:0 0 auto;
+
+      /* “solto”: cada thumb anima sozinha */
+      transform: translateX(0);
+      will-change: transform, opacity;
+      transition: opacity .2s ease, transform var(--dur) var(--ease), outline-color .2s ease;
+      box-shadow: 0 14px 32px rgba(0,0,0,.28);
+      background: rgba(255,255,255,.02);
     }
+
     .thumb img{
       width:100%;
       height:100%;
       object-fit:cover;
       display:block;
     }
+
     .thumb.is-front{
       opacity:1;
       outline-color: rgba(255,255,255,.35);
       transform: translateY(-6px);
+    }
+
+    /* durante slide: ignora o translateY do is-front e usa movimento horizontal */
+    .thumb.is-moving.is-front{
+      transform: translateY(-6px) translateX(var(--tx, 0px));
+    }
+    .thumb.is-moving:not(.is-front){
+      transform: translateX(var(--tx, 0px));
     }
 
     /* ====== RESPONSIVO ====== */
@@ -249,8 +267,8 @@
 
       .thumbnail{
         left:14px; right:14px; bottom:14px;
-        padding:10px; border-radius:16px; gap:8px;
         max-width: calc(100vw - 28px);
+        gap:8px;
       }
       .thumb{ width:76px; height:50px; border-radius:12px; }
     }
@@ -275,7 +293,6 @@
   </header>
 
   <main class="slider" id="slider">
-    <!-- Fundo fixo com 2 IMG (current/next) -->
     <div class="bgstack" id="bgstack" aria-hidden="true">
       <img class="bgimg is-current" id="bgCurrent" alt="">
       <img class="bgimg is-next" id="bgNext" alt="">
@@ -349,16 +366,20 @@
     let isAnimating = false;
     const DURATION = 650;
 
-    function syncActiveContent() {
-      const items = sliderList.querySelectorAll(".item");
-      const thumbs = thumbList.querySelectorAll(".thumb");
+    function getItems(){ return Array.from(sliderList.querySelectorAll(".item")); }
+    function getThumbs(){ return Array.from(thumbList.querySelectorAll(".thumb")); }
+
+    function syncActiveContent(frontIndex = 0) {
+      const items = getItems();
+      const thumbs = getThumbs();
+
       items.forEach((el,i)=>el.classList.toggle("is-active", i===0));
-      thumbs.forEach((el,i)=>el.classList.toggle("is-front", i===0));
+      thumbs.forEach((el,i)=>el.classList.toggle("is-front", i===frontIndex));
     }
 
     function getSlideSrcAt(index) {
-      const item = sliderList.querySelectorAll(".item")[index];
-      return item ? item.dataset.src : "";
+      const items = getItems();
+      return items[index] ? items[index].dataset.src : "";
     }
 
     async function decodeImage(src) {
@@ -366,75 +387,67 @@
       const img = new Image();
       img.decoding = "async";
       img.src = src;
-      if (img.decode) {
-        try { await img.decode(); } catch {}
-      } else {
-        await new Promise(r => { img.onload=r; img.onerror=r; });
-      }
+      if (img.decode) { try { await img.decode(); } catch {} }
+      else { await new Promise(r => { img.onload=r; img.onerror=r; }); }
     }
 
     async function preloadAll() {
-      const srcs = Array.from(sliderList.querySelectorAll(".item"))
-        .map(it => it.dataset.src)
-        .filter(Boolean);
-      // decode em série (menos chance de pico de CPU)
+      const srcs = getItems().map(it => it.dataset.src).filter(Boolean);
       for (const s of srcs) await decodeImage(s);
-    }
-
-    function getThumbStepPx() {
-      const first = thumbList.querySelector(".thumb:first-child");
-      if (!first) return 0;
-      const rect = first.getBoundingClientRect();
-      const cs = getComputedStyle(thumbList);
-      const gap = parseFloat(cs.gap || "0") || 0;
-      return rect.width + gap;
-    }
-
-    function animateThumbStripToLeft(delta, duration) {
-      thumbList.style.transition = `transform ${duration}ms var(--ease)`;
-      thumbList.style.transform = `translateX(${-delta}px)`;
-    }
-    function resetThumbStrip() {
-      thumbList.style.transition = "none";
-      thumbList.style.transform = "translateX(0px)";
-      thumbList.getBoundingClientRect();
     }
 
     function forceReflow(el){ el.getBoundingClientRect(); }
 
     function beginBgTransition(nextSrc){
-      // carrega o next (já decodado), depois anima por classe
       bgNextEl.src = nextSrc;
-
-      // garante que o browser “assentou” o novo src antes de animar
       forceReflow(bgNextEl);
       bgstack.classList.remove("is-animating");
       forceReflow(bgstack);
-
       requestAnimationFrame(() => bgstack.classList.add("is-animating"));
     }
 
     function commitBgTransition(){
-      // Sem trocar src no frame crítico:
-      // a próxima imagem (bgNextEl) vira a "current" trocando classes/roles (swap de elementos)
       bgCurrentEl.classList.remove("is-current");
       bgCurrentEl.classList.add("is-next");
 
       bgNextEl.classList.remove("is-next");
       bgNextEl.classList.add("is-current");
 
-      // swap das referências (agora o "current" aponta para o elemento que já estava renderizado)
       const tmp = bgCurrentEl;
       bgCurrentEl = bgNextEl;
       bgNextEl = tmp;
 
-      // limpa estado
       bgstack.classList.remove("is-animating");
-
-      // opcional: limpar src do buffer “next” para evitar reuso estranho
-      // (deixa um micro delay pra não mexer no frame do commit)
       requestAnimationFrame(() => { bgNextEl.src = ""; });
     }
+
+    function thumbStepPx() {
+      const first = thumbList.querySelector(".thumb");
+      if (!first) return 0;
+      const rect = first.getBoundingClientRect();
+      const gap = parseFloat(getComputedStyle(thumbList).gap || "0") || 0;
+      return rect.width + gap;
+    }
+
+    // Move cada thumb individualmente (não o container)
+    function animateThumbs(tx) {
+      const thumbs = getThumbs();
+      thumbs.forEach(t => {
+        t.classList.add("is-moving");
+        t.style.setProperty("--tx", `${tx}px`);
+      });
+    }
+    function resetThumbs() {
+      const thumbs = getThumbs();
+      thumbs.forEach(t => {
+        t.classList.remove("is-moving");
+        t.style.setProperty("--tx", `0px`);
+      });
+      // força layout pra “assentar” antes de reordenar
+      forceReflow(thumbList);
+    }
+
+    const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
     async function goNext() {
       if (isAnimating) return;
@@ -445,22 +458,27 @@
 
       await decodeImage(nextSrc);
 
-      const step = getThumbStepPx();
-      animateThumbStripToLeft(step, DURATION);
+      // 1) já marca o "front" como o próximo (ALINHA com o fundo)
+      syncActiveContent(1);
 
+      // 2) começa fundo e thumbs juntos
       beginBgTransition(nextSrc);
 
-      // espera fim
-      await new Promise(r => setTimeout(r, DURATION));
+      const step = thumbStepPx();
+      animateThumbs(-step);
 
-      // commit fundo (swap de elementos, não troca src do current)
+      await wait(DURATION);
+
+      // 3) commit fundo
       commitBgTransition();
 
-      // loop infinito real
+      // 4) loop infinito real (slides + thumbs)
       sliderList.appendChild(sliderList.firstElementChild);
       thumbList.appendChild(thumbList.firstElementChild);
-      resetThumbStrip();
-      syncActiveContent();
+
+      // 5) reseta thumbs e agora front volta a ser o primeiro
+      resetThumbs();
+      syncActiveContent(0);
 
       isAnimating = false;
     }
@@ -469,30 +487,31 @@
       if (isAnimating) return;
       isAnimating = true;
 
-      const items = sliderList.querySelectorAll(".item");
+      const items = getItems();
       const prevSrc = items.length ? items[items.length - 1].dataset.src : "";
       if (!prevSrc) { isAnimating = false; return; }
 
       await decodeImage(prevSrc);
 
-      const step = getThumbStepPx();
-
-      // thumbs: simula deslocar para direita
-      thumbList.style.transition = "none";
-      thumbList.style.transform = `translateX(${-step}px)`;
-      forceReflow(thumbList);
-      thumbList.style.transition = `transform ${DURATION}ms var(--ease)`;
-      thumbList.style.transform = `translateX(0px)`;
+      // 1) no prev, o “front” visual vira o último (ele vai entrar na frente)
+      // (como estamos movendo para direita, o último passa a ser o front)
+      const thumbs = getThumbs();
+      syncActiveContent(thumbs.length - 1);
 
       beginBgTransition(prevSrc);
-      await new Promise(r => setTimeout(r, DURATION));
+
+      const step = thumbStepPx();
+      animateThumbs(+step);
+
+      await wait(DURATION);
+
       commitBgTransition();
 
-      // loop infinito real ao contrário
       sliderList.prepend(sliderList.lastElementChild);
       thumbList.prepend(thumbList.lastElementChild);
-      resetThumbStrip();
-      syncActiveContent();
+
+      resetThumbs();
+      syncActiveContent(0);
 
       isAnimating = false;
     }
@@ -501,12 +520,9 @@
     btnPrev.addEventListener("click", goPrev);
 
     (async function init(){
-      syncActiveContent();
-      // preload total (reduz chance de flicker por decode)
+      syncActiveContent(0);
       await preloadAll();
-
-      const cur = getSlideSrcAt(0);
-      bgCurrentEl.src = cur;
+      bgCurrentEl.src = getSlideSrcAt(0);
       bgNextEl.src = "";
     })();
   </script>
