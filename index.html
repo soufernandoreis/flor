@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo Final</title>
+    <title>Catálogo Interativo - Versão Final</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
             --transition-speed-fast: 0.5s;
-            --transition-speed-slow: 0.6s; /* <<-- MAIS RÁPIDO */
-            --zoom-duration: 1.2s; /* <<-- MAIS RÁPIDO */
+            --transition-speed-slow: 0.6s;
+            --zoom-duration: 1.2s;
         }
 
         * {
@@ -21,20 +21,18 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: hidden; /* Garante que a página não fique "solta" */
             color: white;
             background-color: #121212;
         }
 
-        /* --- ANIMAÇÃO DE ZOOM IMPACTANTE --- */
-        @keyframes impactZoom {
+        /* --- ANIMAÇÃO DE ZOOM CORRIGIDA (CHEGANDO PARA FRENTE) --- */
+        @keyframes zoomForward {
             from {
-                transform: scale(1.2); /* Começa um pouco maior */
-                opacity: 0.8;
+                transform: scale(1); /* Começa no tamanho normal */
             }
             to {
-                transform: scale(1.1); /* Termina no estado final de zoom */
-                opacity: 1;
+                transform: scale(1.1); /* Termina com zoom para frente */
             }
         }
 
@@ -45,7 +43,7 @@
             min-height: 100vh;
             display: flex;
             align-items: center;
-            overflow: hidden;
+            overflow: hidden; /* Trava o conteúdo dentro dos limites do container */
         }
 
         .background-panels .panel {
@@ -71,8 +69,8 @@
 
         .background-panels .panel.active {
             opacity: 1;
-            /* Aplica a nova animação de zoom */
-            animation: impactZoom var(--zoom-duration) cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            /* Aplica a animação correta */
+            animation: zoomForward var(--zoom-duration) cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
 
         #panel-1 { background-image: url('conjunto.png'); }
@@ -93,13 +91,8 @@
         .content h1 {
             font-size: 4rem;
             text-transform: uppercase;
-            /* <<-- EFEITO AMANHECER -->> */
-            background: linear-gradient(45deg, #f0c30e, #ff8c00);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            /* Um leve brilho para destacar o gradiente */
-            filter: drop-shadow(2px 2px 8px rgba(0,0,0,0.7));
+            color: white; /* <<-- CORRIGIDO */
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
         }
 
         /* --- 4. Footer (Carrossel e Botões) --- */
@@ -109,7 +102,7 @@
             left: 0;
             width: 100%;
             z-index: 4;
-            padding: 3vh 0;
+            padding: 3vh 5vw; /* Padding aplicado aqui para evitar overflow */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -120,7 +113,6 @@
             display: flex;
             gap: 15px;
             perspective: 1000px;
-            padding: 0 5vw;
             width: 100%;
             overflow-x: auto;
         }
@@ -185,7 +177,7 @@
 
             .footer-container {
                 position: relative;
-                margin-top: calc(5vh + 150px); /* Ajustado para a ausência do parágrafo */
+                margin-top: calc(5vh + 150px);
                 padding-bottom: 30px;
             }
 
@@ -245,7 +237,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const cards = document.querySelectorAll('.card');
-            const contentContainer = document.querySelector('.content');
             const contentTitle = document.getElementById('content-title');
             
             function changeContent(card) {
@@ -261,7 +252,6 @@
                 card.classList.add('active');
                 document.getElementById(card.dataset.target).classList.add('active');
 
-                // O JavaScript agora só precisa atualizar o título.
                 contentTitle.textContent = card.dataset.title;
             }
 
