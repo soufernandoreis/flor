@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo v7 - Layout Fixo</title>
+    <title>Catálogo Interativo v8 - Layout Travado</title>
     <style>
         /* --- 1. Configuração Geral e Reset --- */
         :root {
@@ -20,8 +20,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow-y: auto; /* Permite scroll vertical se necessário */
-            overflow-x: hidden; /* <<-- CORREÇÃO PRINCIPAL: Trava o scroll horizontal da página */
+            overflow-y: auto;
+            overflow-x: hidden; /* <<-- GARANTIA MÁXIMA: Impede o scroll horizontal na página inteira */
             color: white;
             background-color: #121212;
         }
@@ -35,10 +35,11 @@
         /* --- 2. Container Principal e Painéis de Fundo --- */
         .main-container {
             position: relative;
-            width: 100vw; /* Garante que o container ocupe a largura exata da tela */
+            width: 100%; /* <<-- CORREÇÃO DEFINITIVA: Trocado de 100vw para 100% */
             min-height: 100vh;
             display: flex;
             align-items: center;
+            overflow: hidden; /* Garante que nada dentro dele vaze para fora */
         }
 
         .background-panels .panel {
@@ -120,19 +121,12 @@
             gap: 15px;
             perspective: 1000px;
             padding: 0 5vw;
-            max-width: 100%;
-            overflow-x: auto; /* <<-- CORREÇÃO 2: Permite que APENAS o carrossel role se necessário */
+            width: 100%;
+            overflow-x: auto;
         }
         
-        /* Esconde a barra de scroll do carrossel para um visual limpo */
-        .card-carousel::-webkit-scrollbar {
-            display: none;
-        }
-        .card-carousel {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
-
+        .card-carousel::-webkit-scrollbar { display: none; }
+        .card-carousel { -ms-overflow-style: none; scrollbar-width: none; }
 
         .card {
             width: 120px;
@@ -197,7 +191,6 @@
             }
 
             .card-carousel {
-                width: 100%;
                 justify-content: flex-start;
             }
         }
