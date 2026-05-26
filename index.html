@@ -1,241 +1,303 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interativo v4</title>
-    <style>
-        /* --- 1. Configuração Geral e Reset --- */
-        :root {
-            --transition-speed-fast: 0.5s;
-            --transition-speed-slow: 0.8s;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Casa de Oração Cristã</title>
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            height: 100vh;
-            overflow: hidden; /* Previne barras de rolagem */
-            color: white;
-            background-color: #121212;
-        }
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 
-        /* --- 2. Container Principal e Painéis de Fundo --- */
-        .main-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
+  <style>
 
-        .background-panels .panel {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-            opacity: 0;
-            transition: opacity var(--transition-speed-slow) ease-in-out;
-            z-index: 1;
-        }
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
 
-        .background-panels .panel::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
-            z-index: 2;
-        }
+    body{
+      font-family:'Montserrat', sans-serif;
+      background:#0d0d0d;
+      color:#fff;
+      overflow-x:hidden;
+    }
 
-        .background-panels .panel.active {
-            opacity: 1;
-        }
+    a{
+      text-decoration:none;
+    }
 
-        /* --- Imagens de Fundo --- */
-        #panel-1 { background-image: url('conjunto.png'); }
-        #panel-2 { background-image: url('conjuntoescuro.png'); }
-        #panel-3 { background-image: url('jaquetaverde.png'); }
-        #panel-4 { background-image: url('homem.png'); }
+    .hero{
+      min-height:100vh;
+      background:
+      linear-gradient(rgba(0,0,0,.75), rgba(0,0,0,.85)),
+      url('https://images.unsplash.com/photo-1514894786521-2f4db9b9c8d0?q=80&w=1974&auto=format&fit=crop');
+      background-size:cover;
+      background-position:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:40px 20px;
+      text-align:center;
+    }
 
-        /* --- 3. Conteúdo de Texto e Botões --- */
-        .content {
-            position: absolute;
-            top: 50%;
-            left: 10%;
-            transform: translateY(-50%);
-            z-index: 3;
-            max-width: 450px;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        
-        .content.fade-out {
-            opacity: 0;
-            transform: translateY(-60%);
-        }
+    .hero-content{
+      max-width:700px;
+    }
 
-        .content h1 {
-            font-size: 4rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
-        }
+    .logo{
+      width:180px;
+      height:180px;
+      object-fit:cover;
+      border-radius:50%;
+      background:#fff;
+      padding:15px;
+      margin-bottom:30px;
+      box-shadow:0 0 30px rgba(255,255,255,.1);
+    }
 
-        .content p {
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-top: 1rem;
-            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
-        }
-        
-        /* --- 4. Botões de Ação --- */
-        .action-buttons {
-            margin-top: 2rem;
-            display: flex;
-            flex-wrap: wrap; 
-            gap: 10px;
-        }
+    h1{
+      font-size:3rem;
+      font-weight:800;
+      margin-bottom:20px;
+      line-height:1.1;
+    }
 
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            border-radius: 5px;
-            background-color: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            text-decoration: none;
-            text-align: center;
-            font-weight: 500;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
+    .highlight{
+      color:#d7a14a;
+    }
 
-        .btn:hover {
-            background-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
+    .subtitle{
+      font-size:1.1rem;
+      color:#d4d4d4;
+      line-height:1.8;
+      margin-bottom:35px;
+    }
 
-        /* --- 5. Logo da Marca --- */
-        .brand-logo {
-            max-width: 160px; /* Define um tamanho máximo para a logo */
-            margin-top: 6rem; /* Espaçamento acima da logo */
-        }
-        
-        /* --- 6. Estilos para Mobile --- */
-        @media (max-width: 768px) {
-            .content {
-                top: 5vh; /* Ajusta a posição para dar mais espaço */
-                left: 5vw;
-                right: 5vw;
-                transform: translateY(0);
-                width: 90%;
-                max-width: 90%;
-                text-align: center;
-                display: flex; /* Adicionado para facilitar o centramento */
-                flex-direction: column; /* Organiza os itens em coluna */
-                align-items: center; /* Centraliza tudo horizontalmente */
-            }
-            .content h1 {
-                font-size: 2.5rem;
-            }
-            .content p {
-                font-size: 0.9rem;
-            }
-            .action-buttons {
-                justify-content: center;
-            }
-        }
-    </style>
+    .cta-button{
+      display:inline-block;
+      background:#d7a14a;
+      color:#111;
+      padding:18px 40px;
+      border-radius:12px;
+      font-weight:700;
+      font-size:1rem;
+      transition:.3s;
+    }
+
+    .cta-button:hover{
+      transform:translateY(-3px);
+      background:#e9b55f;
+    }
+
+    .info-section{
+      padding:80px 20px;
+      background:#121212;
+    }
+
+    .container{
+      max-width:1100px;
+      margin:auto;
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+      gap:25px;
+      margin-top:50px;
+    }
+
+    .card{
+      background:#1b1b1b;
+      border:1px solid rgba(255,255,255,.08);
+      padding:30px;
+      border-radius:18px;
+      transition:.3s;
+    }
+
+    .card:hover{
+      transform:translateY(-5px);
+      border-color:#d7a14a;
+    }
+
+    .card h3{
+      color:#d7a14a;
+      margin-bottom:15px;
+    }
+
+    .card p{
+      color:#cfcfcf;
+      line-height:1.7;
+      font-size:.95rem;
+    }
+
+    .form-section{
+      padding:90px 20px;
+      background:#0f0f0f;
+      text-align:center;
+    }
+
+    .form-title{
+      margin-bottom:20px;
+      font-size:2.3rem;
+      font-weight:800;
+    }
+
+    .form-text{
+      max-width:700px;
+      margin:0 auto 40px;
+      color:#cfcfcf;
+      line-height:1.8;
+    }
+
+    .form-container{
+      max-width:1000px;
+      margin:auto;
+      border-radius:20px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.1);
+      box-shadow:0 0 40px rgba(0,0,0,.4);
+    }
+
+    iframe{
+      width:100%;
+      height:900px;
+      border:none;
+      background:#fff;
+    }
+
+    footer{
+      background:#080808;
+      padding:30px 20px;
+      text-align:center;
+      color:#9f9f9f;
+      font-size:.9rem;
+    }
+
+    @media(max-width:768px){
+
+      h1{
+        font-size:2.2rem;
+      }
+
+      .subtitle{
+        font-size:1rem;
+      }
+
+      .logo{
+        width:140px;
+        height:140px;
+      }
+
+      iframe{
+        height:1000px;
+      }
+
+    }
+
+  </style>
 </head>
+
 <body>
 
-    <main class="main-container">
-        <div class="background-panels">
-            <div class="panel active" id="panel-1"></div>
-            <div class="panel" id="panel-2"></div>
-            <div class="panel" id="panel-3"></div>
-            <div class="panel" id="panel-4"></div>
+  <section class="hero">
+
+    <div class="hero-content">
+
+      <!-- TROQUE O SRC PELA SUA LOGO -->
+      <img 
+        src="logo.png" 
+        alt="Casa de Oração Cristã"
+        class="logo"
+      >
+
+      <h1>
+        Seja bem-vindo à<br>
+        <span class="highlight">Casa de Oração Cristã</span>
+      </h1>
+
+      <p class="subtitle">
+        Preencha sua ficha de inscrição através do formulário abaixo.
+        Estamos felizes em receber você e sua família.
+      </p>
+
+      <a 
+        href="#formulario"
+        class="cta-button"
+      >
+        Fazer Inscrição
+      </a>
+
+    </div>
+
+  </section>
+
+  <section class="info-section">
+
+    <div class="container">
+
+      <h1 style="text-align:center;">
+        Nossa <span class="highlight">Missão</span>
+      </h1>
+
+      <div class="cards">
+
+        <div class="card">
+          <h3>Comunhão</h3>
+          <p>
+            Criamos um ambiente acolhedor para fortalecer a fé,
+            os relacionamentos e a caminhada cristã.
+          </p>
         </div>
 
-        <div class="content">
-            <h1 id="content-title"></h1>
-            <p id="content-description"></p>
-            <div class="action-buttons">
-                <a href="#" class="btn">Vendedora 1</a>
-                <a href="#" class="btn">Vendedora 2</a>
-                <a href="#" class="btn">Grupo VIP</a>
-                <a href="#" class="btn">Compras no Site</a>
-            </div>
-            <!-- Imagem adicionada aqui -->
-            <img src="brother.png" alt="Logo da Marca" class="brand-logo">
+        <div class="card">
+          <h3>Adoração</h3>
+          <p>
+            Valorizamos a presença de Deus através da adoração,
+            oração e ensino da Palavra.
+          </p>
         </div>
-    </main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const contentContainer = document.querySelector('.content');
-            const contentTitle = document.getElementById('content-title');
-            const contentDescription = document.getElementById('content-description');
-            const panels = document.querySelectorAll('.panel');
+        <div class="card">
+          <h3>Transformação</h3>
+          <p>
+            Nosso propósito é alcançar vidas e promover crescimento
+            espiritual verdadeiro.
+          </p>
+        </div>
 
-            const slidesData = [
-                {
-                    target: 'panel-1', 
-                    title: 'Coleção Urbana', 
-                    description: 'Um estilo que combina conforto e design moderno, perfeito para o dia a dia na cidade. Peças versáteis para todas as ocasiões.'
-                },
-                {
-                    target: 'panel-2', 
-                    title: 'Estilo Noturno', 
-                    description: 'Elegância e sofisticação em tons escuros. O look ideal para eventos noturnos e momentos que pedem um toque de classe.'
-                },
-                {
-                    target: 'panel-3', 
-                    title: 'Aventura Casual', 
-                    description: 'Proteção e estilo para qualquer clima. A jaqueta essencial para quem busca funcionalidade sem abrir mão da moda.'
-                },
-                {
-                    target: 'panel-4', 
-                    title: 'Clássico Atemporal', 
-                    description: 'O suéter que transcende tendências. Conforto e um visual refinado que nunca sai de moda, essencial em qualquer guarda-roupa.'
-                }
-            ];
+      </div>
 
-            let currentIndex = 0;
+    </div>
 
-            function showSlide(index) {
-                const slide = slidesData[index];
-                contentContainer.classList.add('fade-out');
+  </section>
 
-                setTimeout(() => {
-                    contentTitle.textContent = slide.title;
-                    contentDescription.textContent = slide.description;
-                    
-                    panels.forEach(p => p.classList.remove('active'));
-                    document.getElementById(slide.target).classList.add('active');
+  <section class="form-section" id="formulario">
 
-                    contentContainer.classList.remove('fade-out');
-                }, 300);
-            }
+    <h2 class="form-title">
+      Formulário de Inscrição
+    </h2>
 
-            function nextSlide() {
-                currentIndex = (currentIndex + 1) % slidesData.length;
-                showSlide(currentIndex);
-            }
+    <p class="form-text">
+      Preencha corretamente todos os dados solicitados no formulário abaixo.
+    </p>
 
-            showSlide(0);
-            setInterval(nextSlide, 5000);
-        });
-    </script>
+    <div class="form-container">
+
+      <!-- SUBSTITUA PELO LINK EMBED DO GOOGLE FORMS -->
+      <iframe 
+        src="https://docs.google.com/forms/d/e/SEU_FORM_ID/viewform?embedded=true">
+      </iframe>
+
+    </div>
+
+  </section>
+
+  <footer>
+    © 2026 - Igreja Evangélica Casa de Oração Cristã
+  </footer>
 
 </body>
 </html>
